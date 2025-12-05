@@ -1443,6 +1443,79 @@
     });
   }
 
+  /* 6 張照片 3×2 格子 */
+.album-grid {
+  padding: 12px 16px;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+   /*Step 1-2：相簿 CSS
+.album-item {
+  position: relative;
+  width: 100%;
+  padding-top: 100%;
+  border-radius: 14px;
+  overflow: hidden;
+  background: #e5e7eb;
+  cursor: pointer;
+}
+
+.album-item img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.album-item .set-cover-btn {
+  position: absolute;
+  bottom: 4px;
+  right: 4px;
+  background: rgba(0,0,0,0.55);
+  color: white;
+  font-size: 12px;
+  padding: 2px 6px;
+  border-radius: 10px;
+  display: none;
+}
+
+.album-item:hover .set-cover-btn {
+  display: inline-block;
+}
+
+.album-note {
+  font-size: 13px;
+  color: #6b7280;
+  padding: 4px 16px 12px;
+}
+/* 全螢幕圖片 Viewer */
+.photo-viewer {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.9);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 2000;
+  display: none;
+}
+
+.photo-viewer img {
+  max-width: 100%;
+  max-height: 100%;
+  border-radius: 8px;
+}
+
+.photo-viewer-close {
+  position: fixed;
+  top: 14px;
+  right: 14px;
+  color: white;
+  font-size: 30px;
+}
+
   // ==== 排行榜假資料 ====
   const rankPyramidEl = document.getElementById("rankPyramid");
   const rankListEl = document.getElementById("rankList");
@@ -1755,7 +1828,59 @@
   updateFriendNotePreview();
   renderTopRightForPage("people");
   renderRank("pop");
-</script>
-</body>
+</script>/* ====== 相簿資料 ====== */
+let albumPhotos = [
+  `https://picsum.photos/400/400?random=901`,
+  `https://picsum.photos/400/400?random=902`,
+  `https://picsum.photos/400/400?random=903`,
+  `https://picsum.photos/400/400?random=904`,
+  `https://picsum.photos/400/400?random=905`,
+  `https://picsum.photos/400/400?random=906`
+];
+
+/* ====== 渲染相簿 ====== */
+function renderAlbum() {
+  const grid = document.querySelector(".album-grid");
+  grid.innerHTML = "";
+
+  albumPhotos.forEach((src, idx) => {
+    grid.innerHTML += `
+      <div class="album-item" onclick="openPhotoViewer('${src}')">
+        <img src="${src}">
+        <div class="set-cover-btn" onclick="event.stopPropagation(); setAsAvatar(${idx})">
+          設為頭貼
+        </div>
+      </div>
+    `;
+  });
+}
+
+/* ====== 設為頭貼 ====== */
+function setAsAvatar(index) {
+  const newAvatar = albumPhotos[index];
+  document.querySelector(".profile-avatar img").src = newAvatar;
+
+  alert("已把這張照片設為頭貼！");
+}
+
+/* ====== 照片放大 Viewer ====== */
+function openPhotoViewer(src) {
+  const viewer = document.getElementById("photoViewer");
+  viewer.querySelector("img").src = src;
+  viewer.style.display = "flex";
+}
+
+function closeViewer() {
+  document.getElementById("photoViewer").style.display = "none";
+}
+
+renderAlbum();
+
+</body><div class="photo-viewer" id="photoViewer">
+  <img src="">
+  <div class="photo-viewer-close" onclick="closeViewer()">✕</div>
+</div>
+
 </html>
+
 
