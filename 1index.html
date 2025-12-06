@@ -92,42 +92,42 @@
     "https://picsum.photos/400/400?random=906"
   ];
 
-  // ========= 全域變數 =========
-  const peopleGridEl = document.getElementById("peopleGrid");
-  const nextBatchBtn = document.getElementById("nextBatchBtn");
-  const profileDetailContent = document.getElementById("profileDetailContent");
-  const topTitleEl = document.getElementById("topTitle");
-  const topRightSlot = document.getElementById("topRightSlot");
+  // ========= 全域變數（先宣告，DOMContentLoaded 再賦值） =========
+  let peopleGridEl;
+  let nextBatchBtn;
+  let profileDetailContent;
+  let topTitleEl;
+  let topRightSlot;
 
-  const friendsListEl = document.getElementById("friendsList");
-  const chatMessagesEl = document.getElementById("chatMessages");
-  const chatInputEl = document.getElementById("chatInput");
-  const chatSendBtn = document.getElementById("chatSendBtn");
-  const stickerBar = document.getElementById("stickerBar");
-  const stickerToggle = document.getElementById("stickerToggle");
-  const chatWrapper = document.getElementById("chatWrapper");
-  const chatUploadBtn = document.getElementById("chatUploadBtn");
-  const chatFileInput = document.getElementById("chatFileInput");
+  let friendsListEl;
+  let chatMessagesEl;
+  let chatInputEl;
+  let chatSendBtn;
+  let stickerBar;
+  let stickerToggle;
+  let chatWrapper;
+  let chatUploadBtn;
+  let chatFileInput;
 
-  const statusSelect = document.getElementById("statusSelect");
-  const myStatusBadge = document.getElementById("myStatusBadge");
-  const myStatusText = document.getElementById("myStatusText");
-  const myProfileSub = document.getElementById("myProfileSub");
+  let statusSelect;
+  let myStatusBadge;
+  let myStatusText;
+  let myProfileSub;
 
-  const friendNoteInput = document.getElementById("friendNoteInput");
-  const friendNotePreview = document.getElementById("friendNotePreview");
+  let friendNoteInput;
+  let friendNotePreview;
 
   const pages = {
-    people: document.getElementById("page-people"),
-    profileDetail: document.getElementById("page-profileDetail"),
-    friends: document.getElementById("page-friends"),
-    rank: document.getElementById("page-rank"),
-    chat: document.getElementById("page-chat"),
-    me: document.getElementById("page-me")
+    people: null,
+    profileDetail: null,
+    friends: null,
+    rank: null,
+    chat: null,
+    me: null
   };
 
-  const rankPyramidEl = document.getElementById("rankPyramid");
-  const rankListEl = document.getElementById("rankList");
+  let rankPyramidEl;
+  let rankListEl;
 
   let currentBatch = [];
   let currentRankTab = "pop";
@@ -135,10 +135,7 @@
   let currentProfileUser = null;
   let currentChatUser = null;
 
-  // ========= 好友系統狀態（存在記憶體示意用） =========
-  // friends: 已經互相好友
-  // sent: 我送出的好友申請 { uid, user, status: pending/accepted/rejected }
-  // received: 別人送來的好友申請
+  // ========= 好友系統狀態 =========
   let friendState = {
     friends: [],
     sent: [],
@@ -198,7 +195,9 @@
 
   function showPage(pageName) {
     Object.keys(pages).forEach(k => {
-      pages[k].classList.toggle("active", k === pageName);
+      if (pages[k]) {
+        pages[k].classList.toggle("active", k === pageName);
+      }
     });
     // 底部 Nav 高亮同步
     document.querySelectorAll(".nav-item").forEach(item => {
@@ -218,6 +217,7 @@
   }
 
   function renderTopRightForPage(pageName) {
+    if (!topRightSlot) return;
     topRightSlot.innerHTML = "";
     if (pageName === "me") {
       const btn = document.createElement("button");
@@ -251,6 +251,7 @@
   }
 
   function renderPeopleGrid() {
+    if (!peopleGridEl) return;
     if (currentBatch.length === 0) pickRandomBatch();
     peopleGridEl.innerHTML = "";
     currentBatch.forEach(p => {
@@ -293,11 +294,6 @@
       peopleGridEl.appendChild(card);
     });
   }
-
-  nextBatchBtn.addEventListener("click", () => {
-    pickRandomBatch();
-    renderPeopleGrid();
-  });
 
   // ========= 好友系統：關係判斷與操作 =========
   function getRelationship(uid) {
@@ -417,496 +413,19 @@
     });
   }
 
-  // ========= 詳細檔案（對外資料） =========
-  function openProfileDetail(id) {
-    const p = people.find(x => x.id === id);
-    if (!p) return;
-    openProfileDetailWithUser(p);
-  }
-
-  function openProfileDetailWithUser(user) {
-    // 確保 user.uid 存在
-    const u = { ...user };
-    if (!u.uid) {
-      u.uid = u.id ? "people-" + u.id : "user-" + Date.now();
-    }
-    currentProfileUser = u;
-
-    const statusBadgeHtml = renderStatusBadge(u);
-    const vipLevel = (u.id || 1) % 5 + 1;
-
-    const albumHtml = albumPhotos.map((src, idx) => `
-      <div class="album-item" onclick="openPhotoViewer('${src}')">
-        <img src="${src}" alt="photo${idx + 1}" />
-        <button class="set-cover-btn" onclick="event.stopPropagation(); setAsAvatar(${idx})">設為頭貼</button>
-        <div class="album-gift-btn" onclick="event.stopPropagation(); sendGiftAnimation(this)">💝 送禮</div>
-      </div>
-    `).join("");
-
-    profileDetailContent.innerHTML = `
-      <div class="profile-header">
-        <div class="profile-row-main">
-          <div class="profile-avatar" onclick="openPhotoViewer('${u.avatar}')">
-            <img src="${u.avatar}" alt="${u.name}" />
-          </div>
-          <div>
-            <div class="profile-name">${u.name}</div>
-            <div class="profile-sub">${u.ageText || "年齡未設定"} · 台灣 · 暫無更多介紹</div>
-            <div style="margin-top:6px; font-size:15px;">${statusBadgeHtml}</div>
-          </div>
-        </div>
-        <div class="profile-actions">
-          <button class="btn" id="profileBlockBtn">封鎖 / 刪除</button>
-          <button class="btn btn-primary" id="profileFriendOrChatBtn"></button>
-        </div>
-      </div>
-
-      <div class="section">
-        <div class="profile-cta-row">
-          <div class="profile-vip-label">
-            <span>⭐ VIP${vipLevel} 用戶（示意）</span>
-          </div>
-          <button class="big-cta-btn primary" onclick="sendGiftAnimationFromHeader(this)">🎁 送禮物</button>
-        </div>
-      </div>
-
-      <div class="section">
-        <div class="section-title">相簿（每張都有送禮入口）</div>
-        <div class="album-grid">
-          ${albumHtml}
-        </div>
-        <div class="album-note">
-          相簿僅示意，正式版可以上傳自己的照片、設定可見範圍與解鎖方式。
-        </div>
-      </div>
-
-      <div class="section">
-        <div class="section-title">基本資料</div>
-        <table class="info-table">
-          <tr><td class="info-key">暱稱</td><td class="info-value">${u.name}</td></tr>
-          <tr><td class="info-key">性別</td><td class="info-value">未設定</td></tr>
-          <tr><td class="info-key">年齡層</td><td class="info-value">${u.ageText || "未設定"}</td></tr>
-          <tr><td class="info-key">國家</td><td class="info-value">台灣</td></tr>
-          <tr><td class="info-key">地區</td><td class="info-value">未設定</td></tr>
-          <tr><td class="info-key">自我介紹</td><td class="info-value">${u.desc || ""}</td></tr>
-        </table>
-      </div>
-
-      <div class="section">
-        <div class="section-title">自介日記（示意）</div>
-        <div class="diary-list">
-          <div class="diary-item">
-            <div class="diary-date">2025-11-25</div>
-            <div>這裡之後可以顯示對方的 5 篇代表日記，讓人更了解他。</div>
-          </div>
-        </div>
-      </div>
-    `;
-
-    showPage("profileDetail");
-    topTitleEl.textContent = u.name;
-
-    setupProfileDetailActionButtons();
-  }
-
-  function setupProfileDetailActionButtons() {
-    const btn = document.getElementById("profileFriendOrChatBtn");
-    if (!btn || !currentProfileUser) return;
-    const uid = currentProfileUser.uid;
-    const rel = getRelationship(uid);
-
-    btn.disabled = false;
-    btn.textContent = "";
-
-    if (rel === "friend") {
-      btn.textContent = "1 對 1 聊天";
-      btn.onclick = () => startChatWithUser(currentProfileUser);
-    } else if (rel === "sentPending") {
-      btn.textContent = "已送出好友申請";
-      btn.disabled = true;
-      btn.onclick = null;
-    } else if (rel === "receivedPending") {
-      btn.textContent = "同意好友申請";
-      btn.onclick = () => acceptFriend(uid);
-    } else if (rel === "sentRejected" || rel === "receivedRejected") {
-      btn.textContent = "已拒絕 / 無法加好友";
-      btn.disabled = true;
-      btn.onclick = null;
-    } else {
-      btn.textContent = "加入好友";
-      btn.onclick = () => sendFriendRequestForCurrent();
-    }
-  }
-
-  // ========= 好友列表（3 分頁） =========
-  function renderFriendsList(type) {
-    currentFriendTab = type;
-    friendsListEl.innerHTML = "";
-
-    let list = [];
-    if (type === "friends") list = friendState.friends;
-    else if (type === "sent") list = friendState.sent;
-    else list = friendState.received;
-
-    if (!list.length) {
-      const empty = document.createElement("div");
-      empty.style.padding = "16px";
-      empty.style.fontSize = "14px";
-      empty.style.color = "#9ca3af";
-      empty.textContent =
-        type === "friends"
-          ? "目前還沒有好友，從『巧遇』或『排行榜』試著加看看吧。"
-          : type === "sent"
-          ? "目前沒有送出的好友申請。"
-          : "目前沒有收到好友申請。";
-      friendsListEl.appendChild(empty);
-      return;
-    }
-
-    list.forEach(entry => {
-      const { user, status } = entry;
-      const uid = entry.uid;
-
-      const li = document.createElement("li");
-      li.className = "list-item";
-      li.dataset.uid = uid;
-
-      const statusHtml = renderStatusBadge(user);
-
-      let statusRowHtml = "";
-      if (type === "friends") {
-        statusRowHtml = `
-          <div class="item-row3">
-            <span class="label">好友限定：</span>${friendNoteInput.value.trim() || "今天好難過，希望能有好天氣出現。"}
-          </div>
-        `;
-      } else {
-        let stText = "待回覆";
-        if (status === "accepted") stText = "已同意";
-        if (status === "rejected") stText = "已拒絕";
-        statusRowHtml = `
-          <div class="item-row3">
-            <span class="label">申請狀態：</span><span class="friend-status-text">${stText}</span>
-            ${
-              type === "received" && status === "pending"
-                ? `<div style="margin-top:6px;">
-                    <button type="button" class="friend-accept-btn" style="margin-right:6px; font-size:13px; padding:4px 8px; border-radius:999px; border:1px solid #22c55e; background:#ecfdf5; color:#166534;">同意</button>
-                    <button type="button" class="friend-reject-btn" style="font-size:13px; padding:4px 8px; border-radius:999px; border:1px solid #ef4444; background:#fef2f2; color:#b91c1c;">拒絕</button>
-                  </div>`
-                : ""
-            }
-          </div>
-        `;
-      }
-
-      li.innerHTML = `
-        <div class="avatar">
-          <img src="${user.avatar}" alt="${user.name}" />
-        </div>
-        <div class="item-main">
-          <div class="item-row1">
-            <div class="item-row1-left">
-              <span class="item-name">${user.name}</span>
-              <span class="item-mood">${type === "friends" ? "😊" : "🤝"}</span>
-            </div>
-            ${statusHtml}
-          </div>
-          <div class="item-row2">${user.desc || "暫無自我介紹。"}</div>
-          ${statusRowHtml}
-        </div>
-      `;
-
-      // 點整列 → 看對外資料
-      li.addEventListener("click", (e) => {
-        const target = e.target;
-        // 如果是按下接受 / 拒絕按鈕，不要跳 profile
-        if (target.classList.contains("friend-accept-btn") || target.classList.contains("friend-reject-btn")) {
-          return;
-        }
-        openProfileDetailWithUser(user);
-      });
-
-      // 頭像可放大
-      const av = li.querySelector(".avatar img");
-      if (av) {
-        av.addEventListener("click", (e) => {
-          e.stopPropagation();
-          openPhotoViewer(av.src);
-        });
-      }
-
-      // 好友限定小語 → 直接開聊天（只在「好友」分頁）
-      if (type === "friends") {
-        const row3 = li.querySelector(".item-row3");
-        if (row3) {
-          row3.style.cursor = "pointer";
-          row3.addEventListener("click", (e) => {
-            e.stopPropagation();
-            startChatWithUser(user);
-          });
-        }
-      }
-
-      // 收到申請 → 同意 / 拒絕
-      if (type === "received") {
-        const acceptBtn = li.querySelector(".friend-accept-btn");
-        const rejectBtn = li.querySelector(".friend-reject-btn");
-        if (acceptBtn) {
-          acceptBtn.addEventListener("click", (e) => {
-            e.stopPropagation();
-            acceptFriend(uid);
-          });
-        }
-        if (rejectBtn) {
-          rejectBtn.addEventListener("click", (e) => {
-            e.stopPropagation();
-            rejectFriend(uid);
-          });
-        }
-      }
-
-      friendsListEl.appendChild(li);
-    });
-  }
-
-  // ========= 排行榜 =========
-  function renderRank(type) {
-    const data = rankData[type] || [];
-    if (!data.length) {
-      rankPyramidEl.innerHTML = "<div style='font-size:14px; color:#9ca3af; text-align:center;'>暫無排名資料</div>";
-      rankListEl.innerHTML = "";
-      return;
-    }
-    const king = data[0];
-    const second = data[1];
-    const third = data[2];
-    const fourth = data[3];
-    const fifth = data[4];
-    const sixth = data[5];
-    const rest = data.slice(6);
-
-    let pyramidHtml = `
-      <div class="rank-row">
-        <div class="rank-card">
-          <div class="rank-badge">
-            <span class="icon">👑</span>
-            <span>${king.title}</span>
-          </div>
-          <div class="rank-avatar-wrap king">
-            <div class="rank-avatar">
-              <img src="${king.avatar}" alt="${king.name}" />
-            </div>
-          </div>
-          <div class="rank-name">${king.name}</div>
-          <div class="rank-sub">${king.city} · ${king.age}</div>
-        </div>
-      </div>
-    `;
-
-    pyramidHtml += `
-      <div class="rank-row">
-        ${
-          second
-            ? `
-        <div class="rank-card">
-          <div class="rank-avatar-wrap">
-            <div class="rank-avatar medium">
-              <img src="${second.avatar}" alt="${second.name}" />
-            </div>
-          </div>
-          <div class="rank-name">${second.name}</div>
-          <div class="rank-sub">${second.title} · ${second.city}</div>
-        </div>`
-            : ""
-        }
-        ${
-          third
-            ? `
-        <div class="rank-card">
-          <div class="rank-avatar-wrap">
-            <div class="rank-avatar medium">
-              <img src="${third.avatar}" alt="${third.name}" />
-            </div>
-          </div>
-          <div class="rank-name">${third.name}</div>
-          <div class="rank-sub">${third.title} · ${third.city}</div>
-        </div>`
-            : ""
-        }
-      </div>
-    `;
-
-    pyramidHtml += `<div class="rank-row">`;
-    [fourth, fifth, sixth].forEach(item => {
-      if (!item) return;
-      pyramidHtml += `
-        <div class="rank-card">
-          <div class="rank-avatar-wrap">
-            <div class="rank-avatar small">
-              <img src="${item.avatar}" alt="${item.name}" />
-            </div>
-          </div>
-          <div class="rank-name">${item.name}</div>
-          <div class="rank-sub">${item.title} · ${item.city}</div>
-        </div>
-      `;
-    });
-    pyramidHtml += `</div>`;
-    rankPyramidEl.innerHTML = pyramidHtml;
-
-    rankListEl.innerHTML = "";
-    rest.forEach(item => {
-      const li = document.createElement("div");
-      li.className = "rank-list-item";
-      li.innerHTML = `
-        <div class="rank-pos">${item.pos}</div>
-        <div class="rank-list-avatar">
-          <img src="${item.avatar}" alt="${item.name}" />
-        </div>
-        <div class="rank-list-main">
-          <div class="rank-list-name">${item.name} · ${item.title}</div>
-          <div class="rank-list-sub">${item.city} · ${item.age}</div>
-        </div>
-        <div class="rank-score">${item.score} 分</div>
-      `;
-      const av = li.querySelector(".rank-list-avatar img");
-      if (av) {
-        av.addEventListener("click", (e) => {
-          e.stopPropagation();
-          openPhotoViewer(av.src);
-        });
-      }
-      rankListEl.appendChild(li);
-    });
-  }
-
-  // ========= 聊天 =========
-  function sendChat() {
-    const text = chatInputEl.value.trim();
-    if (!text) return;
-    const row = document.createElement("div");
-    row.className = "bubble-row me";
-    const bubble = document.createElement("div");
-    bubble.className = "bubble me";
-    bubble.textContent = text;
-    row.appendChild(bubble);
-    chatMessagesEl.appendChild(row);
-    chatInputEl.value = "";
-    chatMessagesEl.scrollTop = chatMessagesEl.scrollHeight;
-  }
-
-  chatSendBtn.addEventListener("click", sendChat);
-  chatInputEl.addEventListener("keydown", e => {
-    if (e.key === "Enter") {
-      e.preventDefault();
-      sendChat();
-    }
-  });
-
-  stickerToggle.addEventListener("click", () => {
-    stickerBar.classList.toggle("show");
-  });
-
-  stickerBar.querySelectorAll(".sticker-btn").forEach(btn => {
-    btn.addEventListener("click", () => {
-      const emo = btn.textContent;
-      chatInputEl.value += emo;
-      chatInputEl.focus();
-    });
-  });
-
-  function sendImageBubble(src) {
-    const row = document.createElement("div");
-    row.className = "bubble-row me";
-    const bubble = document.createElement("div");
-    bubble.className = "bubble me";
-    const img = document.createElement("img");
-    img.src = src;
-    img.alt = "image";
-    img.addEventListener("click", () => openPhotoViewer(src));
-    bubble.appendChild(img);
-    row.appendChild(bubble);
-    chatMessagesEl.appendChild(row);
-    chatMessagesEl.scrollTop = chatMessagesEl.scrollHeight;
-  }
-
-  if (chatUploadBtn && chatFileInput) {
-    chatUploadBtn.addEventListener("click", () => chatFileInput.click());
-    chatFileInput.addEventListener("change", (e) => {
-      const files = Array.from(e.target.files || []);
-      files.forEach(file => {
-        if (!file.type.startsWith("image/")) return;
-        const reader = new FileReader();
-        reader.onload = (ev) => {
-          const src = ev.target.result;
-          if (!src) return;
-          sendImageBubble(src);
-        };
-        reader.readAsDataURL(file);
-      });
-      chatFileInput.value = "";
-    });
-  }
-
-  document.querySelectorAll(".chat-theme-pill").forEach(pill => {
-    pill.addEventListener("click", () => {
-      document.querySelectorAll(".chat-theme-pill").forEach(p => p.classList.remove("active"));
-      pill.classList.add("active");
-      const theme = pill.getAttribute("data-theme");
-      chatWrapper.className = "chat-wrapper chat-theme-" + theme;
-    });
-  });
-
-  function startChatWithUser(user) {
-    currentChatUser = user;
-    showPage("chat");
-    topTitleEl.textContent = user.name + " · 聊天";
-    // 開新對話時清一版，給提示訊息
-    chatMessagesEl.innerHTML = "";
-    const row = document.createElement("div");
-    row.className = "bubble-row";
-    const bubble = document.createElement("div");
-    bubble.className = "bubble them";
-    bubble.innerHTML = `你正在與 <b>${user.name}</b> 聊天（示意用，尚未串接真實伺服器）。`;
-    row.appendChild(bubble);
-    chatMessagesEl.appendChild(row);
-  }
-
-  // ========= 我的狀態 & 好友限定小語 =========
-  function updateMyStatus() {
-    const val = statusSelect.value;
-    let text = "已上線";
-    let cls = "status-badge";
-
-    if (val === "online") text = "已上線";
-    if (val === "busy") { text = "忙碌中…"; cls += " status-busy"; }
-    if (val === "eating") { text = "用餐去…"; cls += " status-eating"; }
-    if (val === "shower") { text = "洗澡中…"; cls += " status-shower"; }
-    if (val === "away") { text = "暫離中…"; cls += " status-away"; }
-    if (val === "offline") { text = "離線中"; cls += " status-away"; }
-    if (val === "chatty") text = "想聊天";
-
-    myStatusBadge.className = cls;
-    myStatusText.textContent = text;
-    myProfileSub.textContent = "台灣 · 30 歲左右 · " + text;
-  }
-  statusSelect.addEventListener("change", updateMyStatus);
-
-  function updateFriendNotePreview() {
-    const t = friendNoteInput.value.trim() || "（尚未設定）";
-    friendNotePreview.innerHTML = '<span class="label">好友限定：</span>' + t;
-  }
-  friendNoteInput.addEventListener("input", updateFriendNotePreview);
-
   // ========= 相片 Viewer & 送禮動畫 =========
   function openPhotoViewer(src) {
     const viewer = document.getElementById("photoViewer");
+    if (!viewer) return;
     const img = viewer.querySelector("img");
+    if (!img) return;
     img.src = src;
     viewer.classList.add("show");
   }
   function closeViewer() {
-    document.getElementById("photoViewer").classList.remove("show");
+    const viewer = document.getElementById("photoViewer");
+    if (!viewer) return;
+    viewer.classList.remove("show");
   }
   window.openPhotoViewer = openPhotoViewer;
   window.closeViewer = closeViewer;
@@ -915,9 +434,17 @@
     const h = document.createElement("div");
     h.className = "gift-heart";
     h.textContent = "💗";
+    h.style.position = "fixed";
     h.style.left = x + "px";
     h.style.top = y + "px";
+    h.style.fontSize = "32px";
+    h.style.pointerEvents = "none";
+    h.style.transition = "transform 1s ease-out, opacity 1s ease-out";
     document.body.appendChild(h);
+    requestAnimationFrame(() => {
+      h.style.transform = "translateY(-60px)";
+      h.style.opacity = "0";
+    });
     setTimeout(() => h.remove(), 1000);
   }
   function sendGiftAnimation(el) {
@@ -940,8 +467,83 @@
   window.sendGiftAnimationFromHeader = sendGiftAnimationFromHeader;
   window.setAsAvatar = setAsAvatar;
 
-  // ========= 登入 + 基本資料卡片 + 我的照片（沿用你原本的邏輯） =========
-  // 這一塊我沒有改動結構，只保留原本功能：綁定系統+基礎資料+我的相簿+VIP 等
+  // ========= 我的狀態 & 好友限定小語 =========
+  function updateMyStatus() {
+    if (!statusSelect || !myStatusBadge || !myStatusText || !myProfileSub) return;
+    const val = statusSelect.value;
+    let text = "已上線";
+    let cls = "status-badge";
+
+    if (val === "online") text = "已上線";
+    if (val === "busy") { text = "忙碌中…"; cls += " status-busy"; }
+    if (val === "eating") { text = "用餐去…"; cls += " status-eating"; }
+    if (val === "shower") { text = "洗澡中…"; cls += " status-shower"; }
+    if (val === "away") { text = "暫離中…"; cls += " status-away"; }
+    if (val === "offline") { text = "離線中"; cls += " status-away"; }
+    if (val === "chatty") text = "想聊天";
+
+    myStatusBadge.className = cls;
+    myStatusText.textContent = text;
+    myProfileSub.textContent = "台灣 · 30 歲左右 · " + text;
+  }
+
+  function updateFriendNotePreview() {
+    if (!friendNoteInput || !friendNotePreview) return;
+    const t = friendNoteInput.value.trim() || "（尚未設定）";
+    friendNotePreview.innerHTML = '<span class="label">好友限定：</span>' + t;
+  }
+
+  // ========= 聊天 =========
+  function sendChat() {
+    if (!chatInputEl || !chatMessagesEl) return;
+    const text = chatInputEl.value.trim();
+    if (!text) return;
+    const row = document.createElement("div");
+    row.className = "bubble-row me";
+    const bubble = document.createElement("div");
+    bubble.className = "bubble me";
+    bubble.textContent = text;
+    row.appendChild(bubble);
+    chatMessagesEl.appendChild(row);
+    chatInputEl.value = "";
+    chatMessagesEl.scrollTop = chatMessagesEl.scrollHeight;
+  }
+
+  function sendImageBubble(src) {
+    if (!chatMessagesEl) return;
+    const row = document.createElement("div");
+    row.className = "bubble-row me";
+    const bubble = document.createElement("div");
+    bubble.className = "bubble me";
+    const img = document.createElement("img");
+    img.src = src;
+    img.alt = "image";
+    img.addEventListener("click", () => openPhotoViewer(src));
+    bubble.appendChild(img);
+    row.appendChild(bubble);
+    chatMessagesEl.appendChild(row);
+    chatMessagesEl.scrollTop = chatMessagesEl.scrollHeight;
+  }
+
+  function startChatWithUser(user) {
+    currentChatUser = user;
+    showPage("chat");
+    if (topTitleEl) {
+      topTitleEl.textContent = user.name + " · 聊天";
+    }
+    if (!chatMessagesEl) return;
+    // 開新對話時清一版，給提示訊息
+    chatMessagesEl.innerHTML = "";
+    const row = document.createElement("div");
+    row.className = "bubble-row";
+    const bubble = document.createElement("div");
+    bubble.className = "bubble them";
+    bubble.innerHTML = `你正在與 <b>${user.name}</b> 聊天（示意用，尚未串接真實伺服器）。`;
+    row.appendChild(bubble);
+    chatMessagesEl.appendChild(row);
+  }
+
+  // ========= 我的相簿／VIP =========
   const MY_ALBUM_SLOTS = 6;
   let myAlbumPhotosCache = null;
 
@@ -1224,15 +826,35 @@
         overlay.innerHTML = `
           <div>🔒 鎖定照片<br>觀看一次廣告即可暫時解鎖 4 張照片</div>
         `;
+        overlay.style.position = "absolute";
+        overlay.style.inset = "0";
+        overlay.style.background = "rgba(0,0,0,0.55)";
+        overlay.style.display = "flex";
+        overlay.style.flexDirection = "column";
+        overlay.style.alignItems = "center";
+        overlay.style.justifyContent = "center";
+        overlay.style.color = "#fff";
+        overlay.style.fontSize = "13px";
+        overlay.style.textAlign = "center";
+        overlay.style.borderRadius = "12px";
+
         const btn = document.createElement("button");
         btn.type = "button";
         btn.className = "my-album-lock-btn";
         btn.textContent = "觀看廣告暫時解鎖（Demo）";
+        btn.style.marginTop = "8px";
+        btn.style.padding = "6px 12px";
+        btn.style.borderRadius = "999px";
+        btn.style.border = "none";
+        btn.style.background = "#f97316";
+        btn.style.color = "#fff";
+        btn.style.fontSize = "13px";
         btn.addEventListener("click", (e) => {
           e.stopPropagation();
           hmAlbumUnlock();
         });
         overlay.appendChild(btn);
+        slot.style.position = "relative";
         slot.appendChild(overlay);
       }
 
@@ -1252,20 +874,586 @@
     if (img && stored) img.src = stored;
   }
 
+  // ========= 陌生人相簿解鎖（1~2 張免費，3~6 張需看廣告或 VIP） =========
+  function isProfileAlbumUnlocked() {
+    // 觀者 VIP > 0 → 全開放
+    if (hmGetVipLevel() > 0) return true;
+
+    try {
+      const raw = sessionStorage.getItem("hmProfileAlbumUnlockedUntil");
+      if (!raw) return false;
+      const expire = parseInt(raw, 10);
+      if (isNaN(expire)) return false;
+      return Date.now() < expire;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  function unlockProfileAlbum() {
+    const expire = Date.now() + 30 * 60 * 1000; // 30 分鐘
+    try {
+      sessionStorage.setItem("hmProfileAlbumUnlockedUntil", String(expire));
+    } catch (e) { }
+
+    alert("已解鎖此用戶相簿，30 分鐘內可觀看全部照片（Demo）。");
+
+    // 重新 render 當前對外資料頁
+    if (currentProfileUser) {
+      openProfileDetailWithUser(currentProfileUser);
+    }
+  }
+  window.unlockProfileAlbum = unlockProfileAlbum;
+
+  // ========= 詳細檔案（對外資料） =========
+  function openProfileDetail(id) {
+    const p = people.find(x => x.id === id);
+    if (!p) return;
+    openProfileDetailWithUser(p);
+  }
+
+  function openProfileDetailWithUser(user) {
+    // 確保 user.uid 存在
+    const u = { ...user };
+    if (!u.uid) {
+      u.uid = u.id ? "people-" + u.id : "user-" + Date.now();
+    }
+    currentProfileUser = u;
+
+    const statusBadgeHtml = renderStatusBadge(u);
+    const vipLevelForUserDisplay = (u.id || 1) % 5 + 1; // 只是顯示用的 VIP
+    const viewerVipLevel = hmGetVipLevel ? hmGetVipLevel() : 0;
+    const profileAlbumUnlocked = isProfileAlbumUnlocked();
+
+    // 建立陌生人相簿 HTML：1~2 張免費，3~6 張依照 VIP / 解鎖狀態判斷
+    let albumHtml = "";
+    albumPhotos.forEach((src, idx) => {
+      const photoIndex = idx + 1;
+      const isFree = photoIndex <= 2; // 第 1、2 張免費
+      const canView = isFree || viewerVipLevel > 0 || profileAlbumUnlocked;
+
+      if (canView) {
+        albumHtml += `
+          <div class="album-item" onclick="openPhotoViewer('${src}')">
+            <img src="${src}" alt="photo${photoIndex}" />
+            <button class="set-cover-btn"
+              onclick="event.stopPropagation(); setAsAvatar(${idx})">設為頭貼</button>
+            <div class="album-gift-btn"
+              onclick="event.stopPropagation(); sendGiftAnimation(this)">💝 送禮</div>
+          </div>
+        `;
+      } else {
+        albumHtml += `
+          <div class="album-item" onclick="unlockProfileAlbum()" style="position:relative; cursor:pointer;">
+            <img src="${src}" alt="photo${photoIndex}"
+              style="filter: blur(6px); opacity: 0.7; border-radius: 12px;" />
+            <div style="
+              position:absolute; inset:0;
+              background:rgba(0,0,0,0.55);
+              display:flex; flex-direction:column;
+              align-items:center; justify-content:center;
+              color:#fff; font-size:13px; text-align:center;
+              padding:8px; border-radius:12px;">
+              <div>
+                🔒 鎖定照片（第 ${photoIndex} 張）<br>
+                觀看 1 則小廣告即可解鎖 30 分鐘內全部照片（Demo）
+              </div>
+              <button type="button"
+                style="margin-top:8px; padding:6px 12px; border-radius:999px; border:none; background:#f97316; color:#fff; font-size:13px;"
+                onclick="event.stopPropagation(); unlockProfileAlbum();">
+                ▶ 觀看廣告解鎖
+              </button>
+            </div>
+          </div>
+        `;
+      }
+    });
+
+    if (!profileDetailContent) return;
+
+    profileDetailContent.innerHTML = `
+      <div class="profile-header">
+        <div class="profile-row-main">
+          <div class="profile-avatar" onclick="openPhotoViewer('${u.avatar}')">
+            <img src="${u.avatar}" alt="${u.name}" />
+          </div>
+          <div>
+            <div class="profile-name">${u.name}</div>
+            <div class="profile-sub">${u.ageText || "年齡未設定"} · 台灣 · 暫無更多介紹</div>
+            <div style="margin-top:6px; font-size:15px;">${statusBadgeHtml}</div>
+          </div>
+        </div>
+        <div class="profile-actions">
+          <button class="btn" id="profileBlockBtn">封鎖 / 刪除</button>
+          <button class="btn btn-primary" id="profileFriendOrChatBtn"></button>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="profile-cta-row">
+          <div class="profile-vip-label">
+            <span>⭐ VIP${vipLevelForUserDisplay} 用戶（示意）</span>
+          </div>
+          <button class="big-cta-btn primary" onclick="sendGiftAnimationFromHeader(this)">🎁 送禮物</button>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="section-title">相簿（1～2 張免費，其餘依 VIP / 解鎖）</div>
+        <div class="album-grid">
+          ${albumHtml}
+        </div>
+        <div class="album-note">
+          相簿僅示意，正式版可以上傳自己的照片、設定可見範圍與解鎖方式。
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="section-title">基本資料</div>
+        <table class="info-table">
+          <tr><td class="info-key">暱稱</td><td class="info-value">${u.name}</td></tr>
+          <tr><td class="info-key">性別</td><td class="info-value">未設定</td></tr>
+          <tr><td class="info-key">年齡層</td><td class="info-value">${u.ageText || "未設定"}</td></tr>
+          <tr><td class="info-key">國家</td><td class="info-value">台灣</td></tr>
+          <tr><td class="info-key">地區</td><td class="info-value">未設定</td></tr>
+          <tr><td class="info-key">自我介紹</td><td class="info-value">${u.desc || ""}</td></tr>
+        </table>
+      </div>
+
+      <div class="section">
+        <div class="section-title">自介日記（示意）</div>
+        <div class="diary-list">
+          <div class="diary-item">
+            <div class="diary-date">2025-11-25</div>
+            <div>這裡之後可以顯示對方的 5 篇代表日記，讓人更了解他。</div>
+          </div>
+        </div>
+      </div>
+    `;
+
+    showPage("profileDetail");
+    if (topTitleEl) topTitleEl.textContent = u.name;
+
+    setupProfileDetailActionButtons();
+  }
+
+  function setupProfileDetailActionButtons() {
+    const btn = document.getElementById("profileFriendOrChatBtn");
+    if (!btn || !currentProfileUser) return;
+    const uid = currentProfileUser.uid;
+    const rel = getRelationship(uid);
+
+    btn.disabled = false;
+    btn.textContent = "";
+
+    if (rel === "friend") {
+      btn.textContent = "1 對 1 聊天";
+      btn.onclick = () => startChatWithUser(currentProfileUser);
+    } else if (rel === "sentPending") {
+      btn.textContent = "已送出好友申請";
+      btn.disabled = true;
+      btn.onclick = null;
+    } else if (rel === "receivedPending") {
+      btn.textContent = "同意好友申請";
+      btn.onclick = () => acceptFriend(uid);
+    } else if (rel === "sentRejected" || rel === "receivedRejected") {
+      btn.textContent = "已拒絕 / 無法加好友";
+      btn.disabled = true;
+      btn.onclick = null;
+    } else {
+      btn.textContent = "加入好友";
+      btn.onclick = () => sendFriendRequestForCurrent();
+    }
+  }
+
+  // ========= 好友列表（3 分頁） =========
+  function renderFriendsList(type) {
+    currentFriendTab = type;
+    if (!friendsListEl) return;
+    friendsListEl.innerHTML = "";
+
+    let list = [];
+    if (type === "friends") list = friendState.friends;
+    else if (type === "sent") list = friendState.sent;
+    else list = friendState.received;
+
+    if (!list.length) {
+      const empty = document.createElement("div");
+      empty.style.padding = "16px";
+      empty.style.fontSize = "14px";
+      empty.style.color = "#9ca3af";
+      empty.textContent =
+        type === "friends"
+          ? "目前還沒有好友，從『巧遇』或『排行榜』試著加看看吧。"
+          : type === "sent"
+          ? "目前沒有送出的好友申請。"
+          : "目前沒有收到好友申請。";
+      friendsListEl.appendChild(empty);
+      return;
+    }
+
+    list.forEach(entry => {
+      const { user, status } = entry;
+      const uid = entry.uid;
+
+      const li = document.createElement("li");
+      li.className = "list-item";
+      li.dataset.uid = uid;
+
+      const statusHtml = renderStatusBadge(user);
+
+      let statusRowHtml = "";
+      if (type === "friends") {
+        statusRowHtml = `
+          <div class="item-row3">
+            <span class="label">好友限定：</span>${friendNoteInput && friendNoteInput.value.trim() || "今天好難過，希望能有好天氣出現。"}
+          </div>
+        `;
+      } else {
+        let stText = "待回覆";
+        if (status === "accepted") stText = "已同意";
+        if (status === "rejected") stText = "已拒絕";
+        statusRowHtml = `
+          <div class="item-row3">
+            <span class="label">申請狀態：</span><span class="friend-status-text">${stText}</span>
+            ${
+              type === "received" && status === "pending"
+                ? `<div style="margin-top:6px;">
+                    <button type="button" class="friend-accept-btn" style="margin-right:6px; font-size:13px; padding:4px 8px; border-radius:999px; border:1px solid #22c55e; background:#ecfdf5; color:#166534;">同意</button>
+                    <button type="button" class="friend-reject-btn" style="font-size:13px; padding:4px 8px; border-radius:999px; border:1px solid #ef4444; background:#fef2f2; color:#b91c1c;">拒絕</button>
+                  </div>`
+                : ""
+            }
+          </div>
+        `;
+      }
+
+      li.innerHTML = `
+        <div class="avatar">
+          <img src="${user.avatar}" alt="${user.name}" />
+        </div>
+        <div class="item-main">
+          <div class="item-row1">
+            <div class="item-row1-left">
+              <span class="item-name">${user.name}</span>
+              <span class="item-mood">${type === "friends" ? "😊" : "🤝"}</span>
+            </div>
+            ${statusHtml}
+          </div>
+          <div class="item-row2">${user.desc || "暫無自我介紹。"}</div>
+          ${statusRowHtml}
+        </div>
+      `;
+
+      // 點整列 → 看對外資料
+      li.addEventListener("click", (e) => {
+        const target = e.target;
+        // 如果是按下接受 / 拒絕按鈕，不要跳 profile
+        if (target.classList.contains("friend-accept-btn") || target.classList.contains("friend-reject-btn")) {
+          return;
+        }
+        openProfileDetailWithUser(user);
+      });
+
+      // 頭像可放大
+      const av = li.querySelector(".avatar img");
+      if (av) {
+        av.addEventListener("click", (e) => {
+          e.stopPropagation();
+          openPhotoViewer(av.src);
+        });
+      }
+
+      // 好友限定小語 → 直接開聊天（只在「好友」分頁）
+      if (type === "friends") {
+        const row3 = li.querySelector(".item-row3");
+        if (row3) {
+          row3.style.cursor = "pointer";
+          row3.addEventListener("click", (e) => {
+            e.stopPropagation();
+            startChatWithUser(user);
+          });
+        }
+      }
+
+      // 收到申請 → 同意 / 拒絕
+      if (type === "received") {
+        const acceptBtn = li.querySelector(".friend-accept-btn");
+        const rejectBtn = li.querySelector(".friend-reject-btn");
+        if (acceptBtn) {
+          acceptBtn.addEventListener("click", (e) => {
+            e.stopPropagation();
+            acceptFriend(uid);
+          });
+        }
+        if (rejectBtn) {
+          rejectBtn.addEventListener("click", (e) => {
+            e.stopPropagation();
+            rejectFriend(uid);
+          });
+        }
+      }
+
+      friendsListEl.appendChild(li);
+    });
+  }
+
+  // ========= 排行榜 =========
+  function renderRank(type) {
+    if (!rankPyramidEl || !rankListEl) return;
+    const data = rankData[type] || [];
+    if (!data.length) {
+      rankPyramidEl.innerHTML = "<div style='font-size:14px; color:#9ca3af; text-align:center;'>暫無排名資料</div>";
+      rankListEl.innerHTML = "";
+      return;
+    }
+    const king = data[0];
+    const second = data[1];
+    const third = data[2];
+    const fourth = data[3];
+    const fifth = data[4];
+    const sixth = data[5];
+    const rest = data.slice(6);
+
+    let pyramidHtml = `
+      <div class="rank-row">
+        <div class="rank-card">
+          <div class="rank-badge">
+            <span class="icon">👑</span>
+            <span>${king.title}</span>
+          </div>
+          <div class="rank-avatar-wrap king">
+            <div class="rank-avatar">
+              <img src="${king.avatar}" alt="${king.name}" />
+            </div>
+          </div>
+          <div class="rank-name">${king.name}</div>
+          <div class="rank-sub">${king.city} · ${king.age}</div>
+        </div>
+      </div>
+    `;
+
+    pyramidHtml += `
+      <div class="rank-row">
+        ${
+          second
+            ? `
+        <div class="rank-card">
+          <div class="rank-avatar-wrap">
+            <div class="rank-avatar medium">
+              <img src="${second.avatar}" alt="${second.name}" />
+            </div>
+          </div>
+          <div class="rank-name">${second.name}</div>
+          <div class="rank-sub">${second.title} · ${second.city}</div>
+        </div>`
+            : ""
+        }
+        ${
+          third
+            ? `
+        <div class="rank-card">
+          <div class="rank-avatar-wrap">
+            <div class="rank-avatar medium">
+              <img src="${third.avatar}" alt="${third.name}" />
+            </div>
+          </div>
+          <div class="rank-name">${third.name}</div>
+          <div class="rank-sub">${third.title} · ${third.city}</div>
+        </div>`
+            : ""
+        }
+      </div>
+    `;
+
+    pyramidHtml += `<div class="rank-row">`;
+    [fourth, fifth, sixth].forEach(item => {
+      if (!item) return;
+      pyramidHtml += `
+        <div class="rank-card">
+          <div class="rank-avatar-wrap">
+            <div class="rank-avatar small">
+              <img src="${item.avatar}" alt="${item.name}" />
+            </div>
+          </div>
+          <div class="rank-name">${item.name}</div>
+          <div class="rank-sub">${item.title} · ${item.city}</div>
+        </div>
+      `;
+    });
+    pyramidHtml += `</div>`;
+    rankPyramidEl.innerHTML = pyramidHtml;
+
+    rankListEl.innerHTML = "";
+    rest.forEach(item => {
+      const li = document.createElement("div");
+      li.className = "rank-list-item";
+      li.innerHTML = `
+        <div class="rank-pos">${item.pos}</div>
+        <div class="rank-list-avatar">
+          <img src="${item.avatar}" alt="${item.name}" />
+        </div>
+        <div class="rank-list-main">
+          <div class="rank-list-name">${item.name} · ${item.title}</div>
+          <div class="rank-list-sub">${item.city} · ${item.age}</div>
+        </div>
+        <div class="rank-score">${item.score} 分</div>
+      `;
+      const av = li.querySelector(".rank-list-avatar img");
+      if (av) {
+        av.addEventListener("click", (e) => {
+          e.stopPropagation();
+          openPhotoViewer(av.src);
+        });
+      }
+      rankListEl.appendChild(li);
+    });
+  }
+
+  // ========= 登出功能 =========
+  function hmLogout() {
+    try {
+      localStorage.removeItem("hmProfileCompleted");
+      localStorage.removeItem("hmProfileData");
+      localStorage.removeItem("hmAuthProvider");
+      localStorage.removeItem("hmVipLevel");
+      localStorage.removeItem("hmMyAlbumPhotos");
+      localStorage.removeItem("hmMyAvatar");
+      sessionStorage.removeItem("hmAlbumUnlocked");
+      sessionStorage.removeItem("hmProfileAlbumUnlockedUntil");
+    } catch (e) {}
+
+    alert("已登出帳號，將回到綁定視窗（Demo）。");
+    location.reload();
+  }
+
   // ========= DOMContentLoaded 初始化 =========
   document.addEventListener("DOMContentLoaded", function () {
+    // 抓 DOM 元素
+    peopleGridEl = document.getElementById("peopleGrid");
+    nextBatchBtn = document.getElementById("nextBatchBtn");
+    profileDetailContent = document.getElementById("profileDetailContent");
+    topTitleEl = document.getElementById("topTitle");
+    topRightSlot = document.getElementById("topRightSlot");
+
+    friendsListEl = document.getElementById("friendsList");
+    chatMessagesEl = document.getElementById("chatMessages");
+    chatInputEl = document.getElementById("chatInput");
+    chatSendBtn = document.getElementById("chatSendBtn");
+    stickerBar = document.getElementById("stickerBar");
+    stickerToggle = document.getElementById("stickerToggle");
+    chatWrapper = document.getElementById("chatWrapper");
+    chatUploadBtn = document.getElementById("chatUploadBtn");
+    chatFileInput = document.getElementById("chatFileInput");
+
+    statusSelect = document.getElementById("statusSelect");
+    myStatusBadge = document.getElementById("myStatusBadge");
+    myStatusText = document.getElementById("myStatusText");
+    myProfileSub = document.getElementById("myProfileSub");
+
+    friendNoteInput = document.getElementById("friendNoteInput");
+    friendNotePreview = document.getElementById("friendNotePreview");
+
+    pages.people = document.getElementById("page-people");
+    pages.profileDetail = document.getElementById("page-profileDetail");
+    pages.friends = document.getElementById("page-friends");
+    pages.rank = document.getElementById("page-rank");
+    pages.chat = document.getElementById("page-chat");
+    pages.me = document.getElementById("page-me");
+
+    rankPyramidEl = document.getElementById("rankPyramid");
+    rankListEl = document.getElementById("rankList");
+
+    // 巧遇初始化
     pickRandomBatch();
     renderPeopleGrid();
 
+    if (nextBatchBtn) {
+      nextBatchBtn.addEventListener("click", () => {
+        pickRandomBatch();
+        renderPeopleGrid();
+      });
+    }
+
+    // 好友列表初始化
     renderFriendsList("friends");
+    updateFriendBadges();
+
+    // 狀態＆好友限定文字
     updateMyStatus();
     updateFriendNotePreview();
+
+    if (statusSelect) {
+      statusSelect.addEventListener("change", updateMyStatus);
+    }
+    if (friendNoteInput) {
+      friendNoteInput.addEventListener("input", updateFriendNotePreview);
+    }
+
     renderTopRightForPage("people");
     renderRank("pop");
-    updateFriendBadges();
     hmUpdateVipUI();
     renderMyAlbum();
     hmInitMyAvatar();
+
+    // 聊天事件
+    if (chatSendBtn) {
+      chatSendBtn.addEventListener("click", sendChat);
+    }
+    if (chatInputEl) {
+      chatInputEl.addEventListener("keydown", e => {
+        if (e.key === "Enter") {
+          e.preventDefault();
+          sendChat();
+        }
+      });
+    }
+
+    if (stickerToggle && stickerBar) {
+      stickerToggle.addEventListener("click", () => {
+        stickerBar.classList.toggle("show");
+      });
+      const stickerBtns = stickerBar.querySelectorAll(".sticker-btn");
+      stickerBtns.forEach(btn => {
+        btn.addEventListener("click", () => {
+          const emo = btn.textContent;
+          if (chatInputEl) {
+            chatInputEl.value += emo;
+            chatInputEl.focus();
+          }
+        });
+      });
+    }
+
+    if (chatUploadBtn && chatFileInput) {
+      chatUploadBtn.addEventListener("click", () => chatFileInput.click());
+      chatFileInput.addEventListener("change", (e) => {
+        const files = Array.from(e.target.files || []);
+        files.forEach(file => {
+          if (!file.type.startsWith("image/")) return;
+          const reader = new FileReader();
+          reader.onload = (ev) => {
+            const src = ev.target.result;
+            if (!src) return;
+            sendImageBubble(src);
+          };
+          reader.readAsDataURL(file);
+        });
+        chatFileInput.value = "";
+      });
+    }
+
+    const themePills = document.querySelectorAll(".chat-theme-pill");
+    themePills.forEach(pill => {
+      pill.addEventListener("click", () => {
+        themePills.forEach(p => p.classList.remove("active"));
+        pill.classList.add("active");
+        const theme = pill.getAttribute("data-theme");
+        if (chatWrapper) {
+          chatWrapper.className = "chat-wrapper chat-theme-" + theme;
+        }
+      });
+    });
 
     // 好友分頁切換
     document.querySelectorAll("[data-friendtab]").forEach(btn => {
@@ -1393,6 +1581,25 @@
       editBtn.addEventListener("click", function () {
         profileModal.style.display = "flex";
       });
+    }
+
+    // 「我的資料」頁最下方自動插入登出按鈕
+    if (pages.me) {
+      const logoutWrap = document.createElement("div");
+      logoutWrap.style.marginTop = "24px";
+      logoutWrap.style.textAlign = "center";
+      logoutWrap.innerHTML = `
+        <button id="hm-logout-btn"
+          style="padding:10px 20px; border-radius:999px; border:1px solid #d1d5db; background:#fff; font-size:14px;">
+          登出帳號
+        </button>
+      `;
+      pages.me.appendChild(logoutWrap);
+
+      const logoutBtn = document.getElementById("hm-logout-btn");
+      if (logoutBtn) {
+        logoutBtn.addEventListener("click", hmLogout);
+      }
     }
   });
 </script>
