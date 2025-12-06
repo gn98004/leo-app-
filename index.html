@@ -377,7 +377,7 @@
       box-shadow: 0 4px 12px rgba(248, 148, 60, 0.45);
     }
 
-    /* 相簿區塊 */
+    /* 相簿區塊（別人檔案用） */
     .album-grid {
       padding: 12px 16px;
       display: grid;
@@ -923,12 +923,12 @@
       color: #2563eb;
     }
 
-    /* ================== 基本資料彈窗 ================== */
+    /* ================== 基本資料彈窗 & 登入 ================== */
     .hm-modal-backdrop {
       position: fixed;
       inset: 0;
       background: rgba(0, 0, 0, 0.55);
-      display: none;      /* 預設不顯示，JS 需要時才顯示 */
+      display: none;
       align-items: center;
       justify-content: center;
       z-index: 9999;
@@ -1032,6 +1032,20 @@
     .hm-btn-primary:active {
       transform: scale(0.98);
     }
+    .hm-btn-secondary {
+      width: 100%;
+      padding: 10px 0;
+      border-radius: 999px;
+      border: 1px solid #e5e7eb;
+      background: #ffffff;
+      color: #374151;
+      font-size: 15px;
+      cursor: pointer;
+      margin-top: 8px;
+    }
+    .hm-btn-secondary span {
+      margin-left: 6px;
+    }
     .hm-privacy-text {
       margin-top: 8px;
       font-size: 11px;
@@ -1083,6 +1097,11 @@
     }
     .hm-profile-region {
       margin-top: 2px;
+    }
+    .hm-profile-bind {
+      margin-top: 2px;
+      font-size: 11px;
+      color: #9ca3af;
     }
     .hm-profile-social-block {
       margin-top: 12px;
@@ -1173,6 +1192,113 @@
     }
     .hm-btn-outline:active {
       transform: scale(0.97);
+    }
+
+    /* VIP 等級標籤（放在頭像旁邊用） */
+    .vip-badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      margin-left: 6px;
+      padding: 2px 8px;
+      font-size: 11px;
+      border-radius: 999px;
+      background: linear-gradient(135deg, #fbbf24, #f97316);
+      color: #111827;
+      font-weight: 700;
+    }
+
+    /* 我的 6 張照片區塊 */
+    .my-album-note {
+      font-size: 13px;
+      color: #6b7280;
+      padding: 6px 16px 0;
+    }
+    .my-album-grid {
+      padding: 12px 16px 12px;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+    }
+    .my-album-item {
+      position: relative;
+      width: 100%;
+      padding-top: 100%;
+      border-radius: 14px;
+      overflow: hidden;
+      background: #e5e7eb;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+    }
+    .my-album-item img {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .my-album-slot-label {
+      position: absolute;
+      bottom: 4px;
+      left: 4px;
+      right: 4px;
+      font-size: 11px;
+      color: #f9fafb;
+      text-shadow: 0 1px 3px rgba(0,0,0,0.6);
+    }
+    .my-album-upload-btn {
+      position: absolute;
+      top: 6px;
+      right: 6px;
+      font-size: 11px;
+      padding: 2px 6px;
+      border-radius: 999px;
+      border: none;
+      background: rgba(31,41,55,0.9);
+      color: #f9fafb;
+      cursor: pointer;
+    }
+    .my-album-lock-overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(15,23,42,0.82);
+      color: #f9fafb;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      text-align: center;
+      padding: 6px;
+    }
+    .my-album-lock-btn {
+      margin-top: 6px;
+      padding: 4px 10px;
+      font-size: 11px;
+      border-radius: 999px;
+      border: none;
+      background: #f97316;
+      color: #ffffff;
+      cursor: pointer;
+    }
+    .my-album-vip-demo {
+      padding: 0 16px 10px;
+      font-size: 12px;
+      color: #6b7280;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+    .my-album-vip-demo button {
+      font-size: 12px;
+      padding: 4px 10px;
+      border-radius: 999px;
+      border: 1px solid #d1d5db;
+      background: #ffffff;
+      cursor: pointer;
     }
   </style>
 </head>
@@ -1276,13 +1402,16 @@
         <img src="https://picsum.photos/200/200?random=99" alt="我的頭像" />
       </div>
       <div>
-        <div class="profile-name">我自己 · Demo</div>
+        <div class="profile-name">
+          我自己 · Demo
+          <span id="myVipBadge" class="vip-badge" style="display:none;"></span>
+        </div>
         <div class="profile-sub" id="myProfileSub">台灣 · 30 歲左右 · 已上線</div>
       </div>
     </div>
   </div>
 
-  <!-- 新增：HeartMeet 我的資料卡片（連動彈跳視窗資料） -->
+  <!-- HeartMeet 我的資料卡片（連動彈跳視窗資料） -->
   <section id="hm-profile-section">
     <div class="hm-profile-card">
       <div class="hm-profile-header">
@@ -1293,6 +1422,7 @@
           <h3 id="hm-profile-name">未設定姓名</h3>
           <p id="hm-profile-meta">身高 / 體重 未填寫</p>
           <p id="hm-profile-region" class="hm-profile-region">居住區域：未填寫</p>
+          <p id="hm-profile-bind" class="hm-profile-bind">尚未綁定帳號</p>
         </div>
       </div>
 
@@ -1313,6 +1443,19 @@
       </div>
     </div>
   </section>
+
+  <!-- 新增：我的 6 張照片區 -->
+  <div class="section">
+    <div class="section-title">我的照片（最多 6 張，示意）</div>
+    <div class="my-album-note">
+      前 2 張為免費預覽，後 4 張需觀看一次廣告暫時解鎖；成為 VIP1～VIP5 後，6 張將全部永久開放（Demo 模式用按鈕切換 VIP 等級）。
+    </div>
+    <div id="myAlbumGrid" class="my-album-grid"></div>
+    <div class="my-album-vip-demo">
+      <span id="vipLevelText">目前 VIP 等級：無（Demo）</span>
+      <button id="vipLevelToggleBtn" type="button">切換 VIP 等級（0→5 循環）</button>
+    </div>
+  </div>
 
   <div class="section">
     <div class="section-title">我的狀態（像以前即時通那樣）</div>
@@ -1473,33 +1616,57 @@
   <div class="photo-viewer-close" onclick="closeViewer()">✕</div>
 </div>
 
+<!-- 新增：登入綁定 Modal -->
+<div id="hm-login-modal" class="hm-modal-backdrop">
+  <div class="hm-modal">
+    <div class="hm-modal-header">
+      <h2>選擇登入方式 · 綁定帳號</h2>
+      <p>先綁定一個常用的系統帳號，之後儲值與代幣都會跟這個帳號一起走。</p>
+    </div>
+    <div>
+      <button id="hm-login-google" class="hm-btn-primary">
+        以 Google 帳號登入
+      </button>
+      <button id="hm-login-facebook" class="hm-btn-secondary">
+        <span>以 Facebook 帳號登入</span>
+      </button>
+      <button id="hm-login-apple" class="hm-btn-secondary">
+        <span>以 Apple 帳號登入</span>
+      </button>
+    </div>
+    <p class="hm-privacy-text">
+      ※ Demo 版本不會真的連到 Google / Facebook / Apple，僅模擬綁定流程。
+    </p>
+  </div>
+</div>
+
 <!-- 基本資料彈跳視窗：HeartMeet Profile Modal -->
 <div id="hm-profile-modal" class="hm-modal-backdrop">
   <div class="hm-modal">
     <div class="hm-modal-header">
       <h2>完成基本資料，開始配對</h2>
-      <p>為了提升真實度與配對品質，請先填寫以下資訊</p>
+      <p>為了提升真實度與配對品質，請先填寫以下資訊。</p>
     </div>
 
     <form id="hm-profile-form">
       <div class="hm-form-group">
-        <label for="hm-name">姓名 <span class="hm-required">*</span></label>
-        <input type="text" id="hm-name" name="name" placeholder="請輸入您的姓名" required />
+        <label for="hm-name">* <span class="hm-required">*</span>稱呼（暱稱）</label>
+        <input type="text" id="hm-name" name="name" placeholder="給自己一個好記的稱呼" required />
       </div>
 
       <div class="hm-form-group hm-inline">
         <div>
-          <label for="hm-height">身高 (cm)</label>
-          <input type="number" id="hm-height" name="height" min="120" max="230" placeholder="例如：172" />
+          <label for="hm-height">* <span class="hm-required">*</span>身高 (cm)</label>
+          <input type="number" id="hm-height" name="height" min="120" max="230" placeholder="例如：172" required />
         </div>
         <div>
-          <label for="hm-weight">體重 (kg)</label>
-          <input type="number" id="hm-weight" name="weight" min="35" max="200" placeholder="例如：65" />
+          <label for="hm-weight">* <span class="hm-required">*</span>體重 (kg)</label>
+          <input type="number" id="hm-weight" name="weight" min="35" max="200" placeholder="例如：65" required />
         </div>
       </div>
 
       <div class="hm-form-group">
-        <label for="hm-region">居住區域</label>
+        <label for="hm-region">居住區域（可稍後再填）</label>
         <input
           type="text"
           id="hm-region"
@@ -1509,8 +1676,10 @@
       </div>
 
       <div class="hm-form-group">
-        <label>社群帳號串聯（可多選，增加信任感）</label>
-        <p class="hm-help-text">填入任一平台連結或ID，之後會顯示在個人資料中供他人點擊查看。</p>
+        <label>社群帳號串聯（可選填，增加信任感）</label>
+        <p class="hm-help-text">
+          Threads / X / IG / FB 皆可先略過，之後也可以在「我的資料」中再補上或修改。
+        </p>
 
         <div class="hm-social-row">
           <span class="hm-social-label">Threads</span>
@@ -1518,7 +1687,7 @@
             type="text"
             id="hm-threads"
             name="threads"
-            placeholder="貼上 Threads 個人頁連結或帳號"
+            placeholder="貼上 Threads 個人頁連結或帳號（選填）"
           />
         </div>
 
@@ -1528,7 +1697,7 @@
             type="text"
             id="hm-x"
             name="x"
-            placeholder="貼上 X 個人頁連結或帳號"
+            placeholder="貼上 X 個人頁連結或帳號（選填）"
           />
         </div>
 
@@ -1538,7 +1707,7 @@
             type="text"
             id="hm-instagram"
             name="instagram"
-            placeholder="貼上 IG 個人頁連結或帳號"
+            placeholder="貼上 IG 個人頁連結或帳號（選填）"
           />
         </div>
 
@@ -1548,7 +1717,7 @@
             type="text"
             id="hm-facebook"
             name="facebook"
-            placeholder="貼上 FB 個人頁連結或帳號"
+            placeholder="貼上 FB 個人頁連結或帳號（選填）"
           />
         </div>
 
@@ -1558,7 +1727,7 @@
             type="text"
             id="hm-other"
             name="other"
-            placeholder="例如：LINE ID / 官方網站 / YouTube 頻道"
+            placeholder="例如：LINE ID / 官方網站 / YouTube 頻道（選填）"
           />
         </div>
       </div>
@@ -2232,12 +2401,10 @@
   window.setAsAvatar = setAsAvatar;
   window.markViewing = markViewing;
 
-  // ================== 基本資料彈窗 + 我的資料卡片 JS ==================
-
+  // ================== 基本資料 + 綁定帳號 + 我的資料卡片 ==================
   function hmHasCompletedProfile() {
     try {
-      const flag = localStorage.getItem("hmProfileCompleted");
-      return flag === "true";
+      return localStorage.getItem("hmProfileCompleted") === "true";
     } catch (e) {
       return false;
     }
@@ -2249,6 +2416,22 @@
       localStorage.setItem("hmProfileCompleted", "true");
     } catch (e) {
       console.warn("無法儲存使用者資料到 localStorage：", e);
+    }
+  }
+
+  function hmSetAuthProvider(provider) {
+    try {
+      localStorage.setItem("hmAuthProvider", provider);
+    } catch (e) {
+      console.warn("無法儲存綁定系統：", e);
+    }
+  }
+
+  function hmGetAuthProvider() {
+    try {
+      return localStorage.getItem("hmAuthProvider") || "";
+    } catch (e) {
+      return "";
     }
   }
 
@@ -2281,23 +2464,22 @@
     const regionEl = document.getElementById("hm-profile-region");
     const avatarTextEl = document.getElementById("hm-profile-avatar-text");
     const socialListEl = document.getElementById("hm-profile-social-list");
+    const bindEl = document.getElementById("hm-profile-bind");
 
     if (!nameEl || !metaEl || !regionEl || !avatarTextEl || !socialListEl) return;
-    if (!dataStr) return;
 
     let profile = null;
-    try {
-      profile = JSON.parse(dataStr);
-    } catch (e) {
-      console.warn("解析 hmProfileData 失敗：", e);
-      return;
+    if (dataStr) {
+      try {
+        profile = JSON.parse(dataStr);
+      } catch (e) {
+        console.warn("解析 hmProfileData 失敗：", e);
+      }
     }
-    if (!profile) return;
-
-    const name = profile.name || "未設定姓名";
-    const height = profile.height || "";
-    const weight = profile.weight || "";
-    const region = profile.region || "未填寫";
+    const name = profile && profile.name ? profile.name : "未設定姓名";
+    const height = profile && profile.height ? profile.height : "";
+    const weight = profile && profile.weight ? profile.weight : "";
+    const region = profile && profile.region ? profile.region : "未填寫";
 
     nameEl.textContent = name;
     regionEl.textContent = "居住區域：" + region;
@@ -2318,7 +2500,24 @@
     }
     avatarTextEl.textContent = avatarText;
 
-    const socials = profile.socials || {};
+    // 綁定系統顯示
+    const provider = hmGetAuthProvider();
+    if (bindEl) {
+      if (!provider) {
+        bindEl.textContent = "尚未綁定帳號";
+      } else if (provider === "google") {
+        bindEl.textContent = "已綁定：Google 帳號（示意）";
+      } else if (provider === "facebook") {
+        bindEl.textContent = "已綁定：Facebook 帳號（示意）";
+      } else if (provider === "apple") {
+        bindEl.textContent = "已綁定：Apple 帳號（示意）";
+      } else {
+        bindEl.textContent = "已綁定：其他系統帳號（示意）";
+      }
+    }
+
+    // 社群 chip
+    const socials = (profile && profile.socials) || {};
     const items = [];
     const config = [
       { key: "threads", label: "Threads", short: "Th", className: "hm-social-threads" },
@@ -2330,7 +2529,8 @@
 
     config.forEach((c) => {
       const rawValue = socials[c.key];
-      if (!rawValue || !rawValue.trim()) return;
+      if (!rawValue || !rawValue.trim) return;
+      if (!rawValue.trim()) return;
       const url = hmBuildSocialUrl(c.key, rawValue);
       items.push({
         key: c.key,
@@ -2377,6 +2577,189 @@
     }
   }
 
+  // ================== VIP & 我的 6 張照片（本機示意） ==================
+  const MY_ALBUM_SLOTS = 6;
+  let myAlbumPhotosCache = null;
+
+  function hmGetVipLevel() {
+    try {
+      const raw = localStorage.getItem("hmVipLevel");
+      const n = parseInt(raw || "0", 10);
+      if (isNaN(n) || n < 0) return 0;
+      if (n > 5) return 5;
+      return n;
+    } catch (e) {
+      return 0;
+    }
+  }
+
+  function hmSetVipLevel(level) {
+    const lvl = Math.min(Math.max(level, 0), 5);
+    try {
+      localStorage.setItem("hmVipLevel", String(lvl));
+    } catch (e) {}
+    hmUpdateVipUI();
+    renderMyAlbum();
+  }
+
+  function hmUpdateVipUI() {
+    const lvl = hmGetVipLevel();
+    const badge = document.getElementById("myVipBadge");
+    const textEl = document.getElementById("vipLevelText");
+
+    if (badge) {
+      if (lvl <= 0) {
+        badge.style.display = "none";
+        badge.textContent = "";
+      } else {
+        badge.style.display = "inline-flex";
+        badge.textContent = "VIP" + lvl;
+      }
+    }
+
+    if (textEl) {
+      if (lvl <= 0) {
+        textEl.textContent = "目前 VIP 等級：無（Demo）";
+      } else {
+        textEl.textContent = "目前 VIP 等級：VIP" + lvl + "（Demo）";
+      }
+    }
+  }
+
+  function hmLoadAlbumPhotos() {
+    if (myAlbumPhotosCache) return myAlbumPhotosCache;
+    try {
+      const raw = localStorage.getItem("hmMyAlbumPhotos");
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (Array.isArray(parsed) && parsed.length === MY_ALBUM_SLOTS) {
+          myAlbumPhotosCache = parsed;
+          return parsed;
+        }
+      }
+    } catch (e) {
+      console.warn("讀取相簿照片失敗：", e);
+    }
+    myAlbumPhotosCache = new Array(MY_ALBUM_SLOTS).fill(null);
+    return myAlbumPhotosCache;
+  }
+
+  function hmSaveAlbumPhotos() {
+    try {
+      localStorage.setItem("hmMyAlbumPhotos", JSON.stringify(myAlbumPhotosCache || []));
+    } catch (e) {
+      console.warn("儲存相簿照片失敗：", e);
+    }
+  }
+
+  function hmAlbumIsUnlocked() {
+    if (hmGetVipLevel() > 0) return true;
+    try {
+      return sessionStorage.getItem("hmAlbumUnlocked") === "true";
+    } catch (e) {
+      return false;
+    }
+  }
+
+  function hmAlbumUnlock() {
+    try {
+      sessionStorage.setItem("hmAlbumUnlocked", "true");
+    } catch (e) {}
+    alert("Demo：假設你看完一段廣告，現在暫時解鎖 4 張照片，重新整理或關閉瀏覽器後會再鎖回去。");
+    renderMyAlbum();
+  }
+
+  function renderMyAlbum() {
+    const grid = document.getElementById("myAlbumGrid");
+    if (!grid) return;
+    const photos = hmLoadAlbumPhotos();
+    const vip = hmGetVipLevel();
+    const unlocked = hmAlbumIsUnlocked();
+
+    grid.innerHTML = "";
+
+    for (let i = 0; i < MY_ALBUM_SLOTS; i++) {
+      const isFree = i < 2;
+      const isLocked = !isFree && vip === 0 && !unlocked;
+
+      const slot = document.createElement("div");
+      slot.className = "my-album-item";
+
+      const img = document.createElement("img");
+      img.id = "myAlbumImg_" + i;
+      if (photos[i]) {
+        img.src = photos[i];
+      } else {
+        img.style.opacity = "0.3";
+      }
+      slot.appendChild(img);
+
+      const label = document.createElement("div");
+      label.className = "my-album-slot-label";
+      if (isFree) {
+        label.textContent = "第 " + (i + 1) + " 張 · 免費預覽";
+      } else {
+        label.textContent = "第 " + (i + 1) + " 張 · 需解鎖";
+      }
+      slot.appendChild(label);
+
+      // 上傳按鈕 + input
+      const fileInput = document.createElement("input");
+      fileInput.type = "file";
+      fileInput.accept = "image/*";
+      fileInput.style.display = "none";
+      fileInput.id = "myAlbumInput_" + i;
+      slot.appendChild(fileInput);
+
+      const uploadBtn = document.createElement("button");
+      uploadBtn.type = "button";
+      uploadBtn.className = "my-album-upload-btn";
+      uploadBtn.textContent = photos[i] ? "更換" : "上傳";
+      uploadBtn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        fileInput.click();
+      });
+      slot.appendChild(uploadBtn);
+
+      fileInput.addEventListener("change", (e) => {
+        const file = e.target.files && e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = function (ev) {
+          const result = ev.target.result;
+          if (!result) return;
+          const arr = hmLoadAlbumPhotos();
+          arr[i] = result;
+          myAlbumPhotosCache = arr;
+          hmSaveAlbumPhotos();
+          renderMyAlbum();
+        };
+        reader.readAsDataURL(file);
+      });
+
+      // 鎖定遮罩（第3~6張，非 VIP 且未解鎖）
+      if (isLocked) {
+        const overlay = document.createElement("div");
+        overlay.className = "my-album-lock-overlay";
+        overlay.innerHTML = `
+          <div>🔒 鎖定照片<br>觀看一次廣告即可暫時解鎖 4 張照片</div>
+        `;
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "my-album-lock-btn";
+        btn.textContent = "觀看廣告暫時解鎖（Demo）";
+        btn.addEventListener("click", (e) => {
+          e.stopPropagation();
+          hmAlbumUnlock();
+        });
+        overlay.appendChild(btn);
+        slot.appendChild(overlay);
+      }
+
+      grid.appendChild(slot);
+    }
+  }
+
   document.addEventListener("DOMContentLoaded", function () {
     pickRandomBatch();
     renderPeopleGrid();
@@ -2386,12 +2769,50 @@
     renderTopRightForPage("people");
     renderRank("pop");
 
-    // 彈跳視窗初始化
-    const modal = document.getElementById("hm-profile-modal");
+    // 初始化 VIP & 我的照片
+    hmUpdateVipUI();
+    renderMyAlbum();
+
+    const vipToggleBtn = document.getElementById("vipLevelToggleBtn");
+    if (vipToggleBtn) {
+      vipToggleBtn.addEventListener("click", () => {
+        let lvl = hmGetVipLevel();
+        lvl = (lvl + 1) % 6; // 0~5 循環
+        hmSetVipLevel(lvl);
+      });
+    }
+
+    // 登入 / 基本資料 Modal
+    const loginModal = document.getElementById("hm-login-modal");
+    const profileModal = document.getElementById("hm-profile-modal");
     const form = document.getElementById("hm-profile-form");
 
-    if (!hmHasCompletedProfile() && modal) {
-      modal.style.display = "flex";
+    // 只有第一次（未完成基本資料）才先跳登入 + 填資料
+    if (!hmHasCompletedProfile()) {
+      if (loginModal) loginModal.style.display = "flex";
+    }
+
+    function handleFakeLogin(provider) {
+      hmSetAuthProvider(provider);
+      if (loginModal) loginModal.style.display = "none";
+      if (!hmHasCompletedProfile() && profileModal) {
+        profileModal.style.display = "flex";
+      }
+      hmInitProfileCard();
+    }
+
+    const btnGoogle = document.getElementById("hm-login-google");
+    const btnFacebook = document.getElementById("hm-login-facebook");
+    const btnApple = document.getElementById("hm-login-apple");
+
+    if (btnGoogle) {
+      btnGoogle.addEventListener("click", () => handleFakeLogin("google"));
+    }
+    if (btnFacebook) {
+      btnFacebook.addEventListener("click", () => handleFakeLogin("facebook"));
+    }
+    if (btnApple) {
+      btnApple.addEventListener("click", () => handleFakeLogin("apple"));
     }
 
     if (form) {
@@ -2410,7 +2831,11 @@
         const agree = document.getElementById("hm-agree").checked;
 
         if (!name) {
-          alert("請填寫姓名");
+          alert("請填寫稱呼（暱稱）");
+          return;
+        }
+        if (!height || !weight) {
+          alert("身高與體重為必填欄位");
           return;
         }
         if (!agree) {
@@ -2428,21 +2853,21 @@
         };
 
         hmSaveProfileData(profileData);
-        if (modal) modal.style.display = "none";
+        if (profileModal) profileModal.style.display = "none";
 
-        hmInitProfileCard(); // 填完立即更新「我的資料卡片」
+        hmInitProfileCard();
         console.log("HeartMeet 基本資料已完成：", profileData);
       });
     }
 
-    // 我的資料卡片初始化
+    // 已經填過基本資料的使用者：直接初始化卡片，不再出現 Modal
     hmInitProfileCard();
 
-    // 「編輯基本資料」按鈕 → 再打開彈窗
+    // 「編輯基本資料」按鈕 → 直接開啟基本資料 Modal（不再經過登入）
     const editBtn = document.getElementById("hm-profile-edit-btn");
-    if (editBtn && modal) {
+    if (editBtn && profileModal) {
       editBtn.addEventListener("click", function () {
-        modal.style.display = "flex";
+        profileModal.style.display = "flex";
       });
     }
   });
