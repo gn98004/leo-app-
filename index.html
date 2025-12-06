@@ -399,6 +399,33 @@
       width: 100%;
       height: 100%;
       object-fit: cover;
+      transition: filter 0.15s ease, transform 0.15s ease, opacity 0.15s ease;
+    }
+    /* 被鎖住時：霧化 + 提示文字 */
+    .album-item.locked img {
+      filter: blur(8px);
+      transform: scale(1.06);
+      opacity: 0.9;
+    }
+    .album-item.locked::after {
+      content: "🔒 觀看廣告解鎖 30 分鐘";
+      position: absolute;
+      left: 6px;
+      right: 6px;
+      bottom: 6px;
+      padding: 3px 6px;
+      border-radius: 999px;
+      background: rgba(15,23,42,0.78);
+      color: #f9fafb;
+      font-size: 11px;
+      text-align: center;
+    }
+    .album-item img {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
     }
     .set-cover-btn {
       position: absolute;
@@ -1561,6 +1588,24 @@
     </div>
   </div>
 
+  <!-- 新增：帳號與安全 / 登出 -->
+  <div class="section">
+    <div class="section-title">帳號與安全</div>
+    <div class="diary-list">
+      <div class="diary-item">
+        <div style="font-size:16px; margin-bottom:6px;">
+          若你是在他人裝置上使用，建議離開前先登出，以免個人資料被他人查看。
+        </div>
+        <button id="hm-logout-btn" type="button" class="hm-btn-outline">
+          登出目前帳號（清除本機暫存資料）
+        </button>
+        <div style="margin-top:8px; font-size:13px; color:#9ca3af;">
+          Demo：登出會清除本機的綁定資訊、基本資料與相簿暫存，下次進入時會重新跳出綁定與填寫資料的視窗。
+        </div>
+      </div>
+    </div>
+  </div>
+
   <div class="section">
     <div class="section-title">我的日記（示意，之後可限制免費 5 篇）</div>
     <div class="diary-list">
@@ -1827,6 +1872,7 @@
     }
   ];
 
+  // 預設相簿照片（當使用者尚未自己上傳時，當作底圖）
   const albumPhotos = [
     "https://picsum.photos/400/400?random=901",
     "https://picsum.photos/400/400?random=902",
@@ -1843,6 +1889,7 @@
   const topRightSlot = document.getElementById("topRightSlot");
 
   let currentBatch = [];
+  let currentProfileId = null; // 目前正在查看的檔案 id（給相簿解鎖後重刷用）
 
   function shuffleArray(arr) {
     const copy = arr.slice();
@@ -1920,6 +1967,7 @@
   function openProfileDetail(id) {
     const p = people.find(x => x.id === id);
     if (!p) return;
+    currentProfileId = id;
 
     let statusClass = "status-badge";
     if (p.status === "busy") statusClass += " status-busy";
@@ -1931,13 +1979,24 @@
       '<span class="' + statusClass + '"><span class="status-dot"></span><span>' +
       (p.statusText || "已上線") + "</span></span>";
 
-    const albumHtml = albumPhotos.map((src, idx) => `
-      <div class="album-item" onclick="openPhotoViewer('${src}')">
-        <img src="${src}" alt="photo${idx+1}" />
-        <button class="set-cover-btn" onclick="event.stopPropagation(); setAsAvatar(${idx})">設為頭貼</button>
-        <div class="album-gift-btn" onclick="event.stopPropagation(); sendGiftAnimation(this)">💝 送禮</div>
-      </div>
-    `).join("");
+    // 使用「我的照片」為基礎，陌生人看到的就是這 6 張
+    const totalSlots = (typeof MY_ALBUM_SLOTS === "number" ? MY_ALBUM_SLOTS : 6);
+    const vipLevel = hmGetVipLevel();
+    const unlocked = hmAlbumIsUnlocked();
+
+    const albumHtml = Array.from({ length: totalSlots }).map((_, idx) => {
+      const src = hmGetAlbumPhotoSrc(idx);
+      const isFree = idx < 2;
+      const isLocked = !isFree && vipLevel === 0 && !unlocked;
+      const lockedClass = isLocked ? " locked" : "";
+      return `
+        <div class="album-item${lockedClass}" onclick="handleStrangerAlbumClick(${idx})">
+          <img src="${src}" alt="photo${idx + 1}" />
+          <button class="set-cover-btn" onclick="event.stopPropagation(); setAsAvatar(${idx})">設為頭貼</button>
+          <div class="album-gift-btn" onclick="event.stopPropagation(); sendGiftAnimation(this)">💝 送禮</div>
+        </div>
+      `;
+    }).join("");
 
     profileDetailContent.innerHTML = `
       <div class="profile-header">
@@ -1970,7 +2029,8 @@
           ${albumHtml}
         </div>
         <div class="album-note">
-          相簿僅示意，正式版可以上傳自己的照片、設定可見範圍與解鎖方式。
+          相簿僅示意，正式版可以上傳自己的照片、設定可見範圍與解鎖方式。<br/>
+          Demo：前兩張為免費預覽，後四張需觀看廣告才可在 30 分鐘內解鎖。
         </div>
       </div>
 
@@ -2388,10 +2448,10 @@
     alert("這邊之後會打開送禮物面板。");
   }
   function setAsAvatar(idx) {
-    const newAvatar = albumPhotos[idx];
+    const newAvatar = hmGetAlbumPhotoSrc(idx);
     const avatarImg = document.querySelector(".profile-avatar img");
     if (avatarImg) avatarImg.src = newAvatar;
-    alert("已把這張照片設為頭貼！");
+    alert("已把這張照片設為頭貼！（Demo）");
   }
   function markViewing() {
     alert("已標記「正在欣賞她」。之後可以把這個狀態同步到後端。");
@@ -2527,6 +2587,7 @@
       { key: "other", label: "其他", short: "?", className: "hm-social-other" }
     ];
 
+    socialListEl.innerHTML = "";
     config.forEach((c) => {
       const rawValue = socials[c.key];
       if (!rawValue || !rawValue.trim) return;
@@ -2542,7 +2603,6 @@
       });
     });
 
-    socialListEl.innerHTML = "";
     if (items.length === 0) {
       const span = document.createElement("span");
       span.className = "hm-profile-social-empty";
@@ -2600,6 +2660,10 @@
     } catch (e) {}
     hmUpdateVipUI();
     renderMyAlbum();
+    // VIP 變動時也刷新目前檔案
+    if (pages.profileDetail.classList.contains("active") && currentProfileId != null) {
+      openProfileDetail(currentProfileId);
+    }
   }
 
   function hmUpdateVipUI() {
@@ -2652,21 +2716,53 @@
     }
   }
 
-  function hmAlbumIsUnlocked() {
-    if (hmGetVipLevel() > 0) return true;
+  // 取得解鎖到期時間（毫秒）
+  function hmAlbumGetUnlockUntil() {
     try {
-      return sessionStorage.getItem("hmAlbumUnlocked") === "true";
+      const raw = localStorage.getItem("hmAlbumUnlockUntil");
+      const t = parseInt(raw || "0", 10);
+      return isNaN(t) ? 0 : t;
     } catch (e) {
-      return false;
+      return 0;
     }
   }
 
-  function hmAlbumUnlock() {
+  // 判斷目前是否已解鎖（VIP 直接視為永久解鎖）
+  function hmAlbumIsUnlocked() {
+    if (hmGetVipLevel() > 0) return true;
+    const until = hmAlbumGetUnlockUntil();
+    return until > Date.now();
+  }
+
+  // Demo：看完廣告解鎖 30 分鐘
+  function hmAlbumUnlockFor30Minutes() {
+    const unlockUntil = Date.now() + 30 * 60 * 1000;
     try {
-      sessionStorage.setItem("hmAlbumUnlocked", "true");
-    } catch (e) {}
-    alert("Demo：假設你看完一段廣告，現在暫時解鎖 4 張照片，重新整理或關閉瀏覽器後會再鎖回去。");
+      localStorage.setItem("hmAlbumUnlockUntil", String(unlockUntil));
+    } catch (e) {
+      console.warn("儲存相簿解鎖時間失敗：", e);
+    }
+    alert("Demo：假設你看完一段廣告，接下來 30 分鐘內 6 張照片都會開放給陌生人與好友查看。");
     renderMyAlbum();
+    if (pages.profileDetail.classList.contains("active") && currentProfileId != null) {
+      openProfileDetail(currentProfileId);
+    }
+  }
+
+  // 舊函式名稱的別名（避免遺漏）
+  function hmAlbumUnlock() {
+    hmAlbumUnlockFor30Minutes();
+  }
+
+  // 取得某一格照片真正要顯示的 src：
+  // 先用使用者上傳的，沒有的話用預設 picsum 當底圖
+  function hmGetAlbumPhotoSrc(idx) {
+    const photos = hmLoadAlbumPhotos();
+    const fallback = albumPhotos;
+    const p = photos[idx];
+    if (p) return p;
+    if (fallback && fallback[idx]) return fallback[idx];
+    return "https://picsum.photos/400/400?random=" + (901 + idx);
   }
 
   function renderMyAlbum() {
@@ -2687,9 +2783,9 @@
 
       const img = document.createElement("img");
       img.id = "myAlbumImg_" + i;
-      if (photos[i]) {
-        img.src = photos[i];
-      } else {
+      const src = hmGetAlbumPhotoSrc(i);
+      img.src = src || "";
+      if (!photos[i]) {
         img.style.opacity = "0.3";
       }
       slot.appendChild(img);
@@ -2703,7 +2799,7 @@
       }
       slot.appendChild(label);
 
-      // 上傳按鈕 + input
+      // 上傳按鈕 + input（自己看得到）
       const fileInput = document.createElement("input");
       fileInput.type = "file";
       fileInput.accept = "image/*";
@@ -2733,6 +2829,10 @@
           myAlbumPhotosCache = arr;
           hmSaveAlbumPhotos();
           renderMyAlbum();
+          // 自己照片改了，也刷新目前檔案
+          if (pages.profileDetail.classList.contains("active") && currentProfileId != null) {
+            openProfileDetail(currentProfileId);
+          }
         };
         reader.readAsDataURL(file);
       });
@@ -2742,7 +2842,7 @@
         const overlay = document.createElement("div");
         overlay.className = "my-album-lock-overlay";
         overlay.innerHTML = `
-          <div>🔒 鎖定照片<br>觀看一次廣告即可暫時解鎖 4 張照片</div>
+          <div>🔒 鎖定照片<br>觀看一次廣告即可在 30 分鐘內解鎖 6 張照片</div>
         `;
         const btn = document.createElement("button");
         btn.type = "button";
@@ -2750,7 +2850,7 @@
         btn.textContent = "觀看廣告暫時解鎖（Demo）";
         btn.addEventListener("click", (e) => {
           e.stopPropagation();
-          hmAlbumUnlock();
+          hmAlbumUnlockFor30Minutes();
         });
         overlay.appendChild(btn);
         slot.appendChild(overlay);
@@ -2759,6 +2859,26 @@
       grid.appendChild(slot);
     }
   }
+
+  // 陌生人點擊相簿照片時的邏輯：
+  // 前兩張：直接看；VIP：全部直接看；其餘：看廣告→解鎖 30 分鐘
+  function hmShowAlbumAdPrompt() {
+    const go = confirm("這 4 張照片需觀看一段廣告才能在 30 分鐘內解鎖。\n要前往廣告頁（Demo）嗎？");
+    if (!go) return;
+    // Demo：開一個假廣告頁（正式版接廣告 SDK 即可）
+    window.open("https://example.com", "_blank");
+    hmAlbumUnlockFor30Minutes();
+  }
+
+  function handleStrangerAlbumClick(idx) {
+    const vip = hmGetVipLevel();
+    if (idx < 2 || vip > 0 || hmAlbumIsUnlocked()) {
+      openPhotoViewer(hmGetAlbumPhotoSrc(idx));
+    } else {
+      hmShowAlbumAdPrompt();
+    }
+  }
+  window.handleStrangerAlbumClick = handleStrangerAlbumClick;
 
   document.addEventListener("DOMContentLoaded", function () {
     pickRandomBatch();
@@ -2868,6 +2988,28 @@
     if (editBtn && profileModal) {
       editBtn.addEventListener("click", function () {
         profileModal.style.display = "flex";
+      });
+    }
+
+    // 登出按鈕：清除本機資料 + 重整
+    const logoutBtn = document.getElementById("hm-logout-btn");
+    if (logoutBtn) {
+      logoutBtn.addEventListener("click", function () {
+        if (!confirm("確定要登出並清除本機的暫存資料嗎？\n（包含基本資料、綁定系統、VIP 等級與相簿照片 Demo 資料）")) {
+          return;
+        }
+        try {
+          localStorage.removeItem("hmProfileData");
+          localStorage.removeItem("hmProfileCompleted");
+          localStorage.removeItem("hmAuthProvider");
+          localStorage.removeItem("hmVipLevel");
+          localStorage.removeItem("hmMyAlbumPhotos");
+          localStorage.removeItem("hmAlbumUnlockUntil");
+          sessionStorage.removeItem("hmAlbumUnlocked"); // 舊版保險
+        } catch (e) {
+          console.warn("登出時清除 localStorage / sessionStorage 失敗：", e);
+        }
+        location.reload();
       });
     }
   });
