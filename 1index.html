@@ -1,1605 +1,332 @@
-<script>
-  // ========= 假資料：人們 =========
-  const people = [
-    {
-      id: 1,
-      uid: "people-1",
-      name: "りんりん",
-      ageText: "20 歲後半",
-      desc: "日語、中國語可★",
-      avatar: "https://picsum.photos/300/400?random=1",
-      status: "online",
-      statusText: "已上線"
-    },
-    {
-      id: 2,
-      uid: "people-2",
-      name: "Meow",
-      ageText: "30 歲初半",
-      desc: "內有惡貓。",
-      avatar: "https://picsum.photos/300/400?random=2",
-      status: "eating",
-      statusText: "用餐去…"
-    },
-    {
-      id: 3,
-      uid: "people-3",
-      name: "Min",
-      ageText: "10 歲後半",
-      desc: "除了發呆還是發呆直到變呆。",
-      avatar: "https://picsum.photos/300/400?random=3",
-      status: "away",
-      statusText: "暫離中…"
-    },
-    {
-      id: 4,
-      uid: "people-4",
-      name: "影寒",
-      ageText: "30 歲初半",
-      desc: "倚欄聽風雨，淡看江湖路。",
-      avatar: "https://picsum.photos/300/400?random=4",
-      status: "online",
-      statusText: "想聊天"
-    },
-    {
-      id: 5,
-      uid: "people-5",
-      name: "阿初",
-      ageText: "20 歲初半",
-      desc: "喜歡露營、拍照、看星星。",
-      avatar: "https://picsum.photos/300/400?random=5",
-      status: "busy",
-      statusText: "忙碌中…"
-    },
-    {
-      id: 6,
-      uid: "people-6",
-      name: "小路",
-      ageText: "30 歲後半",
-      desc: "走在路上隨便亂想事情。",
-      avatar: "https://picsum.photos/300/400?random=6",
-      status: "shower",
-      statusText: "洗澡中…"
-    },
-    {
-      id: 7,
-      uid: "people-7",
-      name: "Kimi",
-      ageText: "20 歲初半",
-      desc: "喜歡到處吃吃喝喝。",
-      avatar: "https://picsum.photos/300/400?random=7",
-      status: "online",
-      statusText: "已上線"
-    },
-    {
-      id: 8,
-      uid: "people-8",
-      name: "Mori",
-      ageText: "40 歲前後",
-      desc: "熟齡交友，慢慢聊。",
-      avatar: "https://picsum.photos/300/400?random=8",
-      status: "away",
-      statusText: "離線中"
+background: #e5e7eb;
+cursor: pointer;
+}
+    .album-item img {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: filter 0.15s ease, transform 0.15s ease, opacity 0.15s ease;
     }
-  ];
-
-  const albumPhotos = [
-    "https://picsum.photos/400/400?random=901",
-    "https://picsum.photos/400/400?random=902",
-    "https://picsum.photos/400/400?random=903",
-    "https://picsum.photos/400/400?random=904",
-    "https://picsum.photos/400/400?random=905",
-    "https://picsum.photos/400/400?random=906"
-  ];
-
-  // ========= 全域變數（先宣告，DOMContentLoaded 再賦值） =========
-  let peopleGridEl;
-  let nextBatchBtn;
-  let profileDetailContent;
-  let topTitleEl;
-  let topRightSlot;
-
-  let friendsListEl;
-  let chatMessagesEl;
-  let chatInputEl;
-  let chatSendBtn;
-  let stickerBar;
-  let stickerToggle;
-  let chatWrapper;
-  let chatUploadBtn;
-  let chatFileInput;
-
-  let statusSelect;
-  let myStatusBadge;
-  let myStatusText;
-  let myProfileSub;
-
-  let friendNoteInput;
-  let friendNotePreview;
-
-  const pages = {
-    people: null,
-    profileDetail: null,
-    friends: null,
-    rank: null,
-    chat: null,
-    me: null
-  };
-
-  let rankPyramidEl;
-  let rankListEl;
-
-  let currentBatch = [];
-  let currentRankTab = "pop";
-  let currentFriendTab = "friends";
-  let currentProfileUser = null;
-  let currentChatUser = null;
-
-  // ========= 好友系統狀態 =========
-  let friendState = {
-    friends: [],
-    sent: [],
-    received: [
-      {
-        uid: "seed-1",
-        user: {
-          uid: "seed-1",
-          id: null,
-          name: "Demo 用戶A",
-          ageText: "20 多歲",
-          desc: "這是一個示範用的好友申請。",
-          avatar: "https://picsum.photos/200/200?random=333",
-          status: "online",
-          statusText: "已上線"
-        },
-        status: "pending"
-      }
-    ]
-  };
-
-  // ========= 排行榜假資料 =========
-  const rankData = {
-    pop: [
-      { pos: 1, title: "King", name: "Sunny", city: "台北", age: "20+", score: 9820, avatar: "https://picsum.photos/200/200?random=201" },
-      { pos: 2, title: "Princess", name: "Amy", city: "高雄", age: "25+", score: 9130, avatar: "https://picsum.photos/200/200?random=202" },
-      { pos: 3, title: "Prince", name: "Max", city: "新北", age: "22+", score: 8990, avatar: "https://picsum.photos/200/200?random=203" },
-      { pos: 4, title: "Duke", name: "Lynn", city: "台中", age: "23+", score: 8500, avatar: "https://picsum.photos/200/200?random=204" },
-      { pos: 5, title: "Duke", name: "Zero", city: "桃園", age: "20+", score: 8420, avatar: "https://picsum.photos/200/200?random=205" },
-      { pos: 6, title: "Duchess", name: "Mika", city: "台南", age: "27+", score: 8300, avatar: "https://picsum.photos/200/200?random=206" },
-      { pos: 7, title: "Marquis", name: "阿哲", city: "新竹", age: "28+", score: 7900, avatar: "https://picsum.photos/200/200?random=207" },
-      { pos: 8, title: "Baron", name: "小葉", city: "基隆", age: "24+", score: 7600, avatar: "https://picsum.photos/200/200?random=208" }
-    ],
-    receive: [
-      { pos: 1, title: "Queen", name: "Rin", city: "台北", age: "21+", score: 10010, avatar: "https://picsum.photos/200/200?random=211" },
-      { pos: 2, title: "Princess", name: "Nana", city: "新北", age: "26+", score: 9200, avatar: "https://picsum.photos/200/200?random=212" },
-      { pos: 3, title: "Duke", name: "Ken", city: "高雄", age: "29+", score: 8800, avatar: "https://picsum.photos/200/200?random=213" },
-      { pos: 4, title: "Duchess", name: "Sasa", city: "桃園", age: "23+", score: 8400, avatar: "https://picsum.photos/200/200?random=214" }
-    ],
-    send: [
-      { pos: 1, title: "King", name: "Leo", city: "台中", age: "30+", score: 11000, avatar: "https://picsum.photos/200/200?random=221" },
-      { pos: 2, title: "Prince", name: "Sean", city: "台北", age: "24+", score: 9600, avatar: "https://picsum.photos/200/200?random=222" },
-      { pos: 3, title: "Duke", name: "Kai", city: "新北", age: "27+", score: 9000, avatar: "https://picsum.photos/200/200?random=223" },
-      { pos: 4, title: "Baron", name: "米糕", city: "花蓮", age: "32+", score: 8200, avatar: "https://picsum.photos/200/200?random=224" }
-    ]
-  };
-
-  // ========= 共用小工具 =========
-  function shuffleArray(arr) {
-    const copy = arr.slice();
-    for (let i = copy.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [copy[i], copy[j]] = [copy[j], copy[i]];
+    /* 被鎖住時：霧化 + 提示文字 */
+    .album-item.locked img {
+      filter: blur(8px);
+      transform: scale(1.06);
+      opacity: 0.9;
     }
-    return copy;
-  }
+    .album-item.locked::after {
+      content: "🔒 觀看廣告解鎖 30 分鐘";
+      position: absolute;
+      left: 6px;
+      right: 6px;
+      bottom: 6px;
+      padding: 3px 6px;
+      border-radius: 999px;
+      background: rgba(15,23,42,0.78);
+      color: #f9fafb;
+      font-size: 11px;
+      text-align: center;
+    }
+.album-item img {
+position: absolute;
+inset: 0;
+@@ -1561,6 +1588,24 @@ <h3 id="hm-profile-name">未設定姓名</h3>
+</div>
+</div>
 
-  function showPage(pageName) {
-    Object.keys(pages).forEach(k => {
-      if (pages[k]) {
-        pages[k].classList.toggle("active", k === pageName);
-      }
-    });
-    // 底部 Nav 高亮同步
-    document.querySelectorAll(".nav-item").forEach(item => {
-      const page = item.getAttribute("data-page");
-      const active = (page === pageName) || (pageName === "profileDetail" && page === "people");
-      item.classList.toggle("active", active);
-    });
-    // 頂部標題
-    if (pageName === "people") topTitleEl.textContent = "人們 · 心遇 XinYou";
-    if (pageName === "friends") topTitleEl.textContent = "好友";
-    if (pageName === "rank") topTitleEl.textContent = "排行榜";
-    if (pageName === "chat" && currentChatUser) topTitleEl.textContent = currentChatUser.name + " · 聊天";
-    if (pageName === "chat" && !currentChatUser) topTitleEl.textContent = "聊天";
-    if (pageName === "me") topTitleEl.textContent = "我的檔案";
+  <!-- 新增：帳號與安全 / 登出 -->
+  <div class="section">
+    <div class="section-title">帳號與安全</div>
+    <div class="diary-list">
+      <div class="diary-item">
+        <div style="font-size:16px; margin-bottom:6px;">
+          若你是在他人裝置上使用，建議離開前先登出，以免個人資料被他人查看。
+        </div>
+        <button id="hm-logout-btn" type="button" class="hm-btn-outline">
+          登出目前帳號（清除本機暫存資料）
+        </button>
+        <div style="margin-top:8px; font-size:13px; color:#9ca3af;">
+          Demo：登出會清除本機的綁定資訊、基本資料與相簿暫存，下次進入時會重新跳出綁定與填寫資料的視窗。
+        </div>
+      </div>
+    </div>
+  </div>
 
-    renderTopRightForPage(pageName === "profileDetail" ? "people" : pageName);
-  }
+<div class="section">
+<div class="section-title">我的日記（示意，之後可限制免費 5 篇）</div>
+<div class="diary-list">
+@@ -1827,6 +1872,7 @@ <h2>完成基本資料，開始配對</h2>
+}
+];
 
-  function renderTopRightForPage(pageName) {
-    if (!topRightSlot) return;
-    topRightSlot.innerHTML = "";
-    if (pageName === "me") {
-      const btn = document.createElement("button");
-      btn.className = "icon-button";
-      btn.innerHTML = `
-        <svg class="icon-gear" viewBox="0 0 20 20" fill="none">
-          <path d="M9.999 12.5a2.5 2.5 0 1 0 0-5.001 2.5 2.5 0 0 0 0 5z" stroke="#4B5563" stroke-width="1.3" />
-          <path d="M15.167 8.583a5.53 5.53 0 0 0-.11-.44l1.16-1.174a.55.55 0 0 0 .09-.648l-1.1-1.905a.55.55 0 0 0-.628-.26l-1.62.49a5.43 5.43 0 0 0-.77-.44l-.25-1.68A.55.55 0 0 0 11.41 2h-2.2a.55.55 0 0 0-.546.46l-.25 1.68a5.42 5.42 0 0 0-.77.44l-1.62-.49a.55.55 0 0 0-.629.26L4.295 5.3a.55.55 0 0 0 .09.649l1.16 1.173c-.05.144-.087.291-.11.441L4.5 8.999a.55.55 0 0 0-.5.546v2.91c0 .29.219.53.5.546l1.935.12c.034.145.077.288.129.429l-1.178 1.24a.55.55 0 0 0-.067.659l1.2 1.856a.55.55 0 0 0 .622.239l1.74-.56c.13.073.263.14.4.2l.27 1.78a.55.55 0 0 0 .545.46h2.2a.55.55 0 0 0 .545-.46l.27-1.78c.137-.06.27-.127.4-.2l1.74.56a.55.55 0 0 0 .622-.239l1.2-1.857a.55.55 0 0 0-.068-.658l-1.177-1.24c.052-.141.095-.284.129-.429l1.935-.12a.55.55 0 0 0 .5-.547v-2.91a.55.55 0 0 0-.5-.546L15.167 8.583z" stroke="#4B5563" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
+  // 預設相簿照片（當使用者尚未自己上傳時，當作底圖）
+const albumPhotos = [
+"https://picsum.photos/400/400?random=901",
+"https://picsum.photos/400/400?random=902",
+@@ -1843,6 +1889,7 @@ <h2>完成基本資料，開始配對</h2>
+const topRightSlot = document.getElementById("topRightSlot");
+
+let currentBatch = [];
+  let currentProfileId = null; // 目前正在查看的檔案 id（給相簿解鎖後重刷用）
+
+function shuffleArray(arr) {
+const copy = arr.slice();
+@@ -1920,6 +1967,7 @@ <h2>完成基本資料，開始配對</h2>
+function openProfileDetail(id) {
+const p = people.find(x => x.id === id);
+if (!p) return;
+    currentProfileId = id;
+
+let statusClass = "status-badge";
+if (p.status === "busy") statusClass += " status-busy";
+@@ -1931,13 +1979,24 @@ <h2>完成基本資料，開始配對</h2>
+'<span class="' + statusClass + '"><span class="status-dot"></span><span>' +
+(p.statusText || "已上線") + "</span></span>";
+
+    const albumHtml = albumPhotos.map((src, idx) => `
+      <div class="album-item" onclick="openPhotoViewer('${src}')">
+        <img src="${src}" alt="photo${idx+1}" />
+        <button class="set-cover-btn" onclick="event.stopPropagation(); setAsAvatar(${idx})">設為頭貼</button>
+        <div class="album-gift-btn" onclick="event.stopPropagation(); sendGiftAnimation(this)">💝 送禮</div>
+      </div>
+    `).join("");
+    // 使用「我的照片」為基礎，陌生人看到的就是這 6 張
+    const totalSlots = (typeof MY_ALBUM_SLOTS === "number" ? MY_ALBUM_SLOTS : 6);
+    const vipLevel = hmGetVipLevel();
+    const unlocked = hmAlbumIsUnlocked();
+
+    const albumHtml = Array.from({ length: totalSlots }).map((_, idx) => {
+      const src = hmGetAlbumPhotoSrc(idx);
+      const isFree = idx < 2;
+      const isLocked = !isFree && vipLevel === 0 && !unlocked;
+      const lockedClass = isLocked ? " locked" : "";
+      return `
+        <div class="album-item${lockedClass}" onclick="handleStrangerAlbumClick(${idx})">
+          <img src="${src}" alt="photo${idx + 1}" />
+          <button class="set-cover-btn" onclick="event.stopPropagation(); setAsAvatar(${idx})">設為頭貼</button>
+          <div class="album-gift-btn" onclick="event.stopPropagation(); sendGiftAnimation(this)">💝 送禮</div>
+        </div>
       `;
-      btn.addEventListener("click", () => {
-        alert("設定面板之後會接上真正的功能（目前為示意）。");
-      });
-      topRightSlot.appendChild(btn);
-    }
-  }
+    }).join("");
 
-  // ========= 人們（巧遇） =========
-  function pickRandomBatch() {
-    const shuffled = shuffleArray(people);
-    currentBatch = shuffled.slice(0, 4);
-  }
+profileDetailContent.innerHTML = `
+     <div class="profile-header">
+@@ -1970,7 +2029,8 @@ <h2>完成基本資料，開始配對</h2>
+         ${albumHtml}
+       </div>
+       <div class="album-note">
+          相簿僅示意，正式版可以上傳自己的照片、設定可見範圍與解鎖方式。
+          相簿僅示意，正式版可以上傳自己的照片、設定可見範圍與解鎖方式。<br/>
+          Demo：前兩張為免費預覽，後四張需觀看廣告才可在 30 分鐘內解鎖。
+       </div>
+     </div>
 
-  function renderStatusBadge(p) {
-    let statusClass = "status-badge";
-    if (p.status === "busy") statusClass += " status-busy";
-    if (p.status === "away" || p.status === "offline") statusClass += " status-away";
-    if (p.status === "eating") statusClass += " status-eating";
-    if (p.status === "shower") statusClass += " status-shower";
-    return `<span class="${statusClass}"><span class="status-dot"></span><span>${p.statusText || "已上線"}</span></span>`;
-  }
-
-  function renderPeopleGrid() {
-    if (!peopleGridEl) return;
-    if (currentBatch.length === 0) pickRandomBatch();
-    peopleGridEl.innerHTML = "";
-    currentBatch.forEach(p => {
-      const card = document.createElement("div");
-      card.className = "people-card";
-
-      const photo = document.createElement("div");
-      photo.className = "people-photo";
-      photo.innerHTML = `<img src="${p.avatar}" alt="${p.name}" />`;
-      // 依你要求：點「照片」進入對外資料
-      photo.addEventListener("click", (e) => {
-        e.stopPropagation();
-        openProfileDetailWithUser(p);
-      });
-
-      const info = document.createElement("div");
-      info.className = "people-info";
-      const row1 = document.createElement("div");
-      row1.className = "people-name-row";
-      row1.innerHTML = `
-        <div class="people-name">${p.name}</div>
-        <div class="people-age">${p.ageText}</div>
-      `;
-      const statusDiv = document.createElement("div");
-      statusDiv.innerHTML = renderStatusBadge(p);
-      const desc = document.createElement("div");
-      desc.className = "people-desc";
-      desc.textContent = p.desc;
-
-      info.appendChild(row1);
-      info.appendChild(statusDiv.firstChild);
-      info.appendChild(desc);
-
-      card.appendChild(photo);
-      card.appendChild(info);
-
-      // 卡片其他空白處點也可以進入對外資料
-      card.addEventListener("click", () => openProfileDetailWithUser(p));
-
-      peopleGridEl.appendChild(card);
-    });
-  }
-
-  // ========= 好友系統：關係判斷與操作 =========
-  function getRelationship(uid) {
-    if (!uid) return "none";
-    if (friendState.friends.some(x => x.uid === uid)) return "friend";
-
-    const s = friendState.sent.find(x => x.uid === uid);
-    if (s) {
-      if (s.status === "pending") return "sentPending";
-      if (s.status === "accepted") return "friend";
-      if (s.status === "rejected") return "sentRejected";
-    }
-    const r = friendState.received.find(x => x.uid === uid);
-    if (r) {
-      if (r.status === "pending") return "receivedPending";
-      if (r.status === "accepted") return "friend";
-      if (r.status === "rejected") return "receivedRejected";
-    }
-    return "none";
-  }
-
-  function sendFriendRequestForCurrent() {
-    const u = currentProfileUser;
-    if (!u || !u.uid) return;
-    const rel = getRelationship(u.uid);
-    if (rel === "friend") {
-      alert("你們已經是好友。");
-      return;
-    }
-    if (rel === "sentPending") {
-      alert("已送出好友申請，等待對方回覆。");
-      return;
-    }
-
-    friendState.sent.push({
-      uid: u.uid,
-      user: { ...u },
-      status: "pending"
-    });
-    alert("已送出好友申請（示意），對方同意後會出現在好友列表。");
-    updateFriendBadges();
-    renderFriendsList(currentFriendTab);
-    setupProfileDetailActionButtons(); // 更新按鈕狀態
-  }
-
-  function acceptFriend(uid) {
-    const r = friendState.received.find(x => x.uid === uid);
-    if (!r) return;
-    r.status = "accepted";
-
-    if (!friendState.friends.some(x => x.uid === uid)) {
-      friendState.friends.push({ uid, user: { ...r.user } });
-    }
-    const s = friendState.sent.find(x => x.uid === uid);
-    if (s) s.status = "accepted";
-
-    updateFriendBadges();
-    renderFriendsList(currentFriendTab);
-    setupProfileDetailActionButtons();
-  }
-
-  function rejectFriend(uid) {
-    const r = friendState.received.find(x => x.uid === uid);
-    if (!r) return;
-    r.status = "rejected";
-    const s = friendState.sent.find(x => x.uid === uid);
-    if (s) s.status = "rejected";
-
-    updateFriendBadges();
-    renderFriendsList(currentFriendTab);
-    setupProfileDetailActionButtons();
-  }
-
-  function updateFriendBadges() {
-    const pendingReceived = friendState.received.filter(x => x.status === "pending").length;
-    const pendingSent = friendState.sent.filter(x => x.status === "pending").length;
-
-    document.querySelectorAll("[data-friendtab]").forEach(btn => {
-      const type = btn.getAttribute("data-friendtab");
-      let label = "好友";
-      if (type === "sent") label = "送出申請";
-      if (type === "received") label = "收到申請";
-
-      let badgeHtml = "";
-      if (type === "received" && pendingReceived > 0) {
-        badgeHtml = `<span style="
-          display:inline-flex;
-          min-width:16px;
-          height:16px;
-          align-items:center;
-          justify-content:center;
-          background:#ef4444;
-          color:#fff;
-          border-radius:999px;
-          font-size:11px;
-          margin-left:4px;
-          padding:0 4px;
-        ">${pendingReceived}</span>`;
-      }
-      if (type === "sent" && pendingSent > 0) {
-        badgeHtml = `<span style="
-          display:inline-flex;
-          min-width:16px;
-          height:16px;
-          align-items:center;
-          justify-content:center;
-          background:#ef4444;
-          color:#fff;
-          border-radius:999px;
-          font-size:11px;
-          margin-left:4px;
-          padding:0 4px;
-        ">${pendingSent}</span>`;
-      }
-
-      btn.innerHTML = label + badgeHtml;
-    });
-  }
-
-  // ========= 相片 Viewer & 送禮動畫 =========
-  function openPhotoViewer(src) {
-    const viewer = document.getElementById("photoViewer");
-    if (!viewer) return;
-    const img = viewer.querySelector("img");
-    if (!img) return;
-    img.src = src;
-    viewer.classList.add("show");
-  }
-  function closeViewer() {
-    const viewer = document.getElementById("photoViewer");
-    if (!viewer) return;
-    viewer.classList.remove("show");
-  }
-  window.openPhotoViewer = openPhotoViewer;
-  window.closeViewer = closeViewer;
-
-  function spawnHeart(x, y) {
-    const h = document.createElement("div");
-    h.className = "gift-heart";
-    h.textContent = "💗";
-    h.style.position = "fixed";
-    h.style.left = x + "px";
-    h.style.top = y + "px";
-    h.style.fontSize = "32px";
-    h.style.pointerEvents = "none";
-    h.style.transition = "transform 1s ease-out, opacity 1s ease-out";
-    document.body.appendChild(h);
-    requestAnimationFrame(() => {
-      h.style.transform = "translateY(-60px)";
-      h.style.opacity = "0";
-    });
-    setTimeout(() => h.remove(), 1000);
-  }
-  function sendGiftAnimation(el) {
-    const rect = el.getBoundingClientRect();
-    spawnHeart(rect.left + rect.width / 2, rect.top);
-    alert("這邊之後會打開送禮物面板。");
-  }
-  function sendGiftAnimationFromHeader(btn) {
-    const rect = btn.getBoundingClientRect();
-    spawnHeart(rect.left + rect.width / 2, rect.top);
-    alert("這邊之後會打開送禮物面板。");
-  }
-  function setAsAvatar(idx) {
+@@ -2388,10 +2448,10 @@ <h2>完成基本資料，開始配對</h2>
+alert("這邊之後會打開送禮物面板。");
+}
+function setAsAvatar(idx) {
     const newAvatar = albumPhotos[idx];
-    const avatarImg = document.querySelector(".profile-avatar img");
-    if (avatarImg) avatarImg.src = newAvatar;
-    alert("已把這張照片設為頭貼！（僅示意）");
-  }
-  window.sendGiftAnimation = sendGiftAnimation;
-  window.sendGiftAnimationFromHeader = sendGiftAnimationFromHeader;
-  window.setAsAvatar = setAsAvatar;
-
-  // ========= 我的狀態 & 好友限定小語 =========
-  function updateMyStatus() {
-    if (!statusSelect || !myStatusBadge || !myStatusText || !myProfileSub) return;
-    const val = statusSelect.value;
-    let text = "已上線";
-    let cls = "status-badge";
-
-    if (val === "online") text = "已上線";
-    if (val === "busy") { text = "忙碌中…"; cls += " status-busy"; }
-    if (val === "eating") { text = "用餐去…"; cls += " status-eating"; }
-    if (val === "shower") { text = "洗澡中…"; cls += " status-shower"; }
-    if (val === "away") { text = "暫離中…"; cls += " status-away"; }
-    if (val === "offline") { text = "離線中"; cls += " status-away"; }
-    if (val === "chatty") text = "想聊天";
-
-    myStatusBadge.className = cls;
-    myStatusText.textContent = text;
-    myProfileSub.textContent = "台灣 · 30 歲左右 · " + text;
-  }
-
-  function updateFriendNotePreview() {
-    if (!friendNoteInput || !friendNotePreview) return;
-    const t = friendNoteInput.value.trim() || "（尚未設定）";
-    friendNotePreview.innerHTML = '<span class="label">好友限定：</span>' + t;
-  }
-
-  // ========= 聊天 =========
-  function sendChat() {
-    if (!chatInputEl || !chatMessagesEl) return;
-    const text = chatInputEl.value.trim();
-    if (!text) return;
-    const row = document.createElement("div");
-    row.className = "bubble-row me";
-    const bubble = document.createElement("div");
-    bubble.className = "bubble me";
-    bubble.textContent = text;
-    row.appendChild(bubble);
-    chatMessagesEl.appendChild(row);
-    chatInputEl.value = "";
-    chatMessagesEl.scrollTop = chatMessagesEl.scrollHeight;
-  }
-
-  function sendImageBubble(src) {
-    if (!chatMessagesEl) return;
-    const row = document.createElement("div");
-    row.className = "bubble-row me";
-    const bubble = document.createElement("div");
-    bubble.className = "bubble me";
-    const img = document.createElement("img");
-    img.src = src;
-    img.alt = "image";
-    img.addEventListener("click", () => openPhotoViewer(src));
-    bubble.appendChild(img);
-    row.appendChild(bubble);
-    chatMessagesEl.appendChild(row);
-    chatMessagesEl.scrollTop = chatMessagesEl.scrollHeight;
-  }
-
-  function startChatWithUser(user) {
-    currentChatUser = user;
-    showPage("chat");
-    if (topTitleEl) {
-      topTitleEl.textContent = user.name + " · 聊天";
-    }
-    if (!chatMessagesEl) return;
-    // 開新對話時清一版，給提示訊息
-    chatMessagesEl.innerHTML = "";
-    const row = document.createElement("div");
-    row.className = "bubble-row";
-    const bubble = document.createElement("div");
-    bubble.className = "bubble them";
-    bubble.innerHTML = `你正在與 <b>${user.name}</b> 聊天（示意用，尚未串接真實伺服器）。`;
-    row.appendChild(bubble);
-    chatMessagesEl.appendChild(row);
-  }
-
-  // ========= 我的相簿／VIP =========
-  const MY_ALBUM_SLOTS = 6;
-  let myAlbumPhotosCache = null;
-
-  function hmHasCompletedProfile() {
-    try {
-      return localStorage.getItem("hmProfileCompleted") === "true";
-    } catch (e) {
-      return false;
-    }
-  }
-
-  function hmSaveProfileData(data) {
-    try {
-      localStorage.setItem("hmProfileData", JSON.stringify(data));
-      localStorage.setItem("hmProfileCompleted", "true");
-    } catch (e) { }
-  }
-
-  function hmSetAuthProvider(provider) {
-    try {
-      localStorage.setItem("hmAuthProvider", provider);
-    } catch (e) { }
-  }
-
-  function hmGetAuthProvider() {
-    try {
-      return localStorage.getItem("hmAuthProvider") || "";
-    } catch (e) {
-      return "";
-    }
-  }
-
-  function hmBuildSocialUrl(platform, value) {
-    if (!value) return null;
-    const v = value.trim();
-    if (!v) return null;
-    if (v.startsWith("http://") || v.startsWith("https://")) return v;
-    switch (platform) {
-      case "threads": return "https://www.threads.net/@" + v.replace(/^@/, "");
-      case "x": return "https://x.com/" + v.replace(/^@/, "");
-      case "instagram": return "https://www.instagram.com/" + v.replace(/^@/, "");
-      case "facebook": return "https://www.facebook.com/" + v;
-      default: return null;
-    }
-  }
-
-  function hmInitProfileCard() {
-    const dataStr = localStorage.getItem("hmProfileData");
-    const nameEl = document.getElementById("hm-profile-name");
-    const metaEl = document.getElementById("hm-profile-meta");
-    const regionEl = document.getElementById("hm-profile-region");
-    const avatarTextEl = document.getElementById("hm-profile-avatar-text");
-    const socialListEl = document.getElementById("hm-profile-social-list");
-    const bindEl = document.getElementById("hm-profile-bind");
-    if (!nameEl || !metaEl || !regionEl || !avatarTextEl || !socialListEl) return;
-
-    let profile = null;
-    if (dataStr) {
-      try { profile = JSON.parse(dataStr); } catch (e) { }
-    }
-    const name = profile && profile.name ? profile.name : "未設定姓名";
-    const height = profile && profile.height ? profile.height : "";
-    const weight = profile && profile.weight ? profile.weight : "";
-    const region = profile && profile.region ? profile.region : "未填寫";
-
-    nameEl.textContent = name;
-    regionEl.textContent = "居住區域：" + region;
-
-    if (height || weight) {
-      const hText = height ? height + "cm" : "身高未填寫";
-      const wText = weight ? weight + "kg" : "體重未填寫";
-      metaEl.textContent = hText + " ／ " + wText;
-    } else {
-      metaEl.textContent = "身高 / 體重 未填寫";
-    }
-
-    let avatarText = "Me";
-    if (name && typeof name === "string") {
-      const trimmed = name.trim();
-      if (trimmed.length === 1) avatarText = trimmed;
-      else if (trimmed.length >= 2) avatarText = trimmed.slice(0, 2);
-    }
-    avatarTextEl.textContent = avatarText;
-
-    const provider = hmGetAuthProvider();
-    if (bindEl) {
-      if (!provider) bindEl.textContent = "尚未綁定帳號";
-      else if (provider === "google") bindEl.textContent = "已綁定：Google 帳號（示意）";
-      else if (provider === "facebook") bindEl.textContent = "已綁定：Facebook 帳號（示意）";
-      else if (provider === "apple") bindEl.textContent = "已綁定：Apple 帳號（示意）";
-      else bindEl.textContent = "已綁定：其他系統帳號（示意）";
-    }
-
-    const socials = (profile && profile.socials) || {};
-    const items = [];
-    const config = [
-      { key: "threads", label: "Threads", short: "Th", className: "hm-social-threads" },
-      { key: "x", label: "X", short: "X", className: "hm-social-x" },
-      { key: "instagram", label: "IG", short: "IG", className: "hm-social-instagram" },
-      { key: "facebook", label: "FB", short: "FB", className: "hm-social-facebook" },
-      { key: "other", label: "其他", short: "?", className: "hm-social-other" }
-    ];
+    const newAvatar = hmGetAlbumPhotoSrc(idx);
+const avatarImg = document.querySelector(".profile-avatar img");
+if (avatarImg) avatarImg.src = newAvatar;
+    alert("已把這張照片設為頭貼！");
+    alert("已把這張照片設為頭貼！（Demo）");
+}
+function markViewing() {
+alert("已標記「正在欣賞她」。之後可以把這個狀態同步到後端。");
+@@ -2527,6 +2587,7 @@ <h2>完成基本資料，開始配對</h2>
+{ key: "other", label: "其他", short: "?", className: "hm-social-other" }
+];
 
     socialListEl.innerHTML = "";
-    config.forEach(c => {
-      const rawValue = socials[c.key];
-      if (!rawValue || !rawValue.trim) return;
-      if (!rawValue.trim()) return;
-      const url = hmBuildSocialUrl(c.key, rawValue);
-      items.push({
-        key: c.key, label: c.label, short: c.short, className: c.className,
-        raw: rawValue.trim(), url
-      });
-    });
+config.forEach((c) => {
+const rawValue = socials[c.key];
+if (!rawValue || !rawValue.trim) return;
+@@ -2542,7 +2603,6 @@ <h2>完成基本資料，開始配對</h2>
+});
+});
 
-    if (!items.length) {
-      const span = document.createElement("span");
-      span.className = "hm-profile-social-empty";
-      span.textContent = "目前尚未串聯任何社群帳號";
-      socialListEl.appendChild(span);
-    } else {
-      items.forEach(item => {
-        let el;
-        if (item.url) {
-          el = document.createElement("a");
-          el.href = item.url;
-          el.target = "_blank";
-          el.rel = "noopener noreferrer";
-        } else {
-          el = document.createElement("div");
-        }
-        el.className = "hm-social-chip " + item.className;
-
-        const icon = document.createElement("span");
-        icon.className = "hm-social-icon";
-        icon.textContent = item.short;
-
-        const text = document.createElement("span");
-        const displayRaw = item.raw.length > 14 ? item.raw.slice(0, 13) + "..." : item.raw;
-        text.textContent = item.label + "｜" + displayRaw;
-
-        el.appendChild(icon);
-        el.appendChild(text);
-        socialListEl.appendChild(el);
-      });
+    socialListEl.innerHTML = "";
+if (items.length === 0) {
+const span = document.createElement("span");
+span.className = "hm-profile-social-empty";
+@@ -2600,6 +2660,10 @@ <h2>完成基本資料，開始配對</h2>
+} catch (e) {}
+hmUpdateVipUI();
+renderMyAlbum();
+    // VIP 變動時也刷新目前檔案
+    if (pages.profileDetail.classList.contains("active") && currentProfileId != null) {
+      openProfileDetail(currentProfileId);
     }
-  }
+}
 
-  function hmGetVipLevel() {
+function hmUpdateVipUI() {
+@@ -2652,21 +2716,53 @@ <h2>完成基本資料，開始配對</h2>
+}
+}
+
+  // 取得解鎖到期時間（毫秒）
+  function hmAlbumGetUnlockUntil() {
     try {
-      const raw = localStorage.getItem("hmVipLevel");
-      const n = parseInt(raw || "0", 10);
-      if (isNaN(n) || n < 0) return 0;
-      if (n > 5) return 5;
-      return n;
+      const raw = localStorage.getItem("hmAlbumUnlockUntil");
+      const t = parseInt(raw || "0", 10);
+      return isNaN(t) ? 0 : t;
     } catch (e) {
       return 0;
     }
   }
-  function hmSetVipLevel(level) {
-    const lvl = Math.min(Math.max(level, 0), 5);
-    try { localStorage.setItem("hmVipLevel", String(lvl)); } catch (e) { }
-    hmUpdateVipUI();
-    renderMyAlbum();
-  }
-  function hmUpdateVipUI() {
-    const lvl = hmGetVipLevel();
-    const badge = document.getElementById("myVipBadge");
-    const textEl = document.getElementById("vipLevelText");
-    if (badge) {
-      if (lvl <= 0) { badge.style.display = "none"; badge.textContent = ""; }
-      else { badge.style.display = "inline-flex"; badge.textContent = "VIP" + lvl; }
-    }
-    if (textEl) {
-      if (lvl <= 0) textEl.textContent = "目前 VIP 等級：無（Demo）";
-      else textEl.textContent = "目前 VIP 等級：VIP" + lvl + "（Demo）";
-    }
+
+  // 判斷目前是否已解鎖（VIP 直接視為永久解鎖）
+function hmAlbumIsUnlocked() {
+if (hmGetVipLevel() > 0) return true;
+    const until = hmAlbumGetUnlockUntil();
+    return until > Date.now();
   }
 
-  function hmLoadAlbumPhotos() {
-    if (myAlbumPhotosCache) return myAlbumPhotosCache;
-    try {
-      const raw = localStorage.getItem("hmMyAlbumPhotos");
-      if (raw) {
-        const parsed = JSON.parse(raw);
-        if (Array.isArray(parsed) && parsed.length === MY_ALBUM_SLOTS) {
-          myAlbumPhotosCache = parsed;
-          return parsed;
-        }
-      }
-    } catch (e) { }
-    myAlbumPhotosCache = new Array(MY_ALBUM_SLOTS).fill(null);
-    return myAlbumPhotosCache;
-  }
-  function hmSaveAlbumPhotos() {
-    try {
-      localStorage.setItem("hmMyAlbumPhotos", JSON.stringify(myAlbumPhotosCache || []));
-    } catch (e) { }
-  }
-  function hmAlbumIsUnlocked() {
-    if (hmGetVipLevel() > 0) return true;
-    try {
+  // Demo：看完廣告解鎖 30 分鐘
+  function hmAlbumUnlockFor30Minutes() {
+    const unlockUntil = Date.now() + 30 * 60 * 1000;
+try {
       return sessionStorage.getItem("hmAlbumUnlocked") === "true";
-    } catch (e) {
+      localStorage.setItem("hmAlbumUnlockUntil", String(unlockUntil));
+} catch (e) {
       return false;
+      console.warn("儲存相簿解鎖時間失敗：", e);
     }
-  }
-  function hmAlbumUnlock() {
-    try { sessionStorage.setItem("hmAlbumUnlocked", "true"); } catch (e) { }
+    alert("Demo：假設你看完一段廣告，接下來 30 分鐘內 6 張照片都會開放給陌生人與好友查看。");
+    renderMyAlbum();
+    if (pages.profileDetail.classList.contains("active") && currentProfileId != null) {
+      openProfileDetail(currentProfileId);
+}
+}
+
+  // 舊函式名稱的別名（避免遺漏）
+function hmAlbumUnlock() {
+    try {
+      sessionStorage.setItem("hmAlbumUnlocked", "true");
+    } catch (e) {}
     alert("Demo：假設你看完一段廣告，現在暫時解鎖 4 張照片，重新整理或關閉瀏覽器後會再鎖回去。");
     renderMyAlbum();
+    hmAlbumUnlockFor30Minutes();
   }
 
-  function renderMyAlbum() {
-    const grid = document.getElementById("myAlbumGrid");
-    if (!grid) return;
+  // 取得某一格照片真正要顯示的 src：
+  // 先用使用者上傳的，沒有的話用預設 picsum 當底圖
+  function hmGetAlbumPhotoSrc(idx) {
     const photos = hmLoadAlbumPhotos();
-    const vip = hmGetVipLevel();
-    const unlocked = hmAlbumIsUnlocked();
+    const fallback = albumPhotos;
+    const p = photos[idx];
+    if (p) return p;
+    if (fallback && fallback[idx]) return fallback[idx];
+    return "https://picsum.photos/400/400?random=" + (901 + idx);
+}
 
-    grid.innerHTML = "";
-    for (let i = 0; i < MY_ALBUM_SLOTS; i++) {
-      const isFree = i < 2;
-      const isLocked = !isFree && vip === 0 && !unlocked;
-      const slot = document.createElement("div");
-      slot.className = "my-album-item";
+function renderMyAlbum() {
+@@ -2687,9 +2783,9 @@ <h2>完成基本資料，開始配對</h2>
 
-      const img = document.createElement("img");
-      img.id = "myAlbumImg_" + i;
-      if (photos[i]) img.src = photos[i];
-      else img.style.opacity = "0.3";
-      slot.appendChild(img);
+const img = document.createElement("img");
+img.id = "myAlbumImg_" + i;
+      if (photos[i]) {
+        img.src = photos[i];
+      } else {
+      const src = hmGetAlbumPhotoSrc(i);
+      img.src = src || "";
+      if (!photos[i]) {
+img.style.opacity = "0.3";
+}
+slot.appendChild(img);
+@@ -2703,7 +2799,7 @@ <h2>完成基本資料，開始配對</h2>
+}
+slot.appendChild(label);
 
-      const label = document.createElement("div");
-      label.className = "my-album-slot-label";
-      label.textContent = isFree ? `第 ${i + 1} 張 · 免費預覽` : `第 ${i + 1} 張 · 需解鎖`;
-      slot.appendChild(label);
-
-      const fileInput = document.createElement("input");
-      fileInput.type = "file";
-      fileInput.accept = "image/*";
-      fileInput.style.display = "none";
-      fileInput.id = "myAlbumInput_" + i;
-      slot.appendChild(fileInput);
-
-      const uploadBtn = document.createElement("button");
-      uploadBtn.type = "button";
-      uploadBtn.className = "my-album-upload-btn";
-      uploadBtn.textContent = photos[i] ? "更換" : "上傳";
-      uploadBtn.addEventListener("click", (e) => {
-        e.stopPropagation();
-        fileInput.click();
-      });
-      slot.appendChild(uploadBtn);
-
-      fileInput.addEventListener("change", (e) => {
-        const file = e.target.files && e.target.files[0];
-        if (!file) return;
-        const reader = new FileReader();
-        reader.onload = function (ev) {
-          const result = ev.target.result;
-          if (!result) return;
-          const arr = hmLoadAlbumPhotos();
-          arr[i] = result;
-          myAlbumPhotosCache = arr;
-          hmSaveAlbumPhotos();
-          renderMyAlbum();
-        };
-        reader.readAsDataURL(file);
-      });
-
-      slot.addEventListener("click", () => {
-        const src = photos[i];
-        if (src) openPhotoViewer(src);
-      });
-
-      if (isLocked) {
-        const overlay = document.createElement("div");
-        overlay.className = "my-album-lock-overlay";
-        overlay.innerHTML = `
+      // 上傳按鈕 + input
+      // 上傳按鈕 + input（自己看得到）
+const fileInput = document.createElement("input");
+fileInput.type = "file";
+fileInput.accept = "image/*";
+@@ -2733,6 +2829,10 @@ <h2>完成基本資料，開始配對</h2>
+myAlbumPhotosCache = arr;
+hmSaveAlbumPhotos();
+renderMyAlbum();
+          // 自己照片改了，也刷新目前檔案
+          if (pages.profileDetail.classList.contains("active") && currentProfileId != null) {
+            openProfileDetail(currentProfileId);
+          }
+};
+reader.readAsDataURL(file);
+});
+@@ -2742,15 +2842,15 @@ <h2>完成基本資料，開始配對</h2>
+const overlay = document.createElement("div");
+overlay.className = "my-album-lock-overlay";
+overlay.innerHTML = `
           <div>🔒 鎖定照片<br>觀看一次廣告即可暫時解鎖 4 張照片</div>
-        `;
-        overlay.style.position = "absolute";
-        overlay.style.inset = "0";
-        overlay.style.background = "rgba(0,0,0,0.55)";
-        overlay.style.display = "flex";
-        overlay.style.flexDirection = "column";
-        overlay.style.alignItems = "center";
-        overlay.style.justifyContent = "center";
-        overlay.style.color = "#fff";
-        overlay.style.fontSize = "13px";
-        overlay.style.textAlign = "center";
-        overlay.style.borderRadius = "12px";
-
-        const btn = document.createElement("button");
-        btn.type = "button";
-        btn.className = "my-album-lock-btn";
-        btn.textContent = "觀看廣告暫時解鎖（Demo）";
-        btn.style.marginTop = "8px";
-        btn.style.padding = "6px 12px";
-        btn.style.borderRadius = "999px";
-        btn.style.border = "none";
-        btn.style.background = "#f97316";
-        btn.style.color = "#fff";
-        btn.style.fontSize = "13px";
-        btn.addEventListener("click", (e) => {
-          e.stopPropagation();
+          <div>🔒 鎖定照片<br>觀看一次廣告即可在 30 分鐘內解鎖 6 張照片</div>
+       `;
+const btn = document.createElement("button");
+btn.type = "button";
+btn.className = "my-album-lock-btn";
+btn.textContent = "觀看廣告暫時解鎖（Demo）";
+btn.addEventListener("click", (e) => {
+e.stopPropagation();
           hmAlbumUnlock();
-        });
-        overlay.appendChild(btn);
-        slot.style.position = "relative";
-        slot.appendChild(overlay);
-      }
+          hmAlbumUnlockFor30Minutes();
+});
+overlay.appendChild(btn);
+slot.appendChild(overlay);
+@@ -2760,6 +2860,26 @@ <h2>完成基本資料，開始配對</h2>
+}
+}
 
-      grid.appendChild(slot);
-    }
+  // 陌生人點擊相簿照片時的邏輯：
+  // 前兩張：直接看；VIP：全部直接看；其餘：看廣告→解鎖 30 分鐘
+  function hmShowAlbumAdPrompt() {
+    const go = confirm("這 4 張照片需觀看一段廣告才能在 30 分鐘內解鎖。\n要前往廣告頁（Demo）嗎？");
+    if (!go) return;
+    // Demo：開一個假廣告頁（正式版接廣告 SDK 即可）
+    window.open("https://example.com", "_blank");
+    hmAlbumUnlockFor30Minutes();
   }
 
-  function hmLoadMyAvatar() {
-    try { return localStorage.getItem("hmMyAvatar") || ""; } catch (e) { return ""; }
-  }
-  function hmSaveMyAvatar(dataUrl) {
-    try { localStorage.setItem("hmMyAvatar", dataUrl); } catch (e) { }
-  }
-  function hmInitMyAvatar() {
-    const img = document.getElementById("myProfileAvatarImg");
-    const stored = hmLoadMyAvatar();
-    if (img && stored) img.src = stored;
-  }
-
-  // ========= 陌生人相簿解鎖（1~2 張免費，3~6 張需看廣告或 VIP） =========
-  function isProfileAlbumUnlocked() {
-    // 觀者 VIP > 0 → 全開放
-    if (hmGetVipLevel() > 0) return true;
-
-    try {
-      const raw = sessionStorage.getItem("hmProfileAlbumUnlockedUntil");
-      if (!raw) return false;
-      const expire = parseInt(raw, 10);
-      if (isNaN(expire)) return false;
-      return Date.now() < expire;
-    } catch (e) {
-      return false;
-    }
-  }
-
-  function unlockProfileAlbum() {
-    const expire = Date.now() + 30 * 60 * 1000; // 30 分鐘
-    try {
-      sessionStorage.setItem("hmProfileAlbumUnlockedUntil", String(expire));
-    } catch (e) { }
-
-    alert("已解鎖此用戶相簿，30 分鐘內可觀看全部照片（Demo）。");
-
-    // 重新 render 當前對外資料頁
-    if (currentProfileUser) {
-      openProfileDetailWithUser(currentProfileUser);
-    }
-  }
-  window.unlockProfileAlbum = unlockProfileAlbum;
-
-  // ========= 詳細檔案（對外資料） =========
-  function openProfileDetail(id) {
-    const p = people.find(x => x.id === id);
-    if (!p) return;
-    openProfileDetailWithUser(p);
-  }
-
-  function openProfileDetailWithUser(user) {
-    // 確保 user.uid 存在
-    const u = { ...user };
-    if (!u.uid) {
-      u.uid = u.id ? "people-" + u.id : "user-" + Date.now();
-    }
-    currentProfileUser = u;
-
-    const statusBadgeHtml = renderStatusBadge(u);
-    const vipLevelForUserDisplay = (u.id || 1) % 5 + 1; // 只是顯示用的 VIP
-    const viewerVipLevel = hmGetVipLevel ? hmGetVipLevel() : 0;
-    const profileAlbumUnlocked = isProfileAlbumUnlocked();
-
-    // 建立陌生人相簿 HTML：1~2 張免費，3~6 張依照 VIP / 解鎖狀態判斷
-    let albumHtml = "";
-    albumPhotos.forEach((src, idx) => {
-      const photoIndex = idx + 1;
-      const isFree = photoIndex <= 2; // 第 1、2 張免費
-      const canView = isFree || viewerVipLevel > 0 || profileAlbumUnlocked;
-
-      if (canView) {
-        albumHtml += `
-          <div class="album-item" onclick="openPhotoViewer('${src}')">
-            <img src="${src}" alt="photo${photoIndex}" />
-            <button class="set-cover-btn"
-              onclick="event.stopPropagation(); setAsAvatar(${idx})">設為頭貼</button>
-            <div class="album-gift-btn"
-              onclick="event.stopPropagation(); sendGiftAnimation(this)">💝 送禮</div>
-          </div>
-        `;
-      } else {
-        albumHtml += `
-          <div class="album-item" onclick="unlockProfileAlbum()" style="position:relative; cursor:pointer;">
-            <img src="${src}" alt="photo${photoIndex}"
-              style="filter: blur(6px); opacity: 0.7; border-radius: 12px;" />
-            <div style="
-              position:absolute; inset:0;
-              background:rgba(0,0,0,0.55);
-              display:flex; flex-direction:column;
-              align-items:center; justify-content:center;
-              color:#fff; font-size:13px; text-align:center;
-              padding:8px; border-radius:12px;">
-              <div>
-                🔒 鎖定照片（第 ${photoIndex} 張）<br>
-                觀看 1 則小廣告即可解鎖 30 分鐘內全部照片（Demo）
-              </div>
-              <button type="button"
-                style="margin-top:8px; padding:6px 12px; border-radius:999px; border:none; background:#f97316; color:#fff; font-size:13px;"
-                onclick="event.stopPropagation(); unlockProfileAlbum();">
-                ▶ 觀看廣告解鎖
-              </button>
-            </div>
-          </div>
-        `;
-      }
-    });
-
-    if (!profileDetailContent) return;
-
-    profileDetailContent.innerHTML = `
-      <div class="profile-header">
-        <div class="profile-row-main">
-          <div class="profile-avatar" onclick="openPhotoViewer('${u.avatar}')">
-            <img src="${u.avatar}" alt="${u.name}" />
-          </div>
-          <div>
-            <div class="profile-name">${u.name}</div>
-            <div class="profile-sub">${u.ageText || "年齡未設定"} · 台灣 · 暫無更多介紹</div>
-            <div style="margin-top:6px; font-size:15px;">${statusBadgeHtml}</div>
-          </div>
-        </div>
-        <div class="profile-actions">
-          <button class="btn" id="profileBlockBtn">封鎖 / 刪除</button>
-          <button class="btn btn-primary" id="profileFriendOrChatBtn"></button>
-        </div>
-      </div>
-
-      <div class="section">
-        <div class="profile-cta-row">
-          <div class="profile-vip-label">
-            <span>⭐ VIP${vipLevelForUserDisplay} 用戶（示意）</span>
-          </div>
-          <button class="big-cta-btn primary" onclick="sendGiftAnimationFromHeader(this)">🎁 送禮物</button>
-        </div>
-      </div>
-
-      <div class="section">
-        <div class="section-title">相簿（1～2 張免費，其餘依 VIP / 解鎖）</div>
-        <div class="album-grid">
-          ${albumHtml}
-        </div>
-        <div class="album-note">
-          相簿僅示意，正式版可以上傳自己的照片、設定可見範圍與解鎖方式。
-        </div>
-      </div>
-
-      <div class="section">
-        <div class="section-title">基本資料</div>
-        <table class="info-table">
-          <tr><td class="info-key">暱稱</td><td class="info-value">${u.name}</td></tr>
-          <tr><td class="info-key">性別</td><td class="info-value">未設定</td></tr>
-          <tr><td class="info-key">年齡層</td><td class="info-value">${u.ageText || "未設定"}</td></tr>
-          <tr><td class="info-key">國家</td><td class="info-value">台灣</td></tr>
-          <tr><td class="info-key">地區</td><td class="info-value">未設定</td></tr>
-          <tr><td class="info-key">自我介紹</td><td class="info-value">${u.desc || ""}</td></tr>
-        </table>
-      </div>
-
-      <div class="section">
-        <div class="section-title">自介日記（示意）</div>
-        <div class="diary-list">
-          <div class="diary-item">
-            <div class="diary-date">2025-11-25</div>
-            <div>這裡之後可以顯示對方的 5 篇代表日記，讓人更了解他。</div>
-          </div>
-        </div>
-      </div>
-    `;
-
-    showPage("profileDetail");
-    if (topTitleEl) topTitleEl.textContent = u.name;
-
-    setupProfileDetailActionButtons();
-  }
-
-  function setupProfileDetailActionButtons() {
-    const btn = document.getElementById("profileFriendOrChatBtn");
-    if (!btn || !currentProfileUser) return;
-    const uid = currentProfileUser.uid;
-    const rel = getRelationship(uid);
-
-    btn.disabled = false;
-    btn.textContent = "";
-
-    if (rel === "friend") {
-      btn.textContent = "1 對 1 聊天";
-      btn.onclick = () => startChatWithUser(currentProfileUser);
-    } else if (rel === "sentPending") {
-      btn.textContent = "已送出好友申請";
-      btn.disabled = true;
-      btn.onclick = null;
-    } else if (rel === "receivedPending") {
-      btn.textContent = "同意好友申請";
-      btn.onclick = () => acceptFriend(uid);
-    } else if (rel === "sentRejected" || rel === "receivedRejected") {
-      btn.textContent = "已拒絕 / 無法加好友";
-      btn.disabled = true;
-      btn.onclick = null;
+  function handleStrangerAlbumClick(idx) {
+    const vip = hmGetVipLevel();
+    if (idx < 2 || vip > 0 || hmAlbumIsUnlocked()) {
+      openPhotoViewer(hmGetAlbumPhotoSrc(idx));
     } else {
-      btn.textContent = "加入好友";
-      btn.onclick = () => sendFriendRequestForCurrent();
+      hmShowAlbumAdPrompt();
     }
   }
+  window.handleStrangerAlbumClick = handleStrangerAlbumClick;
 
-  // ========= 好友列表（3 分頁） =========
-  function renderFriendsList(type) {
-    currentFriendTab = type;
-    if (!friendsListEl) return;
-    friendsListEl.innerHTML = "";
+document.addEventListener("DOMContentLoaded", function () {
+pickRandomBatch();
+renderPeopleGrid();
+@@ -2870,6 +2990,28 @@ <h2>完成基本資料，開始配對</h2>
+profileModal.style.display = "flex";
+});
+}
 
-    let list = [];
-    if (type === "friends") list = friendState.friends;
-    else if (type === "sent") list = friendState.sent;
-    else list = friendState.received;
-
-    if (!list.length) {
-      const empty = document.createElement("div");
-      empty.style.padding = "16px";
-      empty.style.fontSize = "14px";
-      empty.style.color = "#9ca3af";
-      empty.textContent =
-        type === "friends"
-          ? "目前還沒有好友，從『巧遇』或『排行榜』試著加看看吧。"
-          : type === "sent"
-          ? "目前沒有送出的好友申請。"
-          : "目前沒有收到好友申請。";
-      friendsListEl.appendChild(empty);
-      return;
-    }
-
-    list.forEach(entry => {
-      const { user, status } = entry;
-      const uid = entry.uid;
-
-      const li = document.createElement("li");
-      li.className = "list-item";
-      li.dataset.uid = uid;
-
-      const statusHtml = renderStatusBadge(user);
-
-      let statusRowHtml = "";
-      if (type === "friends") {
-        statusRowHtml = `
-          <div class="item-row3">
-            <span class="label">好友限定：</span>${friendNoteInput && friendNoteInput.value.trim() || "今天好難過，希望能有好天氣出現。"}
-          </div>
-        `;
-      } else {
-        let stText = "待回覆";
-        if (status === "accepted") stText = "已同意";
-        if (status === "rejected") stText = "已拒絕";
-        statusRowHtml = `
-          <div class="item-row3">
-            <span class="label">申請狀態：</span><span class="friend-status-text">${stText}</span>
-            ${
-              type === "received" && status === "pending"
-                ? `<div style="margin-top:6px;">
-                    <button type="button" class="friend-accept-btn" style="margin-right:6px; font-size:13px; padding:4px 8px; border-radius:999px; border:1px solid #22c55e; background:#ecfdf5; color:#166534;">同意</button>
-                    <button type="button" class="friend-reject-btn" style="font-size:13px; padding:4px 8px; border-radius:999px; border:1px solid #ef4444; background:#fef2f2; color:#b91c1c;">拒絕</button>
-                  </div>`
-                : ""
-            }
-          </div>
-        `;
-      }
-
-      li.innerHTML = `
-        <div class="avatar">
-          <img src="${user.avatar}" alt="${user.name}" />
-        </div>
-        <div class="item-main">
-          <div class="item-row1">
-            <div class="item-row1-left">
-              <span class="item-name">${user.name}</span>
-              <span class="item-mood">${type === "friends" ? "😊" : "🤝"}</span>
-            </div>
-            ${statusHtml}
-          </div>
-          <div class="item-row2">${user.desc || "暫無自我介紹。"}</div>
-          ${statusRowHtml}
-        </div>
-      `;
-
-      // 點整列 → 看對外資料
-      li.addEventListener("click", (e) => {
-        const target = e.target;
-        // 如果是按下接受 / 拒絕按鈕，不要跳 profile
-        if (target.classList.contains("friend-accept-btn") || target.classList.contains("friend-reject-btn")) {
+    // 登出按鈕：清除本機資料 + 重整
+    const logoutBtn = document.getElementById("hm-logout-btn");
+    if (logoutBtn) {
+      logoutBtn.addEventListener("click", function () {
+        if (!confirm("確定要登出並清除本機的暫存資料嗎？\n（包含基本資料、綁定系統、VIP 等級與相簿照片 Demo 資料）")) {
           return;
         }
-        openProfileDetailWithUser(user);
-      });
-
-      // 頭像可放大
-      const av = li.querySelector(".avatar img");
-      if (av) {
-        av.addEventListener("click", (e) => {
-          e.stopPropagation();
-          openPhotoViewer(av.src);
-        });
-      }
-
-      // 好友限定小語 → 直接開聊天（只在「好友」分頁）
-      if (type === "friends") {
-        const row3 = li.querySelector(".item-row3");
-        if (row3) {
-          row3.style.cursor = "pointer";
-          row3.addEventListener("click", (e) => {
-            e.stopPropagation();
-            startChatWithUser(user);
-          });
+        try {
+          localStorage.removeItem("hmProfileData");
+          localStorage.removeItem("hmProfileCompleted");
+          localStorage.removeItem("hmAuthProvider");
+          localStorage.removeItem("hmVipLevel");
+          localStorage.removeItem("hmMyAlbumPhotos");
+          localStorage.removeItem("hmAlbumUnlockUntil");
+          sessionStorage.removeItem("hmAlbumUnlocked"); // 舊版保險
+        } catch (e) {
+          console.warn("登出時清除 localStorage / sessionStorage 失敗：", e);
         }
-      }
-
-      // 收到申請 → 同意 / 拒絕
-      if (type === "received") {
-        const acceptBtn = li.querySelector(".friend-accept-btn");
-        const rejectBtn = li.querySelector(".friend-reject-btn");
-        if (acceptBtn) {
-          acceptBtn.addEventListener("click", (e) => {
-            e.stopPropagation();
-            acceptFriend(uid);
-          });
-        }
-        if (rejectBtn) {
-          rejectBtn.addEventListener("click", (e) => {
-            e.stopPropagation();
-            rejectFriend(uid);
-          });
-        }
-      }
-
-      friendsListEl.appendChild(li);
-    });
-  }
-
-  // ========= 排行榜 =========
-  function renderRank(type) {
-    if (!rankPyramidEl || !rankListEl) return;
-    const data = rankData[type] || [];
-    if (!data.length) {
-      rankPyramidEl.innerHTML = "<div style='font-size:14px; color:#9ca3af; text-align:center;'>暫無排名資料</div>";
-      rankListEl.innerHTML = "";
-      return;
-    }
-    const king = data[0];
-    const second = data[1];
-    const third = data[2];
-    const fourth = data[3];
-    const fifth = data[4];
-    const sixth = data[5];
-    const rest = data.slice(6);
-
-    let pyramidHtml = `
-      <div class="rank-row">
-        <div class="rank-card">
-          <div class="rank-badge">
-            <span class="icon">👑</span>
-            <span>${king.title}</span>
-          </div>
-          <div class="rank-avatar-wrap king">
-            <div class="rank-avatar">
-              <img src="${king.avatar}" alt="${king.name}" />
-            </div>
-          </div>
-          <div class="rank-name">${king.name}</div>
-          <div class="rank-sub">${king.city} · ${king.age}</div>
-        </div>
-      </div>
-    `;
-
-    pyramidHtml += `
-      <div class="rank-row">
-        ${
-          second
-            ? `
-        <div class="rank-card">
-          <div class="rank-avatar-wrap">
-            <div class="rank-avatar medium">
-              <img src="${second.avatar}" alt="${second.name}" />
-            </div>
-          </div>
-          <div class="rank-name">${second.name}</div>
-          <div class="rank-sub">${second.title} · ${second.city}</div>
-        </div>`
-            : ""
-        }
-        ${
-          third
-            ? `
-        <div class="rank-card">
-          <div class="rank-avatar-wrap">
-            <div class="rank-avatar medium">
-              <img src="${third.avatar}" alt="${third.name}" />
-            </div>
-          </div>
-          <div class="rank-name">${third.name}</div>
-          <div class="rank-sub">${third.title} · ${third.city}</div>
-        </div>`
-            : ""
-        }
-      </div>
-    `;
-
-    pyramidHtml += `<div class="rank-row">`;
-    [fourth, fifth, sixth].forEach(item => {
-      if (!item) return;
-      pyramidHtml += `
-        <div class="rank-card">
-          <div class="rank-avatar-wrap">
-            <div class="rank-avatar small">
-              <img src="${item.avatar}" alt="${item.name}" />
-            </div>
-          </div>
-          <div class="rank-name">${item.name}</div>
-          <div class="rank-sub">${item.title} · ${item.city}</div>
-        </div>
-      `;
-    });
-    pyramidHtml += `</div>`;
-    rankPyramidEl.innerHTML = pyramidHtml;
-
-    rankListEl.innerHTML = "";
-    rest.forEach(item => {
-      const li = document.createElement("div");
-      li.className = "rank-list-item";
-      li.innerHTML = `
-        <div class="rank-pos">${item.pos}</div>
-        <div class="rank-list-avatar">
-          <img src="${item.avatar}" alt="${item.name}" />
-        </div>
-        <div class="rank-list-main">
-          <div class="rank-list-name">${item.name} · ${item.title}</div>
-          <div class="rank-list-sub">${item.city} · ${item.age}</div>
-        </div>
-        <div class="rank-score">${item.score} 分</div>
-      `;
-      const av = li.querySelector(".rank-list-avatar img");
-      if (av) {
-        av.addEventListener("click", (e) => {
-          e.stopPropagation();
-          openPhotoViewer(av.src);
-        });
-      }
-      rankListEl.appendChild(li);
-    });
-  }
-
-  // ========= 登出功能 =========
-  function hmLogout() {
-    try {
-      localStorage.removeItem("hmProfileCompleted");
-      localStorage.removeItem("hmProfileData");
-      localStorage.removeItem("hmAuthProvider");
-      localStorage.removeItem("hmVipLevel");
-      localStorage.removeItem("hmMyAlbumPhotos");
-      localStorage.removeItem("hmMyAvatar");
-      sessionStorage.removeItem("hmAlbumUnlocked");
-      sessionStorage.removeItem("hmProfileAlbumUnlockedUntil");
-    } catch (e) {}
-
-    alert("已登出帳號，將回到綁定視窗（Demo）。");
-    location.reload();
-  }
-
-  // ========= DOMContentLoaded 初始化 =========
-  document.addEventListener("DOMContentLoaded", function () {
-    // 抓 DOM 元素
-    peopleGridEl = document.getElementById("peopleGrid");
-    nextBatchBtn = document.getElementById("nextBatchBtn");
-    profileDetailContent = document.getElementById("profileDetailContent");
-    topTitleEl = document.getElementById("topTitle");
-    topRightSlot = document.getElementById("topRightSlot");
-
-    friendsListEl = document.getElementById("friendsList");
-    chatMessagesEl = document.getElementById("chatMessages");
-    chatInputEl = document.getElementById("chatInput");
-    chatSendBtn = document.getElementById("chatSendBtn");
-    stickerBar = document.getElementById("stickerBar");
-    stickerToggle = document.getElementById("stickerToggle");
-    chatWrapper = document.getElementById("chatWrapper");
-    chatUploadBtn = document.getElementById("chatUploadBtn");
-    chatFileInput = document.getElementById("chatFileInput");
-
-    statusSelect = document.getElementById("statusSelect");
-    myStatusBadge = document.getElementById("myStatusBadge");
-    myStatusText = document.getElementById("myStatusText");
-    myProfileSub = document.getElementById("myProfileSub");
-
-    friendNoteInput = document.getElementById("friendNoteInput");
-    friendNotePreview = document.getElementById("friendNotePreview");
-
-    pages.people = document.getElementById("page-people");
-    pages.profileDetail = document.getElementById("page-profileDetail");
-    pages.friends = document.getElementById("page-friends");
-    pages.rank = document.getElementById("page-rank");
-    pages.chat = document.getElementById("page-chat");
-    pages.me = document.getElementById("page-me");
-
-    rankPyramidEl = document.getElementById("rankPyramid");
-    rankListEl = document.getElementById("rankList");
-
-    // 巧遇初始化
-    pickRandomBatch();
-    renderPeopleGrid();
-
-    if (nextBatchBtn) {
-      nextBatchBtn.addEventListener("click", () => {
-        pickRandomBatch();
-        renderPeopleGrid();
+        location.reload();
       });
     }
-
-    // 好友列表初始化
-    renderFriendsList("friends");
-    updateFriendBadges();
-
-    // 狀態＆好友限定文字
-    updateMyStatus();
-    updateFriendNotePreview();
-
-    if (statusSelect) {
-      statusSelect.addEventListener("change", updateMyStatus);
-    }
-    if (friendNoteInput) {
-      friendNoteInput.addEventListener("input", updateFriendNotePreview);
-    }
-
-    renderTopRightForPage("people");
-    renderRank("pop");
-    hmUpdateVipUI();
-    renderMyAlbum();
-    hmInitMyAvatar();
-
-    // 聊天事件
-    if (chatSendBtn) {
-      chatSendBtn.addEventListener("click", sendChat);
-    }
-    if (chatInputEl) {
-      chatInputEl.addEventListener("keydown", e => {
-        if (e.key === "Enter") {
-          e.preventDefault();
-          sendChat();
-        }
-      });
-    }
-
-    if (stickerToggle && stickerBar) {
-      stickerToggle.addEventListener("click", () => {
-        stickerBar.classList.toggle("show");
-      });
-      const stickerBtns = stickerBar.querySelectorAll(".sticker-btn");
-      stickerBtns.forEach(btn => {
-        btn.addEventListener("click", () => {
-          const emo = btn.textContent;
-          if (chatInputEl) {
-            chatInputEl.value += emo;
-            chatInputEl.focus();
-          }
-        });
-      });
-    }
-
-    if (chatUploadBtn && chatFileInput) {
-      chatUploadBtn.addEventListener("click", () => chatFileInput.click());
-      chatFileInput.addEventListener("change", (e) => {
-        const files = Array.from(e.target.files || []);
-        files.forEach(file => {
-          if (!file.type.startsWith("image/")) return;
-          const reader = new FileReader();
-          reader.onload = (ev) => {
-            const src = ev.target.result;
-            if (!src) return;
-            sendImageBubble(src);
-          };
-          reader.readAsDataURL(file);
-        });
-        chatFileInput.value = "";
-      });
-    }
-
-    const themePills = document.querySelectorAll(".chat-theme-pill");
-    themePills.forEach(pill => {
-      pill.addEventListener("click", () => {
-        themePills.forEach(p => p.classList.remove("active"));
-        pill.classList.add("active");
-        const theme = pill.getAttribute("data-theme");
-        if (chatWrapper) {
-          chatWrapper.className = "chat-wrapper chat-theme-" + theme;
-        }
-      });
-    });
-
-    // 好友分頁切換
-    document.querySelectorAll("[data-friendtab]").forEach(btn => {
-      btn.addEventListener("click", () => {
-        document.querySelectorAll("[data-friendtab]").forEach(b => b.classList.remove("active"));
-        btn.classList.add("active");
-        const type = btn.getAttribute("data-friendtab");
-        renderFriendsList(type);
-      });
-    });
-
-    // 排行榜分頁切換
-    document.querySelectorAll("[data-ranktab]").forEach(btn => {
-      btn.addEventListener("click", () => {
-        document.querySelectorAll("[data-ranktab]").forEach(b => b.classList.remove("active"));
-        btn.classList.add("active");
-        currentRankTab = btn.getAttribute("data-ranktab");
-        renderRank(currentRankTab);
-      });
-    });
-
-    // 底部導覽
-    document.querySelectorAll(".nav-item").forEach(item => {
-      item.addEventListener("click", () => {
-        const page = item.getAttribute("data-page");
-        showPage(page);
-      });
-    });
-
-    // 我的大頭貼上傳 + 放大
-    const myAvatarImg = document.getElementById("myProfileAvatarImg");
-    const myAvatarInput = document.getElementById("myAvatarInput");
-    const myAvatarEditBtn = document.getElementById("myAvatarEditBtn");
-
-    if (myAvatarImg) {
-      myAvatarImg.addEventListener("click", () => {
-        if (myAvatarImg.src) openPhotoViewer(myAvatarImg.src);
-      });
-    }
-    if (myAvatarEditBtn && myAvatarInput && myAvatarImg) {
-      myAvatarEditBtn.addEventListener("click", (e) => {
-        e.stopPropagation();
-        myAvatarInput.click();
-      });
-      myAvatarInput.addEventListener("change", (e) => {
-        const file = e.target.files && e.target.files[0];
-        if (!file) return;
-        const reader = new FileReader();
-        reader.onload = (ev) => {
-          const src = ev.target.result;
-          if (!src) return;
-          myAvatarImg.src = src;
-          hmSaveMyAvatar(src);
-        };
-        reader.readAsDataURL(file);
-        myAvatarInput.value = "";
-      });
-    }
-
-    // VIP Demo 切換
-    const vipToggleBtn = document.getElementById("vipLevelToggleBtn");
-    if (vipToggleBtn) {
-      vipToggleBtn.addEventListener("click", () => {
-        let lvl = hmGetVipLevel();
-        lvl = (lvl + 1) % 6; // 0~5
-        hmSetVipLevel(lvl);
-      });
-    }
-
-    // 登入 / 基本資料 Modal
-    const loginModal = document.getElementById("hm-login-modal");
-    const profileModal = document.getElementById("hm-profile-modal");
-    const form = document.getElementById("hm-profile-form");
-
-    if (!hmHasCompletedProfile()) {
-      if (loginModal) loginModal.style.display = "flex";
-    }
-
-    function handleFakeLogin(provider) {
-      hmSetAuthProvider(provider);
-      if (loginModal) loginModal.style.display = "none";
-      if (!hmHasCompletedProfile() && profileModal) profileModal.style.display = "flex";
-      hmInitProfileCard();
-    }
-
-    const btnGoogle = document.getElementById("hm-login-google");
-    const btnFacebook = document.getElementById("hm-login-facebook");
-    const btnApple = document.getElementById("hm-login-apple");
-    if (btnGoogle) btnGoogle.addEventListener("click", () => handleFakeLogin("google"));
-    if (btnFacebook) btnFacebook.addEventListener("click", () => handleFakeLogin("facebook"));
-    if (btnApple) btnApple.addEventListener("click", () => handleFakeLogin("apple"));
-
-    if (form) {
-      form.addEventListener("submit", function (e) {
-        e.preventDefault();
-        const name = document.getElementById("hm-name").value.trim();
-        const height = document.getElementById("hm-height").value.trim();
-        const weight = document.getElementById("hm-weight").value.trim();
-        const region = document.getElementById("hm-region").value.trim();
-        const threads = document.getElementById("hm-threads").value.trim();
-        const x = document.getElementById("hm-x").value.trim();
-        const instagram = document.getElementById("hm-instagram").value.trim();
-        const facebook = document.getElementById("hm-facebook").value.trim();
-        const other = document.getElementById("hm-other").value.trim();
-        const agree = document.getElementById("hm-agree").checked;
-
-        if (!name) { alert("請填寫稱呼（暱稱）"); return; }
-        if (!height || !weight) { alert("身高與體重為必填欄位"); return; }
-        if (!agree) { alert("請勾選同意服務條款與隱私政策"); return; }
-
-        const profileData = {
-          name, height, weight, region,
-          socials: { threads, x, instagram, facebook, other },
-          createdAt: new Date().toISOString()
-        };
-        hmSaveProfileData(profileData);
-        if (profileModal) profileModal.style.display = "none";
-        hmInitProfileCard();
-      });
-    }
-
-    hmInitProfileCard();
-    const editBtn = document.getElementById("hm-profile-edit-btn");
-    if (editBtn && profileModal) {
-      editBtn.addEventListener("click", function () {
-        profileModal.style.display = "flex";
-      });
-    }
-
-    // 「我的資料」頁最下方自動插入登出按鈕
-    if (pages.me) {
-      const logoutWrap = document.createElement("div");
-      logoutWrap.style.marginTop = "24px";
-      logoutWrap.style.textAlign = "center";
-      logoutWrap.innerHTML = `
-        <button id="hm-logout-btn"
-          style="padding:10px 20px; border-radius:999px; border:1px solid #d1d5db; background:#fff; font-size:14px;">
-          登出帳號
-        </button>
-      `;
-      pages.me.appendChild(logoutWrap);
-
-      const logoutBtn = document.getElementById("hm-logout-btn");
-      if (logoutBtn) {
-        logoutBtn.addEventListener("click", hmLogout);
-      }
-    }
-  });
+});
 </script>
+</body>
