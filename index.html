@@ -1,0 +1,3305 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <title>心遇 XinYou · 前台 Demo V3</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+  <style>
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+      background: #0f172a;
+      color: #0f172a;
+    }
+
+    .app-shell {
+      max-width: 480px;
+      margin: 0 auto;
+      height: 100vh;
+      background: radial-gradient(circle at top, #1f2937 0, #020617 55%, #020617 100%);
+      display: flex;
+      flex-direction: column;
+      color: #e5e7eb;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .top-bar {
+      height: 52px;
+      padding: 0 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid rgba(148, 163, 184, 0.3);
+      backdrop-filter: blur(18px);
+      background: linear-gradient(to right, rgba(15,23,42,0.9), rgba(17,24,39,0.9));
+      position: relative;
+      z-index: 10;
+    }
+
+    .top-bar-title {
+      font-size: 17px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .top-bar-title span.logo-dot {
+      width: 9px;
+      height: 9px;
+      border-radius: 999px;
+      background: radial-gradient(circle at 30% 0%, #f97316, #ec4899);
+      box-shadow: 0 0 12px rgba(248, 113, 113, 0.9);
+    }
+
+    .top-bar-right {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 11px;
+    }
+
+    .vip-pill {
+      border-radius: 999px;
+      border: 1px solid rgba(251, 191, 36, 0.6);
+      padding: 3px 8px;
+      font-size: 11px;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      background: linear-gradient(to right, rgba(30,64,175,0.5), rgba(120,53,15,0.5));
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .vip-pill span.crown {
+      font-size: 12px;
+    }
+
+    .vip-pill small {
+      opacity: 0.7;
+    }
+
+    .top-bar-badge {
+      padding: 3px 7px;
+      border-radius: 999px;
+      border: 1px solid rgba(148, 163, 184, 0.7);
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      opacity: 0.8;
+    }
+
+    .page-container {
+      flex: 1;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .page {
+      position: absolute;
+      inset: 0;
+      padding: 10px 10px 64px;
+      overflow-y: auto;
+      display: none;
+    }
+
+    .page.active {
+      display: block;
+    }
+
+    .section-title {
+      font-size: 13px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: #9ca3af;
+      margin: 6px 2px 6px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .section-title::before {
+      content: "";
+      width: 10px;
+      height: 1px;
+      border-radius: 999px;
+      background: linear-gradient(to right, #4b5563, transparent);
+    }
+
+    .section-title-badge {
+      padding: 2px 6px;
+      border-radius: 999px;
+      background: rgba(15, 118, 110, 0.15);
+      border: 1px solid rgba(45, 212, 191, 0.4);
+      font-size: 10px;
+      color: #a5f3fc;
+    }
+
+    .card {
+      border-radius: 18px;
+      padding: 10px;
+      background: radial-gradient(circle at top left, rgba(248, 250, 252, 0.06), rgba(15, 23, 42, 0.9));
+      border: 1px solid rgba(148, 163, 184, 0.5);
+      box-shadow: 0 14px 30px rgba(15, 23, 42, 0.7);
+      display: flex;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+
+    .card-avatar {
+      flex-shrink: 0;
+      width: 64px;
+      height: 64px;
+      border-radius: 18px;
+      overflow: hidden;
+      position: relative;
+      background: radial-gradient(circle at 20% 0%, #f97316, #0ea5e9);
+    }
+
+    .card-avatar img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .card-main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .card-header-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .card-name {
+      font-size: 15px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .card-name span.age-city {
+      font-size: 11px;
+      color: #9ca3af;
+      font-weight: 400;
+    }
+
+    .card-tagline {
+      font-size: 12px;
+      color: #9ca3af;
+      margin: 4px 0 3px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .card-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
+      margin-top: 3px;
+    }
+
+    .tag-pill {
+      font-size: 10px;
+      padding: 2px 6px;
+      border-radius: 999px;
+      background: rgba(15, 23, 42, 0.9);
+      border: 1px solid rgba(148, 163, 184, 0.7);
+      color: #e5e7eb;
+    }
+
+    .card-actions {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-top: 6px;
+    }
+
+    .btn {
+      border: none;
+      border-radius: 999px;
+      font-size: 11px;
+      padding: 5px 11px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+
+    .btn-primary {
+      background: linear-gradient(to right, #f97316, #ec4899);
+      color: #f9fafb;
+      box-shadow: 0 10px 20px rgba(248, 113, 113, 0.35);
+    }
+
+    .btn-outline {
+      background: rgba(15, 23, 42, 0.95);
+      color: #e5e7eb;
+      border: 1px solid rgba(148, 163, 184, 0.7);
+    }
+
+    .btn-ghost {
+      background: transparent;
+      color: #9ca3af;
+      border: 1px dashed rgba(75, 85, 99, 0.8);
+    }
+
+    .btn-xs {
+      padding: 3px 8px;
+      font-size: 10px;
+    }
+
+    .btn-icon {
+      width: 28px;
+      height: 28px;
+      border-radius: 999px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 13px;
+    }
+
+    .status-badge {
+      font-size: 10px;
+      padding: 2px 6px;
+      border-radius: 999px;
+      background: rgba(30, 64, 175, 0.3);
+      border: 1px solid rgba(129, 140, 248, 0.8);
+      color: #c7d2fe;
+    }
+
+    .bottom-nav {
+      height: 58px;
+      padding: 4px 8px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-top: 1px solid rgba(30, 64, 175, 0.9);
+      background: radial-gradient(circle at top, rgba(15,23,42,0.98), rgba(15,23,42,0.98));
+      backdrop-filter: blur(18px);
+      position: relative;
+      z-index: 10;
+    }
+
+    .nav-item {
+      flex: 1;
+      text-align: center;
+      font-size: 10px;
+      color: #6b7280;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 3px;
+      cursor: pointer;
+    }
+
+    .nav-item span.icon {
+      font-size: 17px;
+      line-height: 1;
+    }
+
+    .nav-item.active {
+      color: #e5e7eb;
+      font-weight: 600;
+    }
+
+    .nav-item.active span.icon {
+      transform: translateY(-1px);
+    }
+
+    .nav-indicator {
+      position: absolute;
+      bottom: 3px;
+      height: 2px;
+      width: 18%;
+      border-radius: 999px;
+      background: linear-gradient(to right, #f97316, #ec4899);
+      transition: transform 0.2s ease-out;
+    }
+
+    .page::-webkit-scrollbar {
+      width: 4px;
+    }
+
+    .page::-webkit-scrollbar-thumb {
+      background: rgba(75, 85, 99, 0.8);
+      border-radius: 999px;
+    }
+
+    .helper-tip {
+      font-size: 11px;
+      color: #9ca3af;
+      margin: 2px 3px 6px;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .helper-tip span.dot {
+      width: 4px;
+      height: 4px;
+      border-radius: 999px;
+      background: #22c55e;
+    }
+
+    /* People page */
+    #peopleList {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 10px;
+      margin-top: 4px;
+    }
+
+    /* Friends page */
+    .friends-section {
+      border-radius: 16px;
+      padding: 8px;
+      background: linear-gradient(to bottom right, rgba(15,23,42,0.95), rgba(2,6,23,0.98));
+      border: 1px solid rgba(55,65,81,0.9);
+      margin-bottom: 10px;
+    }
+
+    .friends-section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 11px;
+      color: #9ca3af;
+      margin-bottom: 4px;
+    }
+
+    .friend-mini-card {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      padding: 6px 4px;
+      border-radius: 12px;
+    }
+
+    .friend-mini-left {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .friend-mini-avatar {
+      width: 32px;
+      height: 32px;
+      border-radius: 999px;
+      overflow: hidden;
+      background: radial-gradient(circle at top, #f97316, #06b6d4);
+      flex-shrink: 0;
+    }
+
+    .friend-mini-avatar img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .friend-mini-info {
+      display: flex;
+      flex-direction: column;
+      font-size: 11px;
+    }
+
+    .friend-mini-name {
+      font-weight: 500;
+    }
+
+    .friend-mini-sub {
+      font-size: 10px;
+      color: #9ca3af;
+    }
+
+    .friend-empty {
+      font-size: 11px;
+      color: #6b7280;
+      padding: 4px 2px 2px;
+    }
+
+    /* Rank page */
+    .rank-list {
+      margin-top: 4px;
+    }
+
+    .rank-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      border-radius: 16px;
+      padding: 7px 8px;
+      background: linear-gradient(to right, rgba(15,23,42,0.95), rgba(15,23,42,0.9));
+      border: 1px solid rgba(55,65,81,0.9);
+      margin-bottom: 8px;
+    }
+
+    .rank-left {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .rank-badge {
+      width: 26px;
+      height: 26px;
+      border-radius: 999px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 13px;
+      font-weight: 700;
+      color: #e5e7eb;
+      background: radial-gradient(circle at top, #f97316, #ea580c);
+      box-shadow: 0 0 16px rgba(250, 204, 21, 0.8);
+      flex-shrink: 0;
+    }
+
+    .rank-item:nth-child(2) .rank-badge {
+      width: 24px;
+      height: 24px;
+      background: radial-gradient(circle at top, #e5e7eb, #6b7280);
+      box-shadow: 0 0 12px rgba(209, 213, 219, 0.7);
+    }
+
+    .rank-item:nth-child(3) .rank-badge {
+      width: 22px;
+      height: 22px;
+      background: radial-gradient(circle at top, #facc15, #ea580c);
+      box-shadow: 0 0 10px rgba(250, 204, 21, 0.6);
+    }
+
+    .rank-avatar {
+      width: 38px;
+      height: 38px;
+      border-radius: 999px;
+      overflow: hidden;
+      background: radial-gradient(circle at top, #f97316, #06b6d4);
+      flex-shrink: 0;
+    }
+
+    .rank-avatar img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .rank-info-main {
+      display: flex;
+      flex-direction: column;
+      font-size: 12px;
+    }
+
+    .rank-name-row {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .rank-score {
+      font-size: 11px;
+      color: #a5b4fc;
+    }
+
+    .rank-trend {
+      font-size: 10px;
+      color: #4ade80;
+    }
+
+    /* Chat page */
+    .chat-layout {
+      display: grid;
+      grid-template-columns: 1.1fr 1.9fr;
+      gap: 8px;
+      height: calc(100% - 10px);
+    }
+
+    @media (max-width: 420px) {
+      .chat-layout {
+        grid-template-columns: 1fr;
+      }
+      .chat-detail {
+        margin-top: 6px;
+      }
+    }
+
+    .chat-list-card {
+      border-radius: 16px;
+      background: linear-gradient(to bottom, rgba(15,23,42,0.95), rgba(15,23,42,0.98));
+      border: 1px solid rgba(55,65,81,0.9);
+      padding: 8px;
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+    }
+
+    .chat-list-title {
+      font-size: 12px;
+      color: #9ca3af;
+      margin-bottom: 4px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .chat-list {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      overflow-y: auto;
+      flex: 1;
+    }
+
+    .chat-list-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 5px;
+      border-radius: 12px;
+      cursor: pointer;
+    }
+
+    .chat-list-item:hover {
+      background: rgba(30,64,175,0.35);
+    }
+
+    .chat-list-item.active {
+      background: rgba(30,64,175,0.75);
+    }
+
+    .chat-list-avatar {
+      width: 34px;
+      height: 34px;
+      border-radius: 999px;
+      overflow: hidden;
+      background: radial-gradient(circle at top, #f97316, #06b6d4);
+      flex-shrink: 0;
+    }
+
+    .chat-list-avatar img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .chat-list-main {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .chat-list-name-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 4px;
+      font-size: 12px;
+    }
+
+    .chat-list-name {
+      font-weight: 500;
+    }
+
+    .chat-list-time {
+      font-size: 10px;
+      color: #9ca3af;
+      flex-shrink: 0;
+    }
+
+    .chat-list-snippet-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 4px;
+      margin-top: 2px;
+      font-size: 11px;
+      color: #9ca3af;
+    }
+
+    .chat-list-snippet {
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .chat-unread-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 999px;
+      background: #22c55e;
+      flex-shrink: 0;
+    }
+
+    .chat-detail-card {
+      border-radius: 16px;
+      background: radial-gradient(circle at top left, rgba(15,23,42,0.95), rgba(2,6,23,1));
+      border: 1px solid rgba(55,65,81,0.95);
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+      position: relative;
+    }
+
+    .chat-detail-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 9px 6px;
+      border-bottom: 1px solid rgba(31,41,55,0.9);
+      font-size: 12px;
+    }
+
+    .chat-detail-user {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .chat-detail-user-avatar {
+      width: 26px;
+      height: 26px;
+      border-radius: 999px;
+      overflow: hidden;
+      background: radial-gradient(circle at top, #f97316, #06b6d4);
+    }
+
+    .chat-detail-user-avatar img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .chat-detail-user-info {
+      display: flex;
+      flex-direction: column;
+      font-size: 11px;
+    }
+
+    .chat-detail-user-name {
+      font-weight: 500;
+    }
+
+    .chat-detail-user-sub {
+      font-size: 10px;
+      color: #9ca3af;
+    }
+
+    .chat-theme-selector {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 10px;
+      color: #9ca3af;
+    }
+
+    .chat-theme-pill {
+      width: 18px;
+      height: 18px;
+      border-radius: 999px;
+      border: 1px solid rgba(75,85,99,0.9);
+      cursor: pointer;
+      position: relative;
+    }
+
+    .chat-theme-pill.active::after {
+      content: "";
+      position: absolute;
+      inset: 4px;
+      border-radius: 999px;
+      border: 2px solid rgba(226,232,240,0.9);
+    }
+
+    .chat-theme-pill.theme-light {
+      background: radial-gradient(circle at top, #e5e7eb, #cbd5f5);
+    }
+
+    .chat-theme-pill.theme-pink {
+      background: radial-gradient(circle at top, #f9a8d4, #ec4899);
+    }
+
+    .chat-theme-pill.theme-blue {
+      background: radial-gradient(circle at top, #bfdbfe, #3b82f6);
+    }
+
+    .chat-theme-pill.theme-dark {
+      background: radial-gradient(circle at top, #0f172a, #020617);
+    }
+
+    .chat-wrapper {
+      position: relative;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+    }
+
+    .chat-messages {
+      flex: 1;
+      overflow-y: auto;
+      padding: 8px 10px 6px;
+      font-size: 13px;
+      position: relative;
+    }
+
+    .chat-messages::-webkit-scrollbar {
+      width: 4px;
+    }
+
+    .chat-messages::-webkit-scrollbar-thumb {
+      background: rgba(75,85,99,0.9);
+      border-radius: 999px;
+    }
+
+    .chat-theme-light {
+      background: radial-gradient(circle at top left, #f3f4f6, #e5e7eb);
+    }
+
+    .chat-theme-pink {
+      background: radial-gradient(circle at top left, #fce7f3, #f9a8d4);
+    }
+
+    .chat-theme-blue {
+      background: radial-gradient(circle at top left, #dbeafe, #bfdbfe);
+    }
+
+    .chat-theme-dark {
+      background: radial-gradient(circle at top left, #020617, #020617);
+    }
+
+    .chat-theme-light .bubble.them {
+      background: rgba(15,23,42,0.07);
+      color: #0f172a;
+    }
+
+    .chat-theme-light .bubble.me {
+      background: #0f172a;
+      color: #f9fafb;
+    }
+
+    .chat-theme-pink .bubble.them {
+      background: rgba(127,29,85,0.04);
+      color: #831843;
+    }
+
+    .chat-theme-pink .bubble.me {
+      background: #db2777;
+      color: #fdf2f8;
+    }
+
+    .chat-theme-blue .bubble.them {
+      background: rgba(30,64,175,0.06);
+      color: #1e3a8a;
+    }
+
+    .chat-theme-blue .bubble.me {
+      background: #1d4ed8;
+      color: #eff6ff;
+    }
+
+    .chat-theme-dark .bubble.them {
+      background: rgba(15,23,42,0.9);
+      color: #e5e7eb;
+    }
+
+    .chat-theme-dark .bubble.me {
+      background: linear-gradient(to right, #f97316, #ec4899);
+      color: #f9fafb;
+    }
+
+    .bubble-row {
+      display: flex;
+      margin-bottom: 6px;
+    }
+
+    .bubble-row.me {
+      justify-content: flex-end;
+    }
+
+    .bubble {
+      max-width: 78%;
+      padding: 7px 9px;
+      border-radius: 14px;
+      font-size: 13px;
+      line-height: 1.4;
+      box-shadow: 0 6px 14px rgba(15, 23, 42, 0.25);
+      position: relative;
+      word-wrap: break-word;
+    }
+
+    .bubble.them {
+      border-bottom-left-radius: 3px;
+    }
+
+    .bubble.me {
+      border-bottom-right-radius: 3px;
+    }
+
+    .bubble-meta {
+      font-size: 10px;
+      opacity: 0.65;
+      margin-top: 2px;
+      text-align: right;
+    }
+
+    .chat-photo {
+      display: block;
+      max-width: 70%;
+      border-radius: 12px;
+      margin-top: 4px;
+      box-shadow: 0 10px 25px rgba(15,23,42,0.4);
+    }
+
+    .chat-input-bar {
+      padding: 6px 8px 7px;
+      border-top: 1px solid rgba(31,41,55,0.9);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .chat-input-wrapper {
+      flex: 1;
+      border-radius: 999px;
+      background: rgba(15,23,42,0.96);
+      border: 1px solid rgba(55,65,81,0.9);
+      display: flex;
+      align-items: center;
+      padding: 3px 9px;
+      gap: 6px;
+    }
+
+    .chat-input-inner {
+      flex: 1;
+      border: none;
+      background: transparent;
+      color: #e5e7eb;
+      font-size: 13px;
+      outline: none;
+    }
+
+    .chat-input-inner::placeholder {
+      color: #6b7280;
+    }
+
+    .chat-plus-btn {
+      border-radius: 999px;
+      width: 24px;
+      height: 24px;
+      border: none;
+      background: rgba(31,41,55,0.9);
+      color: #e5e7eb;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      cursor: pointer;
+    }
+
+    .chat-send-btn {
+      border-radius: 999px;
+      border: none;
+      width: 32px;
+      height: 32px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(to right, #22c55e, #16a34a);
+      color: #f9fafb;
+      box-shadow: 0 10px 22px rgba(22,163,74,0.6);
+      cursor: pointer;
+      flex-shrink: 0;
+      font-size: 15px;
+    }
+
+    .chat-more-menu {
+      position: absolute;
+      left: 8px;
+      bottom: 48px;
+      display: none;
+      flex-direction: row;
+      gap: 6px;
+      padding: 5px 6px;
+      border-radius: 999px;
+      background: rgba(15,23,42,0.98);
+      border: 1px solid rgba(55,65,81,0.9);
+      box-shadow: 0 14px 30px rgba(15,23,42,0.85);
+      font-size: 11px;
+    }
+
+    .chat-more-btn {
+      border-radius: 999px;
+      border: none;
+      padding: 4px 7px;
+      background: rgba(17,24,39,0.9);
+      color: #e5e7eb;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      cursor: pointer;
+    }
+
+    .chat-more-btn span.icon {
+      font-size: 13px;
+    }
+
+    .sticker-bar {
+      position: absolute;
+      right: 9px;
+      bottom: 48px;
+      display: none;
+      flex-wrap: wrap;
+      width: 140px;
+      gap: 4px;
+      padding: 6px 7px;
+      border-radius: 12px;
+      background: rgba(15,23,42,0.98);
+      border: 1px solid rgba(55,65,81,0.9);
+      box-shadow: 0 14px 30px rgba(15,23,42,0.85);
+      font-size: 18px;
+    }
+
+    .sticker-btn {
+      border: none;
+      background: transparent;
+      cursor: pointer;
+      font-size: 18px;
+    }
+
+    .msg-empty {
+      font-size: 11px;
+      color: #6b7280;
+      padding: 4px 1px;
+    }
+
+    /* My page */
+    .me-grid {
+      display: grid;
+      grid-template-columns: 1.2fr 1.8fr;
+      gap: 8px;
+    }
+
+    @media (max-width: 420px) {
+      .me-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .me-left-card, .me-right-card {
+      border-radius: 16px;
+      background: linear-gradient(to bottom right, rgba(15,23,42,0.95), rgba(2,6,23,0.98));
+      border: 1px solid rgba(55,65,81,0.9);
+      padding: 8px;
+    }
+
+    .me-avatar-wrap {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 6px;
+    }
+
+    .me-avatar-main {
+      width: 56px;
+      height: 56px;
+      border-radius: 18px;
+      overflow: hidden;
+      background: radial-gradient(circle at top, #f97316, #06b6d4);
+      flex-shrink: 0;
+    }
+
+    .me-avatar-main img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .me-avatar-info {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      font-size: 12px;
+    }
+
+    .me-nickname-row {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-weight: 500;
+    }
+
+    .me-nickname-row span.badge {
+      font-size: 10px;
+      padding: 2px 6px;
+      border-radius: 999px;
+      border: 1px solid rgba(59,130,246,0.7);
+      color: #bfdbfe;
+    }
+
+    .me-basic-form {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: 6px 8px;
+      align-items: center;
+      font-size: 11px;
+      margin-top: 4px;
+    }
+
+    .me-basic-form label {
+      color: #9ca3af;
+    }
+
+    .me-basic-input, .me-basic-select, .me-basic-textarea {
+      width: 100%;
+      border-radius: 999px;
+      background: rgba(15,23,42,0.98);
+      border: 1px solid rgba(55,65,81,0.9);
+      padding: 3px 8px;
+      font-size: 11px;
+      color: #e5e7eb;
+      outline: none;
+    }
+
+    .me-basic-textarea {
+      border-radius: 10px;
+      min-height: 40px;
+      resize: vertical;
+      font-size: 12px;
+      padding: 4px 8px;
+    }
+
+    .me-basic-input::placeholder,
+    .me-basic-textarea::placeholder {
+      color: #6b7280;
+    }
+
+    .me-save-tip {
+      font-size: 10px;
+      color: #6b7280;
+      margin-top: 4px;
+    }
+
+    .friend-note-preview {
+      margin-top: 5px;
+      border-radius: 10px;
+      background: rgba(17,24,39,0.95);
+      border: 1px dashed rgba(75,85,99,0.9);
+      padding: 6px 7px;
+      font-size: 11px;
+      color: #e5e7eb;
+    }
+
+    .friend-note-preview-header {
+      font-size: 10px;
+      color: #9ca3af;
+      margin-bottom: 2px;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .friend-note-preview-header span.dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 999px;
+      background: #22c55e;
+    }
+
+    /* My album */
+    .my-album-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 4px;
+      margin-top: 6px;
+    }
+
+    .my-album-slot {
+      position: relative;
+      border-radius: 10px;
+      overflow: hidden;
+      background: rgba(15,23,42,0.95);
+      border: 1px solid rgba(55,65,81,0.9);
+      height: 0;
+      padding-bottom: 100%;
+      cursor: pointer;
+    }
+
+    .my-album-slot-inner {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      color: #6b7280;
+    }
+
+    .my-album-slot img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .my-album-slot-label {
+      position: absolute;
+      left: 4px;
+      bottom: 4px;
+      font-size: 9px;
+      padding: 2px 4px;
+      border-radius: 999px;
+      background: rgba(15,23,42,0.85);
+      color: #e5e7eb;
+      border: 1px solid rgba(55,65,81,0.8);
+    }
+
+    .my-album-lock-overlay {
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle at top, rgba(15,23,42,0.3), rgba(15,23,42,0.96));
+      backdrop-filter: blur(4px);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      text-align: center;
+      padding: 6px;
+      color: #e5e7eb;
+    }
+
+    .my-album-lock-btn {
+      margin-top: 4px;
+      border-radius: 999px;
+      border: none;
+      padding: 3px 8px;
+      font-size: 10px;
+      background: linear-gradient(to right, #22c55e, #16a34a);
+      color: #f9fafb;
+      cursor: pointer;
+    }
+
+    .my-album-tip {
+      font-size: 10px;
+      color: #9ca3af;
+      margin-top: 4px;
+    }
+
+    .hidden-input {
+      display: none;
+    }
+
+    /* Diaries */
+    .diary-header-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin: 4px 0;
+    }
+
+    .diary-limit-pill {
+      font-size: 10px;
+      color: #a5b4fc;
+      border-radius: 999px;
+      padding: 2px 7px;
+      border: 1px solid rgba(129,140,248,0.7);
+      background: rgba(30,64,175,0.3);
+    }
+
+    .diary-input-row {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      margin-bottom: 4px;
+    }
+
+    .diary-input-area {
+      border-radius: 10px;
+      border: 1px solid rgba(55,65,81,0.9);
+      background: rgba(15,23,42,0.98);
+      padding: 4px 8px;
+      font-size: 12px;
+      color: #e5e7eb;
+      resize: vertical;
+      min-height: 44px;
+      outline: none;
+    }
+
+    .diary-input-area::placeholder {
+      color: #6b7280;
+    }
+
+    .diary-input-toolbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 10px;
+      color: #6b7280;
+    }
+
+    .diary-image-btn {
+      border-radius: 999px;
+      border: 1px dashed rgba(75,85,99,0.9);
+      padding: 2px 6px;
+      background: rgba(15,23,42,0.98);
+      color: #e5e7eb;
+      cursor: pointer;
+      font-size: 10px;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .diary-list {
+      margin-top: 4px;
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+      max-height: 210px;
+      overflow-y: auto;
+      padding-right: 2px;
+    }
+
+    .diary-item {
+      border-radius: 10px;
+      border: 1px solid rgba(55,65,81,0.9);
+      background: rgba(15,23,42,0.96);
+      padding: 5px 7px 6px;
+      font-size: 11px;
+    }
+
+    .diary-meta {
+      font-size: 10px;
+      color: #9ca3af;
+      margin-bottom: 2px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .diary-body {
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    .diary-image {
+      margin-top: 4px;
+      border-radius: 8px;
+      max-height: 120px;
+      width: auto;
+      max-width: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .diary-empty {
+      font-size: 11px;
+      color: #6b7280;
+      padding-top: 2px;
+    }
+
+    .badge-outline {
+      border-radius: 999px;
+      border: 1px solid rgba(148,163,184,0.8);
+      padding: 2px 6px;
+      font-size: 10px;
+      color: #9ca3af;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    /* Footprints */
+    .footprints-list {
+      margin-top: 4px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      font-size: 11px;
+    }
+
+    .footprint-row {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .footprint-avatar {
+      width: 22px;
+      height: 22px;
+      border-radius: 999px;
+      overflow: hidden;
+      background: radial-gradient(circle at top, #f97316, #06b6d4);
+      flex-shrink: 0;
+    }
+
+    .footprint-avatar img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .footprint-name {
+      color: #e5e7eb;
+    }
+
+    .footprint-time {
+      color: #6b7280;
+      font-size: 10px;
+    }
+
+    /* Profile detail page */
+    .profile-detail-card {
+      border-radius: 18px;
+      padding: 8px 9px 10px;
+      background: radial-gradient(circle at top left, rgba(15,23,42,0.95), rgba(2,6,23,1));
+      border: 1px solid rgba(55,65,81,0.95);
+      box-shadow: 0 18px 35px rgba(15,23,42,0.9);
+    }
+
+    .profile-detail-header {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      margin-bottom: 6px;
+    }
+
+    .profile-detail-avatar {
+      width: 64px;
+      height: 64px;
+      border-radius: 20px;
+      overflow: hidden;
+      background: radial-gradient(circle at top, #f97316, #06b6d4);
+      flex-shrink: 0;
+    }
+
+    .profile-detail-avatar img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .profile-detail-main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 1px;
+      font-size: 12px;
+    }
+
+    .profile-detail-name-row {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 15px;
+      font-weight: 600;
+    }
+
+    .profile-detail-sub {
+      font-size: 11px;
+      color: #9ca3af;
+    }
+
+    .profile-detail-actions {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-top: 4px;
+    }
+
+    .profile-detail-section-title {
+      font-size: 11px;
+      color: #9ca3af;
+      margin-top: 6px;
+      margin-bottom: 2px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .profile-detail-section-title::before {
+      content: "";
+      width: 8px;
+      height: 1px;
+      border-radius: 999px;
+      background: linear-gradient(to right, #4b5563, transparent);
+    }
+
+    .profile-album-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 4px;
+      margin-top: 4px;
+    }
+
+    .profile-album-item {
+      position: relative;
+      border-radius: 10px;
+      overflow: hidden;
+      background: rgba(15,23,42,0.95);
+      border: 1px solid rgba(55,65,81,0.9);
+      height: 0;
+      padding-bottom: 100%;
+    }
+
+    .profile-album-img {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .profile-detail-diaries {
+      margin-top: 4px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      font-size: 11px;
+    }
+
+    .profile-detail-diary-item {
+      border-radius: 10px;
+      border: 1px solid rgba(55,65,81,0.9);
+      background: rgba(15,23,42,0.96);
+      padding: 4px 6px;
+    }
+
+    .profile-detail-diary-meta {
+      font-size: 10px;
+      color: #9ca3af;
+      margin-bottom: 1px;
+      display: flex;
+      justify-content: space-between;
+      gap: 4px;
+    }
+
+    .profile-detail-diary-body {
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    .profile-back-btn {
+      margin-top: 8px;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 11px;
+      color: #9ca3af;
+      cursor: pointer;
+    }
+
+    .profile-back-btn span.icon {
+      font-size: 16px;
+    }
+  </style>
+</head>
+<body>
+  <div class="app-shell">
+    <header class="top-bar">
+      <div class="top-bar-title">
+        <span class="logo-dot"></span>
+        <span>心遇</span>
+        <span style="opacity:.7;">XinYou</span>
+      </div>
+      <div class="top-bar-right">
+        <div class="vip-pill" id="vipToggleBtn">
+          <span class="crown">👑</span>
+          <span id="vipLevelLabel">VIP 0</span>
+          <small>點我切換</small>
+        </div>
+        <div class="top-bar-badge">DEMO · 前台</div>
+      </div>
+    </header>
+
+    <main class="page-container">
+      <!-- 人們 -->
+      <section class="page active" id="page-people">
+        <div class="section-title">
+          巧遇 · 推薦中
+          <span class="section-title-badge">依距離與興趣排序 · Demo</span>
+        </div>
+        <div class="helper-tip">
+          <span class="dot"></span>
+          <span>點頭像看「對外資料」，點「加好友」進好友流程。</span>
+        </div>
+        <div id="peopleList"></div>
+      </section>
+
+      <!-- 好友 -->
+      <section class="page" id="page-friends">
+        <div class="section-title">
+          好友
+          <span class="section-title-badge">狀態與申請一目了然</span>
+        </div>
+
+        <div class="friends-section" id="friends-real-section">
+          <div class="friends-section-header">
+            <span>已成為好友</span>
+            <span style="font-size:10px;color:#6b7280;">雙方通過後才會出現在這裡</span>
+          </div>
+          <div id="friendList"></div>
+        </div>
+
+        <div class="friends-section">
+          <div class="friends-section-header">
+            <span>送出申請</span>
+            <span style="font-size:10px;color:#6b7280;">等待對方通過 · 可取消</span>
+          </div>
+          <div id="friendOutgoingList"></div>
+        </div>
+
+        <div class="friends-section">
+          <div class="friends-section-header">
+            <span>收到的申請</span>
+            <span style="font-size:10px;color:#6b7280;">Demo 預設一筆 · 可同意/拒絕</span>
+          </div>
+          <div id="friendIncomingList"></div>
+        </div>
+      </section>
+
+      <!-- 排行 -->
+      <section class="page" id="page-rank">
+        <div class="section-title">
+          排行榜
+          <span class="section-title-badge">玫瑰送禮 · 好感度排行</span>
+        </div>
+        <div class="helper-tip">
+          <span class="dot"></span>
+          <span>前 3 名皇冠加大顯示，形成金字塔視覺效果。</span>
+        </div>
+        <div class="rank-list" id="rankList"></div>
+      </section>
+
+      <!-- 聊天 -->
+      <section class="page" id="page-chat">
+        <div class="section-title">
+          聊天
+          <span class="section-title-badge">類 LINE / 微信 列表 + 對話</span>
+        </div>
+
+        <div class="chat-layout">
+          <div class="chat-list-card">
+            <div class="chat-list-title">
+              <span>訊息列表</span>
+              <span style="font-size:10px;color:#6b7280;">官方通知固定在頂端（可刪除）</span>
+            </div>
+            <ul class="chat-list" id="chatList"></ul>
+          </div>
+
+          <div class="chat-detail-card">
+            <div class="chat-detail-header">
+              <div class="chat-detail-user">
+                <div class="chat-detail-user-avatar">
+                  <img id="chatDetailAvatar" src="https://picsum.photos/seed/xinyou-system/200/200" alt="avatar" />
+                </div>
+                <div class="chat-detail-user-info">
+                  <span class="chat-detail-user-name" id="chatDetailName">系統通知 · 心遇小幫手</span>
+                  <span class="chat-detail-user-sub" id="chatDetailSub">官方帳號 · 重要公告會顯示在這裡</span>
+                </div>
+              </div>
+              <div class="chat-theme-selector">
+                <span>主題</span>
+                <div class="chat-theme-pill theme-light active" data-theme="light"></div>
+                <div class="chat-theme-pill theme-pink" data-theme="pink"></div>
+                <div class="chat-theme-pill theme-blue" data-theme="blue"></div>
+                <div class="chat-theme-pill theme-dark" data-theme="dark"></div>
+              </div>
+            </div>
+
+            <div class="chat-wrapper chat-theme-dark" id="chatWrapper">
+              <div class="chat-messages" id="chatMessages">
+                <div class="msg-empty" id="chatEmptyTip">選擇左側列表中的對象開始聊天。</div>
+              </div>
+
+              <div class="chat-more-menu" id="chatMoreMenu">
+                <button class="chat-more-btn" type="button" id="chatMoreStickerBtn">
+                  <span class="icon">😊</span>貼圖
+                </button>
+                <button class="chat-more-btn" type="button" id="chatMorePhotoBtn">
+                  <span class="icon">📷</span>照片
+                </button>
+                <button class="chat-more-btn" type="button" id="chatMoreGifBtn">
+                  <span class="icon">✨</span>GIF
+                </button>
+              </div>
+
+              <div class="sticker-bar" id="stickerBar">
+                <button class="sticker-btn" type="button">😊</button>
+                <button class="sticker-btn" type="button">😍</button>
+                <button class="sticker-btn" type="button">🤣</button>
+                <button class="sticker-btn" type="button">😉</button>
+                <button class="sticker-btn" type="button">🥹</button>
+                <button class="sticker-btn" type="button">🔥</button>
+                <button class="sticker-btn" type="button">🎉</button>
+                <button class="sticker-btn" type="button">💐</button>
+                <button class="sticker-btn" type="button">🌙</button>
+                <button class="sticker-btn" type="button">💌</button>
+              </div>
+
+              <div class="chat-input-bar">
+                <div class="chat-input-wrapper">
+                  <button class="chat-plus-btn" type="button" id="chatPlusBtn">＋</button>
+                  <input id="chatInput" class="chat-input-inner" placeholder="輸入訊息..." />
+                </div>
+                <button class="chat-send-btn" type="button" id="chatSendBtn">➤</button>
+              </div>
+
+              <input type="file" accept="image/*" id="chatPhotoInput" class="hidden-input" />
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 我的 -->
+      <section class="page" id="page-me">
+        <div class="section-title">
+          我的資料
+          <span class="section-title-badge">這裡是自己看得到、能完整編輯的地方</span>
+        </div>
+
+        <div class="me-grid">
+          <div class="me-left-card">
+            <div class="me-avatar-wrap">
+              <div class="me-avatar-main">
+                <img src="https://picsum.photos/seed/xinyou-me/300/300" alt="me" />
+              </div>
+              <div class="me-avatar-info">
+                <div class="me-nickname-row">
+                  <span id="meNicknamePreview">旅人 · Demo</span>
+                  <span class="badge" id="meVipBadge">一般會員</span>
+                </div>
+                <span style="font-size:11px;color:#9ca3af;">這是對外顯示的大頭貼與暱稱。</span>
+              </div>
+            </div>
+
+            <div class="me-basic-form">
+              <label for="meNickname">暱稱</label>
+              <input id="meNickname" class="me-basic-input" placeholder="輸入你的暱稱" />
+
+              <label for="meGender">性別</label>
+              <select id="meGender" class="me-basic-select">
+                <option value="">不顯示</option>
+                <option value="女">女</option>
+                <option value="男">男</option>
+                <option value="其他">其他</option>
+              </select>
+
+              <label for="meCity">所在縣市</label>
+              <select id="meCity" class="me-basic-select">
+                <option value="">不顯示</option>
+                <option value="台北">台北</option>
+                <option value="新北">新北</option>
+                <option value="桃園">桃園</option>
+                <option value="台中">台中</option>
+                <option value="台南">台南</option>
+                <option value="高雄">高雄</option>
+                <option value="花蓮">花蓮</option>
+                <option value="台東">台東</option>
+                <option value="其他">其他</option>
+              </select>
+
+              <label for="meTagline">一句話介紹</label>
+              <textarea id="meTagline" class="me-basic-textarea" placeholder="例如：下班後喜歡露營、拍照，找人一起看星星。"></textarea>
+            </div>
+
+            <div class="me-save-tip">以上內容會做為「對外資料」的一部分，陌生人和好友皆可看到。</div>
+
+            <div style="margin-top:8px;">
+              <div class="section-title" style="margin:4px 0;">
+                誰來看過我
+                <span class="section-title-badge">顯示最近 3 位足跡</span>
+              </div>
+              <div class="footprints-list" id="footprintsList"></div>
+            </div>
+          </div>
+
+          <div class="me-right-card">
+            <div class="section-title" style="margin-top:0;">
+              相簿（自我編輯）
+              <span class="section-title-badge">自己這邊 6 張都能自由上傳/刪除</span>
+            </div>
+            <div class="helper-tip" style="margin-bottom:4px;">
+              <span class="dot"></span>
+              <span>這裡是你自己的管理介面，不會被鎖。真正「2 張免費 + 4 張須解鎖」是給陌生人看你的對外資料時才會套用。</span>
+            </div>
+            <div class="my-album-grid" id="myAlbumGrid"></div>
+            <div class="my-album-tip">
+              前 2 張：「免費預覽」區塊，陌生人進入你的對外資料就會先看到。<br />
+              後 4 張：對外預設為「鎖定照片」，需好友/VIP 或看廣告暫時解鎖。
+            </div>
+            <input type="file" accept="image/*" id="myAlbumFileInput" class="hidden-input" />
+
+            <div style="margin-top:10px;">
+              <div class="section-title" style="margin:4px 0;">
+                日記牆
+                <span class="section-title-badge">免費 5 則，VIP 最多 30 則</span>
+              </div>
+              <div class="diary-header-row">
+                <div class="badge-outline" id="diaryLimitBadge">免費會員可建立 5 則日記</div>
+                <button class="btn btn-xs btn-outline" id="clearDiaryBtn" type="button">清空全部日記（Demo）</button>
+              </div>
+
+              <div class="diary-input-row">
+                <textarea id="diaryInput" class="diary-input-area" placeholder="寫點什麼今天的心情、日常、想說的話吧…"></textarea>
+                <div class="diary-input-toolbar">
+                  <button class="diary-image-btn" id="diaryImageBtn" type="button">
+                    <span>📷</span>附上一張照片
+                  </button>
+                  <span id="diaryCountInfo">0 / 5 則</span>
+                </div>
+              </div>
+              <input type="file" accept="image/*" id="diaryImageInput" class="hidden-input" />
+
+              <div class="diary-list" id="diaryList"></div>
+            </div>
+
+            <div style="margin-top:10px;">
+              <div class="section-title" style="margin:4px 0;">
+                好友限定小語
+                <span class="section-title-badge">只有成為好友後才會看到</span>
+              </div>
+              <textarea id="friendNoteInput" class="me-basic-textarea" placeholder="例如：真正熟了之後會發現我其實很愛說冷笑話。"></textarea>
+              <div class="friend-note-preview">
+                <div class="friend-note-preview-header">
+                  <span class="dot"></span>
+                  <span>好友眼中的你 · 預覽</span>
+                </div>
+                <div id="friendNotePreviewBody" style="white-space:pre-wrap;word-break:break-word;font-size:11px;color:#e5e7eb;">
+                  還沒寫小語，先寫一段吧，好友才看得到。
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 對外個人資料頁（訪客視角） -->
+      <section class="page" id="page-profileDetail">
+        <div style="margin-bottom:6px;">
+          <div class="profile-back-btn" id="profileBackBtn">
+            <span class="icon">←</span>
+            <span>返回上一頁</span>
+          </div>
+        </div>
+
+        <div class="profile-detail-card">
+          <div class="profile-detail-header">
+            <div class="profile-detail-avatar">
+              <img id="profileAvatar" src="https://picsum.photos/seed/xinyou-guest/300/300" alt="avatar" />
+            </div>
+            <div class="profile-detail-main">
+              <div class="profile-detail-name-row">
+                <span id="profileName">陌生用戶</span>
+                <span style="font-size:11px;color:#9ca3af;" id="profileAgeCity">20 · 台灣</span>
+              </div>
+              <div class="profile-detail-sub" id="profileTagline">這裡會顯示對方的簡短自我介紹。</div>
+              <div class="profile-detail-actions">
+                <button class="btn btn-xs btn-primary" id="profileAddFriendBtn" type="button">加入好友</button>
+                <button class="btn btn-xs btn-outline" id="profileChatBtn" type="button">發起聊天</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="profile-detail-section-title">
+            相簿預覽
+            <span class="section-title-badge">前 2 張免費，其餘鎖定（Demo）</span>
+          </div>
+          <div class="profile-album-grid" id="profileAlbumGrid"></div>
+
+          <div class="profile-detail-section-title">
+            對外日記（截取）
+          </div>
+          <div class="profile-detail-diaries" id="profileDiaryPreview"></div>
+
+          <div class="profile-detail-section-title">
+            好友限定小語 · 解鎖條件
+          </div>
+          <div style="font-size:11px;color:#9ca3af;padding:3px 1px;">
+            好友通過後才能看到對方的「好友限定小語」。目前僅示意顯示，不實際讀取資料。
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <nav class="bottom-nav">
+      <div class="nav-item active" data-page="people">
+        <span class="icon">👥</span>
+        <span>人們</span>
+      </div>
+      <div class="nav-item" data-page="friends">
+        <span class="icon">🤝</span>
+        <span>好友</span>
+      </div>
+      <div class="nav-item" data-page="rank">
+        <span class="icon">👑</span>
+        <span>排行</span>
+      </div>
+      <div class="nav-item" data-page="chat">
+        <span class="icon">💬</span>
+        <span>聊天</span>
+      </div>
+      <div class="nav-item" data-page="me">
+        <span class="icon">😊</span>
+        <span>我的</span>
+      </div>
+      <div class="nav-indicator" id="navIndicator"></div>
+    </nav>
+  </div>
+
+  <script>
+    const persons = [
+      {
+        id: 1,
+        name: "小夏",
+        age: 27,
+        city: "台北",
+        job: "平面設計",
+        avatar: "https://picsum.photos/seed/xinyou-p1/300/300",
+        tagline: "喜歡咖啡、貓咪跟深夜散步。",
+        tags: ["露營", "咖啡廳", "攝影"],
+        score: 9820,
+        trend: "+21",
+      },
+      {
+        id: 2,
+        name: "阿哲",
+        age: 30,
+        city: "新北",
+        job: "後端工程師",
+        avatar: "https://picsum.photos/seed/xinyou-p2/300/300",
+        tagline: "白天寫程式，晚上追星與看漫畫。",
+        tags: ["程式", "ACG", "VR"],
+        score: 9510,
+        trend: "+9",
+      },
+      {
+        id: 3,
+        name: "Mia",
+        age: 25,
+        city: "台中",
+        job: "酒吧調酒師",
+        avatar: "https://picsum.photos/seed/xinyou-p3/300/300",
+        tagline: "擅長做甜甜的調酒，也想遇到甜甜的你。",
+        tags: ["夜景", "音樂", "調酒"],
+        score: 9380,
+        trend: "+33",
+      },
+      {
+        id: 4,
+        name: "阿治",
+        age: 32,
+        city: "高雄",
+        job: "攝影師",
+        avatar: "https://picsum.photos/seed/xinyou-p4/300/300",
+        tagline: "專拍婚禮與風景，也想紀錄屬於我們的故事。",
+        tags: ["單眼相機", "登山", "公路旅行"],
+        score: 9100,
+        trend: "+5",
+      },
+      {
+        id: 5,
+        name: "Rin",
+        age: 24,
+        city: "台南",
+        job: "甜點店店員",
+        avatar: "https://picsum.photos/seed/xinyou-p5/300/300",
+        tagline: "試吃太多甜點需要人陪我運動一下。",
+        tags: ["甜點", "跑步", "日劇"],
+        score: 8950,
+        trend: "+12",
+      },
+      {
+        id: 6,
+        name: "Kevin",
+        age: 29,
+        city: "桃園",
+        job: "保全",
+        avatar: "https://picsum.photos/seed/xinyou-p6/300/300",
+        tagline: "上班時間守護大家，下班時間想守護某個人。",
+        tags: ["籃球", "電影", "健身"],
+        score: 8820,
+        trend: "-3",
+      },
+      {
+        id: 7,
+        name: "小嵐",
+        age: 26,
+        city: "花蓮",
+        job: "飯店接待",
+        avatar: "https://picsum.photos/seed/xinyou-p7/300/300",
+        tagline: "住在山海中間，喜歡露營、車宿與看星星。",
+        tags: ["露營", "車宿", "VR"],
+        score: 8600,
+        trend: "+17",
+      },
+      {
+        id: 8,
+        name: "Eason",
+        age: 31,
+        city: "台東",
+        job: "樂手",
+        avatar: "https://picsum.photos/seed/xinyou-p8/300/300",
+        tagline: "在不同城市演出，也在不同城市尋找故事。",
+        tags: ["吉他", "Live House", "旅行"],
+        score: 8420,
+        trend: "+2",
+      }
+    ];
+
+    const STORAGE_KEYS = {
+      vip: "hmVipLevel",
+      album: "hmMyAlbumPhotos",
+      diaries: "hmMyDiaries",
+      albumUnlock: "hmAlbumUnlockUntil",
+      relations: "hmRelations",
+      footprints: "hmFootprints",
+      friendNote: "hmFriendNote",
+      profileBasic: "hmProfileBasic",
+    };
+
+    const MY_ALBUM_SLOTS = 6;
+
+    function hmGetVipLevel() {
+      const raw = localStorage.getItem(STORAGE_KEYS.vip);
+      const n = parseInt(raw, 10);
+      if (isNaN(n) || n < 0) return 0;
+      if (n > 5) return 5;
+      return n;
+    }
+
+    function hmSetVipLevel(level) {
+      const n = Math.min(Math.max(level, 0), 5);
+      localStorage.setItem(STORAGE_KEYS.vip, String(n));
+      hmUpdateVipUI();
+      renderMyDiaries();
+    }
+
+    function hmUpdateVipUI() {
+      const vipLevel = hmGetVipLevel();
+      const vipLabel = document.getElementById("vipLevelLabel");
+      const meVipBadge = document.getElementById("meVipBadge");
+      const diaryLimitBadge = document.getElementById("diaryLimitBadge");
+      const diaryCountInfo = document.getElementById("diaryCountInfo");
+
+      let text = "VIP " + vipLevel;
+      if (vipLevel === 0) text = "一般會員";
+      vipLabel.textContent = text;
+
+      if (vipLevel === 0) {
+        meVipBadge.textContent = "一般會員";
+      } else {
+        meVipBadge.textContent = "VIP " + vipLevel;
+      }
+
+      const max = hmGetDiaryLimit();
+      diaryLimitBadge.textContent = vipLevel === 0
+        ? "免費會員可建立 5 則日記"
+        : "VIP " + vipLevel + " 可建立最多 " + max + " 則日記";
+
+      const diaries = hmLoadDiaries();
+      diaryCountInfo.textContent = diaries.length + " / " + max + " 則";
+    }
+
+    function hmLoadAlbumPhotos() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEYS.album);
+        if (!raw) return Array(MY_ALBUM_SLOTS).fill(null);
+        const parsed = JSON.parse(raw);
+        if (!Array.isArray(parsed)) return Array(MY_ALBUM_SLOTS).fill(null);
+        const result = Array(MY_ALBUM_SLOTS).fill(null);
+        for (let i = 0; i < Math.min(parsed.length, MY_ALBUM_SLOTS); i++) {
+          result[i] = typeof parsed[i] === "string" ? parsed[i] : null;
+        }
+        return result;
+      } catch (e) {
+        console.error("load album error", e);
+        return Array(MY_ALBUM_SLOTS).fill(null);
+      }
+    }
+
+    function hmSaveAlbumPhotos(arr) {
+      try {
+        localStorage.setItem(STORAGE_KEYS.album, JSON.stringify(arr || []));
+      } catch (e) {
+        console.error("save album error", e);
+      }
+    }
+
+    function hmGetDiaryLimit() {
+      const vip = hmGetVipLevel();
+      if (vip <= 0) return 5;
+      return 5 + vip * 5;
+    }
+
+    function hmLoadDiaries() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEYS.diaries);
+        if (!raw) return [];
+        const parsed = JSON.parse(raw);
+        if (!Array.isArray(parsed)) return [];
+        return parsed;
+      } catch (e) {
+        return [];
+      }
+    }
+
+    function hmSaveDiaries(list) {
+      try {
+        localStorage.setItem(STORAGE_KEYS.diaries, JSON.stringify(list || []));
+      } catch (e) {
+        console.error("save diaries error", e);
+      }
+    }
+
+    function hmAlbumIsUnlocked() {
+      const vip = hmGetVipLevel();
+      if (vip > 0) return true;
+      try {
+        const raw = localStorage.getItem(STORAGE_KEYS.albumUnlock);
+        if (!raw) return false;
+        const until = parseInt(raw, 10);
+        if (isNaN(until)) return false;
+        const now = Date.now();
+        return now < until;
+      } catch (e) {
+        return false;
+      }
+    }
+
+    function hmAlbumUnlockFor30Minutes() {
+      const now = Date.now();
+      const until = now + 30 * 60 * 1000;
+      localStorage.setItem(STORAGE_KEYS.albumUnlock, String(until));
+      alert("Demo：已模擬看完一則廣告，接下來 30 分鐘內瀏覽對外相簿會暫時解鎖鎖定照片。");
+    }
+
+    function hmLoadRelations() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEYS.relations);
+        if (!raw) return {};
+        const obj = JSON.parse(raw);
+        return obj && typeof obj === "object" ? obj : {};
+      } catch (e) {
+        return {};
+      }
+    }
+
+    function hmSaveRelations(rel) {
+      try {
+        localStorage.setItem(STORAGE_KEYS.relations, JSON.stringify(rel || {}));
+      } catch (e) {
+        console.error("save relations error", e);
+      }
+    }
+
+    let relations = hmLoadRelations();
+    if (!relations[3]) {
+      relations[3] = "pending_in";
+      hmSaveRelations(relations);
+    }
+
+    function getRelation(id) {
+      return relations[id] || "stranger";
+    }
+
+    function setRelation(id, value) {
+      relations[id] = value;
+      hmSaveRelations(relations);
+      renderFriendsPage();
+      renderPeople();
+      renderRankPage();
+      renderChatList();
+    }
+
+    function hmAddFootprint(personId) {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEYS.footprints);
+        let list = [];
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          if (Array.isArray(parsed)) list = parsed;
+        }
+        const now = Date.now();
+        list = list.filter((f) => f.id !== personId);
+        list.unshift({ id: personId, ts: now });
+        list = list.slice(0, 3);
+        localStorage.setItem(STORAGE_KEYS.footprints, JSON.stringify(list));
+        renderFootprints();
+      } catch (e) {
+        console.error("footprint error", e);
+      }
+    }
+
+    function hmLoadFootprints() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEYS.footprints);
+        if (!raw) return [];
+        const parsed = JSON.parse(raw);
+        if (!Array.isArray(parsed)) return [];
+        return parsed;
+      } catch (e) {
+        return [];
+      }
+    }
+
+    function hmLoadFriendNote() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEYS.friendNote);
+        if (!raw) return "";
+        return String(raw);
+      } catch (e) {
+        return "";
+      }
+    }
+
+    function hmSaveFriendNote(text) {
+      try {
+        localStorage.setItem(STORAGE_KEYS.friendNote, text || "");
+      } catch (e) {}
+    }
+
+    function hmLoadProfileBasic() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEYS.profileBasic);
+        if (!raw) return null;
+        const data = JSON.parse(raw);
+        return data && typeof data === "object" ? data : null;
+      } catch (e) {
+        return null;
+      }
+    }
+
+    function hmSaveProfileBasic(data) {
+      try {
+        localStorage.setItem(STORAGE_KEYS.profileBasic, JSON.stringify(data || {}));
+      } catch (e) {}
+    }
+
+    function renderPeople() {
+      const container = document.getElementById("peopleList");
+      if (!container) return;
+      container.innerHTML = "";
+      persons.forEach((p) => {
+        const rel = getRelation(p.id);
+        const card = document.createElement("div");
+        card.className = "card";
+        card.innerHTML = `
+          <div class="card-avatar" data-id="${p.id}">
+            <img src="${p.avatar}" alt="${p.name}" />
+          </div>
+          <div class="card-main">
+            <div class="card-header-row">
+              <div class="card-name">
+                <span>${p.name}</span>
+                <span class="age-city">${p.age} · ${p.city}</span>
+              </div>
+              <span class="status-badge">${p.job}</span>
+            </div>
+            <div class="card-tagline">${p.tagline}</div>
+            <div class="card-tags">
+              ${p.tags.map((t) => `<span class="tag-pill">#${t}</span>`).join("")}
+            </div>
+            <div class="card-actions">
+              <button class="btn btn-primary btn-xs" data-open-profile="${p.id}">查看對外資料</button>
+              <button class="btn btn-outline btn-xs" data-rel-action="${p.id}"></button>
+            </div>
+          </div>
+        `;
+        container.appendChild(card);
+      });
+
+      container.querySelectorAll("[data-open-profile]").forEach((btn) => {
+        btn.addEventListener("click", (e) => {
+          const id = parseInt(e.currentTarget.getAttribute("data-open-profile"), 10);
+          openProfileDetail(id);
+        });
+      });
+
+      container.querySelectorAll(".card-avatar").forEach((av) => {
+        av.addEventListener("click", (e) => {
+          const id = parseInt(e.currentTarget.getAttribute("data-id"), 10);
+          openProfileDetail(id);
+        });
+      });
+
+      container.querySelectorAll("[data-rel-action]").forEach((btn) => {
+        const id = parseInt(btn.getAttribute("data-rel-action"), 10);
+        const rel = getRelation(id);
+        if (rel === "friend") {
+          btn.textContent = "已是好友";
+        } else if (rel === "pending_out") {
+          btn.textContent = "已送出申請";
+        } else if (rel === "pending_in") {
+          btn.textContent = "對方邀請你";
+        } else {
+          btn.textContent = "加入好友";
+        }
+
+        btn.addEventListener("click", () => {
+          handleRelationButton(id);
+        });
+      });
+    }
+
+    function handleRelationButton(id) {
+      const rel = getRelation(id);
+      if (rel === "friend") {
+        if (confirm("確定要解除好友嗎？")) {
+          setRelation(id, "stranger");
+        }
+      } else if (rel === "pending_out") {
+        if (confirm("取消這筆好友申請？")) {
+          setRelation(id, "stranger");
+        }
+      } else if (rel === "pending_in") {
+        const ok = confirm("對方已經向你發出好友邀請，是否直接同意？");
+        if (ok) {
+          setRelation(id, "friend");
+        }
+      } else {
+        setRelation(id, "pending_out");
+        alert("已送出好友邀請（Demo），對方同意後會出現在「好友」列表。");
+      }
+    }
+
+    function renderFriendsPage() {
+      const friendList = document.getElementById("friendList");
+      const outgoingList = document.getElementById("friendOutgoingList");
+      const incomingList = document.getElementById("friendIncomingList");
+
+      if (!friendList || !outgoingList || !incomingList) return;
+
+      friendList.innerHTML = "";
+      outgoingList.innerHTML = "";
+      incomingList.innerHTML = "";
+
+      const friendIds = persons.filter((p) => getRelation(p.id) === "friend").map((p) => p.id);
+      const outgoingIds = persons.filter((p) => getRelation(p.id) === "pending_out").map((p) => p.id);
+      const incomingIds = persons.filter((p) => getRelation(p.id) === "pending_in").map((p) => p.id);
+
+      if (friendIds.length === 0) {
+        friendList.innerHTML = '<div class="friend-empty">目前沒有任何好友，從「人們」頁面按下「加入好友」開始吧。</div>';
+      } else {
+        friendIds.forEach((id) => {
+          const p = persons.find((x) => x.id === id);
+          if (!p) return;
+          const row = document.createElement("div");
+          row.className = "friend-mini-card";
+          row.innerHTML = `
+            <div class="friend-mini-left">
+              <div class="friend-mini-avatar">
+                <img src="${p.avatar}" alt="${p.name}" />
+              </div>
+              <div class="friend-mini-info">
+                <span class="friend-mini-name">${p.name}</span>
+                <span class="friend-mini-sub">${p.city} · ${p.job}</span>
+              </div>
+            </div>
+            <div style="display:flex;align-items:center;gap:4px;">
+              <button class="btn btn-xs btn-outline" data-chat-friend="${p.id}">聊天</button>
+              <button class="btn btn-xs btn-ghost" data-remove-friend="${p.id}">解除</button>
+            </div>
+          `;
+          friendList.appendChild(row);
+        });
+
+        friendList.querySelectorAll("[data-chat-friend]").forEach((btn) => {
+          btn.addEventListener("click", (e) => {
+            const id = parseInt(e.currentTarget.getAttribute("data-chat-friend"), 10);
+            openChatWithPerson(id);
+          });
+        });
+
+        friendList.querySelectorAll("[data-remove-friend]").forEach((btn) => {
+          btn.addEventListener("click", (e) => {
+            const id = parseInt(e.currentTarget.getAttribute("data-remove-friend"), 10);
+            if (confirm("確定要解除好友嗎？")) {
+              setRelation(id, "stranger");
+            }
+          });
+        });
+      }
+
+      if (outgoingIds.length === 0) {
+        outgoingList.innerHTML = '<div class="friend-empty">目前沒有送出的好友申請。</div>';
+      } else {
+        outgoingIds.forEach((id) => {
+          const p = persons.find((x) => x.id === id);
+          if (!p) return;
+          const row = document.createElement("div");
+          row.className = "friend-mini-card";
+          row.innerHTML = `
+            <div class="friend-mini-left">
+              <div class="friend-mini-avatar">
+                <img src="${p.avatar}" alt="${p.name}" />
+              </div>
+              <div class="friend-mini-info">
+                <span class="friend-mini-name">${p.name}</span>
+                <span class="friend-mini-sub">等待對方通過 · ${p.city}</span>
+              </div>
+            </div>
+            <div>
+              <button class="btn btn-xs btn-outline" data-cancel-out="${p.id}">取消申請</button>
+            </div>
+          `;
+          outgoingList.appendChild(row);
+        });
+
+        outgoingList.querySelectorAll("[data-cancel-out]").forEach((btn) => {
+          btn.addEventListener("click", (e) => {
+            const id = parseInt(e.currentTarget.getAttribute("data-cancel-out"), 10);
+            if (confirm("取消這筆好友申請？")) {
+              setRelation(id, "stranger");
+            }
+          });
+        });
+      }
+
+      if (incomingIds.length === 0) {
+        incomingList.innerHTML = '<div class="friend-empty">目前沒有收到的好友申請。Demo 會預放 Mia 一筆申請。</div>';
+      } else {
+        incomingIds.forEach((id) => {
+          const p = persons.find((x) => x.id === id);
+          if (!p) return;
+          const row = document.createElement("div");
+          row.className = "friend-mini-card";
+          row.innerHTML = `
+            <div class="friend-mini-left">
+              <div class="friend-mini-avatar">
+                <img src="${p.avatar}" alt="${p.name}" />
+              </div>
+              <div class="friend-mini-info">
+                <span class="friend-mini-name">${p.name}</span>
+                <span class="friend-mini-sub">${p.city} · 想加你為好友</span>
+              </div>
+            </div>
+            <div style="display:flex;gap:4px;">
+              <button class="btn btn-xs btn-primary" data-accept-in="${p.id}">同意</button>
+              <button class="btn btn-xs btn-ghost" data-reject-in="${p.id}">拒絕</button>
+            </div>
+          `;
+          incomingList.appendChild(row);
+        });
+
+        incomingList.querySelectorAll("[data-accept-in]").forEach((btn) => {
+          btn.addEventListener("click", (e) => {
+            const id = parseInt(e.currentTarget.getAttribute("data-accept-in"), 10);
+            setRelation(id, "friend");
+          });
+        });
+
+        incomingList.querySelectorAll("[data-reject-in]").forEach((btn) => {
+          btn.addEventListener("click", (e) => {
+            const id = parseInt(e.currentTarget.getAttribute("data-reject-in"), 10);
+            setRelation(id, "stranger");
+          });
+        });
+      }
+    }
+
+    function renderRankPage() {
+      const list = document.getElementById("rankList");
+      if (!list) return;
+      list.innerHTML = "";
+      const sorted = [...persons].sort((a, b) => b.score - a.score);
+      sorted.forEach((p, index) => {
+        const rel = getRelation(p.id);
+        const item = document.createElement("div");
+        item.className = "rank-item";
+        item.innerHTML = `
+          <div class="rank-left">
+            <div class="rank-badge">${index + 1}</div>
+            <div class="rank-avatar">
+              <img src="${p.avatar}" alt="${p.name}" />
+            </div>
+            <div class="rank-info-main">
+              <div class="rank-name-row">
+                <span>${p.name}</span>
+                <span class="rank-score">${p.score.toLocaleString()} 分</span>
+              </div>
+              <div style="font-size:11px;color:#9ca3af;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
+                ${p.tagline}
+              </div>
+              <div class="rank-trend">${p.trend} 本週好感度</div>
+            </div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:4px;align-items:flex-end;">
+            <button class="btn btn-xs btn-primary" data-open-profile="${p.id}">看資料</button>
+            <button class="btn btn-xs btn-outline" data-rel-action="${p.id}"></button>
+          </div>
+        `;
+        list.appendChild(item);
+      });
+
+      list.querySelectorAll("[data-open-profile]").forEach((btn) => {
+        btn.addEventListener("click", (e) => {
+          const id = parseInt(e.currentTarget.getAttribute("data-open-profile"), 10);
+          openProfileDetail(id);
+        });
+      });
+
+      list.querySelectorAll("[data-rel-action]").forEach((btn) => {
+        const id = parseInt(btn.getAttribute("data-rel-action"), 10);
+        const rel = getRelation(id);
+        if (rel === "friend") {
+          btn.textContent = "已是好友";
+        } else if (rel === "pending_out") {
+          btn.textContent = "已送出";
+        } else if (rel === "pending_in") {
+          btn.textContent = "對方邀請你";
+        } else {
+          btn.textContent = "加入好友";
+        }
+
+        btn.addEventListener("click", () => handleRelationButton(id));
+      });
+    }
+
+    function renderMyAlbum() {
+      const grid = document.getElementById("myAlbumGrid");
+      if (!grid) return;
+      grid.innerHTML = "";
+      const photos = hmLoadAlbumPhotos();
+
+      for (let i = 0; i < MY_ALBUM_SLOTS; i++) {
+        const slot = document.createElement("div");
+        slot.className = "my-album-slot";
+        slot.dataset.index = String(i);
+        const inner = document.createElement("div");
+        inner.className = "my-album-slot-inner";
+
+        if (photos[i]) {
+          inner.innerHTML = '<img src="' + photos[i] + '" alt="photo' + (i + 1) + '" />';
+        } else {
+          inner.textContent = "+";
+        }
+
+        const label = document.createElement("div");
+        label.className = "my-album-slot-label";
+        if (i < 2) {
+          label.textContent = "免費預覽區 " + (i + 1);
+        } else {
+          label.textContent = "對外鎖定區 " + (i + 1);
+        }
+
+        slot.appendChild(inner);
+        slot.appendChild(label);
+
+        slot.addEventListener("click", () => {
+          handleMyAlbumSlotClick(i);
+        });
+
+        grid.appendChild(slot);
+      }
+    }
+
+    let currentAlbumEditIndex = null;
+
+    function handleMyAlbumSlotClick(index) {
+      const photos = hmLoadAlbumPhotos();
+      if (photos[index]) {
+        const confirmDelete = confirm("要移除此照片嗎？");
+        if (confirmDelete) {
+          photos[index] = null;
+          hmSaveAlbumPhotos(photos);
+          renderMyAlbum();
+        }
+      } else {
+        currentAlbumEditIndex = index;
+        document.getElementById("myAlbumFileInput").click();
+      }
+    }
+
+    function onMyAlbumFileChange(event) {
+      const file = event.target.files && event.target.files[0];
+      if (!file || currentAlbumEditIndex === null) return;
+      const reader = new FileReader();
+      reader.onload = function (e) {
+        const dataUrl = e.target.result;
+        const photos = hmLoadAlbumPhotos();
+        photos[currentAlbumEditIndex] = dataUrl;
+        hmSaveAlbumPhotos(photos);
+        renderMyAlbum();
+        currentAlbumEditIndex = null;
+        event.target.value = "";
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function renderMyDiaries() {
+      const listEl = document.getElementById("diaryList");
+      const countInfo = document.getElementById("diaryCountInfo");
+      if (!listEl || !countInfo) return;
+
+      const diaries = hmLoadDiaries();
+      const max = hmGetDiaryLimit();
+
+      countInfo.textContent = diaries.length + " / " + max + " 則";
+
+      listEl.innerHTML = "";
+      if (diaries.length === 0) {
+        listEl.innerHTML = '<div class="diary-empty">尚未寫任何日記，先打幾句心情吧。</div>';
+        return;
+      }
+
+      diaries.forEach((d, idx) => {
+        const item = document.createElement("div");
+        item.className = "diary-item";
+        const dateText = new Date(d.createdAt || Date.now()).toLocaleString("zh-TW", {
+          month: "2-digit",
+          day: "2-digit",
+          hour: "2-digit",
+          minute: "2-digit",
+        });
+        item.innerHTML = `
+          <div class="diary-meta">
+            <span>${dateText}</span>
+            <button type="button" data-remove-diary="${idx}" style="border:none;background:none;color:#9ca3af;font-size:10px;cursor:pointer;">刪除</button>
+          </div>
+          <div class="diary-body">${(d.text || "").replace(/</g, "&lt;").replace(/>/g, "&gt;")}</div>
+        `;
+        if (d.imageDataUrl) {
+          const img = document.createElement("img");
+          img.src = d.imageDataUrl;
+          img.alt = "diary";
+          img.className = "diary-image";
+          item.appendChild(img);
+        }
+        listEl.appendChild(item);
+      });
+
+      listEl.querySelectorAll("[data-remove-diary]").forEach((btn) => {
+        btn.addEventListener("click", (e) => {
+          const idx = parseInt(e.currentTarget.getAttribute("data-remove-diary"), 10);
+          const diaries = hmLoadDiaries();
+          diaries.splice(idx, 1);
+          hmSaveDiaries(diaries);
+          renderMyDiaries();
+        });
+      });
+    }
+
+    function handleAddDiary() {
+      const input = document.getElementById("diaryInput");
+      const fileInput = document.getElementById("diaryImageInput");
+      if (!input) return;
+      const text = input.value.trim();
+      const max = hmGetDiaryLimit();
+      const diaries = hmLoadDiaries();
+      if (!text && (!fileInput.files || !fileInput.files[0])) {
+        alert("請先輸入一些內容，或選擇一張照片。");
+        return;
+      }
+      if (diaries.length >= max) {
+        alert("已超過目前等級可建立的日記數量上限（" + max + " 則）。");
+        return;
+      }
+
+      const file = fileInput.files && fileInput.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = function (e) {
+          const dataUrl = e.target.result;
+          diaries.unshift({
+            id: Date.now(),
+            text: text || "",
+            imageDataUrl: dataUrl,
+            createdAt: Date.now(),
+          });
+          hmSaveDiaries(diaries);
+          input.value = "";
+          fileInput.value = "";
+          renderMyDiaries();
+        };
+        reader.readAsDataURL(file);
+      } else {
+        diaries.unshift({
+          id: Date.now(),
+          text: text || "",
+          imageDataUrl: null,
+          createdAt: Date.now(),
+        });
+        hmSaveDiaries(diaries);
+        input.value = "";
+        renderMyDiaries();
+      }
+    }
+
+    function clearAllDiaries() {
+      if (!confirm("確定要清空所有日記嗎？這只是 Demo，實際版會再多一道確認。")) return;
+      hmSaveDiaries([]);
+      renderMyDiaries();
+    }
+
+    function renderFootprints() {
+      const container = document.getElementById("footprintsList");
+      if (!container) return;
+      container.innerHTML = "";
+      const list = hmLoadFootprints();
+      if (list.length === 0) {
+        container.innerHTML = '<div class="diary-empty">目前還沒有任何足跡紀錄，當有人查看你的對外資料時會顯示在這裡（Demo）。</div>';
+        return;
+      }
+      list.forEach((f) => {
+        const p = persons.find((x) => x.id === f.id);
+        if (!p) return;
+        const row = document.createElement("div");
+        row.className = "footprint-row";
+        const dateText = new Date(f.ts || Date.now()).toLocaleString("zh-TW", {
+          month: "2-digit",
+          day: "2-digit",
+          hour: "2-digit",
+          minute: "2-digit",
+        });
+        row.innerHTML = `
+          <div class="footprint-avatar">
+            <img src="${p.avatar}" alt="${p.name}" />
+          </div>
+          <div>
+            <div class="footprint-name">${p.name}</div>
+            <div class="footprint-time">${dateText} 來看過你</div>
+          </div>
+        `;
+        container.appendChild(row);
+      });
+    }
+
+    function openProfileDetail(personId) {
+      const p = persons.find((x) => x.id === personId);
+      if (!p) return;
+      hmAddFootprint(personId);
+      const avatarEl = document.getElementById("profileAvatar");
+      const nameEl = document.getElementById("profileName");
+      const ageCityEl = document.getElementById("profileAgeCity");
+      const taglineEl = document.getElementById("profileTagline");
+
+      if (avatarEl) avatarEl.src = p.avatar;
+      if (nameEl) nameEl.textContent = p.name;
+      if (ageCityEl) ageCityEl.textContent = p.age + " · " + p.city;
+      if (taglineEl) taglineEl.textContent = p.tagline || "";
+
+      renderProfileAlbumForVisitor(p);
+      renderProfileDiaryPreview(p);
+
+      const addFriendBtn = document.getElementById("profileAddFriendBtn");
+      const chatBtn = document.getElementById("profileChatBtn");
+      if (addFriendBtn) {
+        const rel = getRelation(p.id);
+        if (rel === "friend") {
+          addFriendBtn.textContent = "已是好友";
+        } else if (rel === "pending_out") {
+          addFriendBtn.textContent = "已送出申請";
+        } else if (rel === "pending_in") {
+          addFriendBtn.textContent = "對方邀請你";
+        } else {
+          addFriendBtn.textContent = "加入好友";
+        }
+
+        addFriendBtn.onclick = () => handleRelationButton(p.id);
+      }
+      if (chatBtn) {
+        chatBtn.onclick = () => {
+          switchPage("chat");
+          openChatWithPerson(p.id);
+        };
+      }
+
+      switchPage("profileDetail");
+    }
+
+    function renderProfileAlbumForVisitor(profile) {
+      const grid = document.getElementById("profileAlbumGrid");
+      if (!grid) return;
+      grid.innerHTML = "";
+
+      const unlocked = hmAlbumIsUnlocked();
+      for (let i = 0; i < 6; i++) {
+        const item = document.createElement("div");
+        item.className = "profile-album-item";
+        const img = document.createElement("img");
+        img.className = "profile-album-img";
+        img.src = "https://picsum.photos/seed/xinyou-profile-" + profile.id + "-" + i + "/600/600";
+        item.appendChild(img);
+
+        if (i >= 2 && !unlocked) {
+          const overlay = document.createElement("div");
+          overlay.className = "my-album-lock-overlay";
+          overlay.innerHTML = '<div>🔒 鎖定照片<br>看一次廣告暫時解鎖（Demo）</div>';
+          const btn = document.createElement("button");
+          btn.type = "button";
+          btn.className = "my-album-lock-btn";
+          btn.textContent = "觀看廣告暫時解鎖";
+          btn.addEventListener("click", (e) => {
+            e.stopPropagation();
+            hmAlbumUnlockFor30Minutes();
+            openProfileDetail(profile.id);
+          });
+          overlay.appendChild(btn);
+          item.appendChild(overlay);
+        }
+
+        grid.appendChild(item);
+      }
+    }
+
+    function renderProfileDiaryPreview(profile) {
+      const container = document.getElementById("profileDiaryPreview");
+      if (!container) return;
+      container.innerHTML = "";
+
+      const diaries = hmLoadDiaries();
+      if (!diaries.length) {
+        container.innerHTML = '<div class="diary-empty">對方尚未公開任何日記（Demo 目前共用本機日記）。</div>';
+        return;
+      }
+      diaries.slice(0, 3).forEach((d) => {
+        const Div = document.createElement("div");
+        Div.className = "profile-detail-diary-item";
+        const dateText = new Date(d.createdAt || Date.now()).toLocaleString("zh-TW", {
+          month: "2-digit",
+          day: "2-digit",
+          hour: "2-digit",
+          minute: "2-digit",
+        });
+        Div.innerHTML = `
+          <div class="profile-detail-diary-meta">
+            <span>${dateText}</span>
+            <span>公開日記 · Demo</span>
+          </div>
+          <div class="profile-detail-diary-body">${(d.text || "").replace(/</g, "&lt;").replace(/>/g, "&gt;")}</div>
+        `;
+        container.appendChild(Div);
+      });
+    }
+
+    const baseConversations = [
+      {
+        id: "system",
+        name: "心遇小幫手",
+        avatar: "https://picsum.photos/seed/xinyou-system/200/200",
+        snippet: "歡迎加入心遇，祝你在這裡遇見好故事。",
+        time: "剛剛",
+        unread: true,
+        deletable: true,
+      }
+    ];
+
+    let deletedConversationIds = [];
+
+    function getFriendIds() {
+      return persons.filter((p) => getRelation(p.id) === "friend").map((p) => p.id);
+    }
+
+    function getChatConversations() {
+      const conversations = [];
+      baseConversations.forEach((c) => {
+        if (!deletedConversationIds.includes(c.id)) {
+          conversations.push(c);
+        }
+      });
+
+      const friendIds = getFriendIds();
+      friendIds.forEach((id) => {
+        const p = persons.find((x) => x.id === id);
+        if (!p) return;
+        conversations.push({
+          id: "friend-" + id,
+          name: p.name,
+          avatar: p.avatar,
+          snippet: "點擊開始對話（Demo）",
+          time: "線上",
+          unread: false,
+          deletable: false,
+        });
+      });
+
+      return conversations;
+    }
+
+    let currentChatId = null;
+
+    function renderChatList() {
+      const listEl = document.getElementById("chatList");
+      if (!listEl) return;
+      listEl.innerHTML = "";
+      const conversations = getChatConversations();
+
+      if (!conversations.length) {
+        listEl.innerHTML = '<li class="msg-empty">目前沒有任何訊息，先從「人們」加好友，再回來聊天吧。</li>';
+        return;
+      }
+
+      conversations.forEach((conv) => {
+        const li = document.createElement("li");
+        li.className = "chat-list-item";
+        li.dataset.chatId = conv.id;
+        if (conv.id === currentChatId) {
+          li.classList.add("active");
+        }
+
+        li.innerHTML = `
+          <div class="chat-list-avatar">
+            <img src="${conv.avatar}" alt="${conv.name}" />
+          </div>
+          <div class="chat-list-main">
+            <div class="chat-list-name-row">
+              <span class="chat-list-name">${conv.name}</span>
+              <span class="chat-list-time">${conv.time}</span>
+            </div>
+            <div class="chat-list-snippet-row">
+              <span class="chat-list-snippet">${conv.snippet}</span>
+              ${conv.unread ? '<span class="chat-unread-dot"></span>' : ""}
+            </div>
+          </div>
+        `;
+
+        li.addEventListener("click", () => {
+          openChat(conv.id);
+        });
+
+        if (conv.deletable) {
+          const delBtn = document.createElement("button");
+          delBtn.type = "button";
+          delBtn.textContent = "✕";
+          delBtn.style.border = "none";
+          delBtn.style.background = "transparent";
+          delBtn.style.color = "#9ca3af";
+          delBtn.style.fontSize = "11px";
+          delBtn.style.cursor = "pointer";
+          delBtn.addEventListener("click", (ev) => {
+            ev.stopPropagation();
+            deleteConversation(conv.id);
+          });
+          li.querySelector(".chat-list-snippet-row").appendChild(delBtn);
+        }
+
+        listEl.appendChild(li);
+      });
+    }
+
+    function deleteConversation(id) {
+      if (!confirm("確定要隱藏這個官方訊息嗎？之後可以在後台再開啟。")) return;
+      if (!deletedConversationIds.includes(id)) {
+        deletedConversationIds.push(id);
+      }
+      if (currentChatId === id) {
+        currentChatId = null;
+        resetChatDetail();
+      }
+      renderChatList();
+    }
+
+    function resetChatDetail() {
+      const messagesEl = document.getElementById("chatMessages");
+      const emptyTip = document.getElementById("chatEmptyTip");
+      if (messagesEl && emptyTip) {
+        messagesEl.innerHTML = "";
+        messagesEl.appendChild(emptyTip);
+        emptyTip.style.display = "block";
+      }
+
+      const nameEl = document.getElementById("chatDetailName");
+      const subEl = document.getElementById("chatDetailSub");
+      const avatarEl = document.getElementById("chatDetailAvatar");
+      if (nameEl) nameEl.textContent = "系統通知 · 心遇小幫手";
+      if (subEl) subEl.textContent = "官方帳號 · 重要公告會顯示在這裡";
+      if (avatarEl) avatarEl.src = "https://picsum.photos/seed/xinyou-system/200/200";
+    }
+
+    function openChat(chatId) {
+      currentChatId = chatId;
+      const conversations = getChatConversations();
+      const conv = conversations.find((c) => c.id === chatId);
+      if (!conv) return;
+
+      const listEl = document.getElementById("chatList");
+      if (listEl) {
+        listEl.querySelectorAll(".chat-list-item").forEach((item) => {
+          item.classList.remove("active");
+          if (item.dataset.chatId === chatId) {
+            item.classList.add("active");
+          }
+        });
+      }
+
+      const nameEl = document.getElementById("chatDetailName");
+      const subEl = document.getElementById("chatDetailSub");
+      const avatarEl = document.getElementById("chatDetailAvatar");
+      if (nameEl) nameEl.textContent = conv.name;
+      if (subEl) {
+        if (chatId === "system") {
+          subEl.textContent = "官方通知 · Demo 訊息";
+        } else if (chatId.startsWith("friend-")) {
+          subEl.textContent = "已是好友，可以互傳訊息與照片";
+        } else {
+          subEl.textContent = "對話資訊";
+        }
+      }
+      if (avatarEl) avatarEl.src = conv.avatar;
+
+      const messagesEl = document.getElementById("chatMessages");
+      const emptyTip = document.getElementById("chatEmptyTip");
+      if (messagesEl && emptyTip) {
+        messagesEl.innerHTML = "";
+        emptyTip.style.display = "none";
+
+        if (chatId === "system") {
+          appendChatBubble("them", "歡迎加入心遇，祝你在這裡遇見好故事。", { time: "剛剛" });
+          appendChatBubble("them", "這裡是官方小幫手，之後活動通知會出現在這裡。", { time: "剛剛" });
+        } else if (chatId.startsWith("friend-")) {
+          appendChatBubble("them", "嗨，我們已經是好友了，可以開始聊天囉！", { time: "剛剛" });
+        } else {
+          appendChatBubble("them", "嗨，這是一則示意訊息。", { time: "剛剛" });
+        }
+      }
+    }
+
+    function appendChatBubble(from, text, options) {
+      const messagesEl = document.getElementById("chatMessages");
+      const emptyTip = document.getElementById("chatEmptyTip");
+      if (!messagesEl || !emptyTip) return;
+
+      emptyTip.style.display = "none";
+
+      const row = document.createElement("div");
+      row.className = "bubble-row" + (from === "me" ? " me" : "");
+
+      const bubble = document.createElement("div");
+      bubble.className = "bubble " + (from === "me" ? "me" : "them");
+      if (text) {
+        const textSpan = document.createElement("div");
+        textSpan.textContent = text;
+        bubble.appendChild(textSpan);
+      }
+
+      if (options && options.imageDataUrl) {
+        const img = document.createElement("img");
+        img.src = options.imageDataUrl;
+        img.className = "chat-photo";
+        bubble.appendChild(img);
+      }
+
+      const meta = document.createElement("div");
+      meta.className = "bubble-meta";
+      meta.textContent = options && options.time ? options.time : "剛剛";
+      bubble.appendChild(meta);
+
+      row.appendChild(bubble);
+      messagesEl.appendChild(row);
+      messagesEl.scrollTop = messagesEl.scrollHeight;
+    }
+
+    function sendChatMessage() {
+      const input = document.getElementById("chatInput");
+      if (!input) return;
+      const text = input.value.trim();
+      if (!currentChatId) {
+        alert("請先從左側列表選擇一個對象。");
+        return;
+      }
+      if (!text) return;
+      appendChatBubble("me", text, { time: "剛剛" });
+      input.value = "";
+    }
+
+    function openChatWithPerson(personId) {
+      const chatId = "friend-" + personId;
+      currentChatId = chatId;
+      switchPage("chat");
+      renderChatList();
+      openChat(chatId);
+    }
+
+    function handleChatThemeSwitch(theme) {
+      const wrapper = document.getElementById("chatWrapper");
+      if (!wrapper) return;
+      wrapper.classList.remove("chat-theme-light", "chat-theme-pink", "chat-theme-blue", "chat-theme-dark");
+      if (theme === "light") wrapper.classList.add("chat-theme-light");
+      else if (theme === "pink") wrapper.classList.add("chat-theme-pink");
+      else if (theme === "blue") wrapper.classList.add("chat-theme-blue");
+      else wrapper.classList.add("chat-theme-dark");
+
+      document.querySelectorAll(".chat-theme-pill").forEach((pill) => {
+        pill.classList.remove("active");
+        if (pill.getAttribute("data-theme") === theme) {
+          pill.classList.add("active");
+        }
+      });
+    }
+
+    function setupChatInteractions() {
+      const sendBtn = document.getElementById("chatSendBtn");
+      const input = document.getElementById("chatInput");
+      const plusBtn = document.getElementById("chatPlusBtn");
+      const moreMenu = document.getElementById("chatMoreMenu");
+      const stickerBtn = document.getElementById("chatMoreStickerBtn");
+      const photoBtn = document.getElementById("chatMorePhotoBtn");
+      const gifBtn = document.getElementById("chatMoreGifBtn");
+      const stickerBar = document.getElementById("stickerBar");
+      const photoInput = document.getElementById("chatPhotoInput");
+
+      if (sendBtn) {
+        sendBtn.addEventListener("click", sendChatMessage);
+      }
+      if (input) {
+        input.addEventListener("keydown", (e) => {
+          if (e.key === "Enter") {
+            e.preventDefault();
+            sendChatMessage();
+          }
+        });
+      }
+      if (plusBtn && moreMenu) {
+        plusBtn.addEventListener("click", () => {
+          const isVisible = moreMenu.style.display === "flex";
+          moreMenu.style.display = isVisible ? "none" : "flex";
+          if (stickerBar) stickerBar.style.display = "none";
+        });
+      }
+      if (stickerBtn && stickerBar) {
+        stickerBtn.addEventListener("click", () => {
+          stickerBar.style.display = stickerBar.style.display === "flex" ? "none" : "flex";
+        });
+      }
+      if (photoBtn && photoInput) {
+        photoBtn.addEventListener("click", () => {
+          photoInput.click();
+        });
+      }
+      if (gifBtn) {
+        gifBtn.addEventListener("click", () => {
+          appendChatBubble("them", "Demo：之後可以在這裡接上 GIF / 動圖服務。", { time: "系統" });
+        });
+      }
+
+      if (stickerBar) {
+        stickerBar.querySelectorAll(".sticker-btn").forEach((btn) => {
+          btn.addEventListener("click", () => {
+            const emoji = btn.textContent || "";
+            if (emoji) {
+              appendChatBubble("me", emoji, { time: "剛剛" });
+            }
+          });
+        });
+      }
+
+      if (photoInput) {
+        photoInput.addEventListener("change", (event) => {
+          const file = event.target.files && event.target.files[0];
+          if (!file) return;
+          if (!currentChatId) {
+            alert("請先從左側列表選擇一個對象。");
+            event.target.value = "";
+            return;
+          }
+          const reader = new FileReader();
+          reader.onload = function (e) {
+            const dataUrl = e.target.result;
+            appendChatBubble("me", "", { time: "剛剛", imageDataUrl: dataUrl });
+          };
+          reader.readAsDataURL(file);
+          event.target.value = "";
+        });
+      }
+
+      document.querySelectorAll(".chat-theme-pill").forEach((pill) => {
+        pill.addEventListener("click", () => {
+          const theme = pill.getAttribute("data-theme");
+          handleChatThemeSwitch(theme || "dark");
+        });
+      });
+    }
+
+    function switchPage(pageName) {
+      document.querySelectorAll(".page").forEach((page) => {
+        page.classList.remove("active");
+      });
+      const targetId = "page-" + pageName;
+      const targetPage = document.getElementById(targetId);
+      if (targetPage) {
+        targetPage.classList.add("active");
+      }
+
+      document.querySelectorAll(".nav-item").forEach((nav, idx) => {
+        nav.classList.remove("active");
+        if (nav.getAttribute("data-page") === pageName) {
+          nav.classList.add("active");
+          moveNavIndicator(idx);
+        }
+      });
+
+      if (pageName === "friends") {
+        renderFriendsPage();
+      } else if (pageName === "rank") {
+        renderRankPage();
+      } else if (pageName === "people") {
+        renderPeople();
+      } else if (pageName === "chat") {
+        renderChatList();
+      } else if (pageName === "me") {
+        renderFootprints();
+        renderMyAlbum();
+        renderMyDiaries();
+      }
+    }
+
+    function moveNavIndicator(index) {
+      const indicator = document.getElementById("navIndicator");
+      if (!indicator) return;
+      const percent = index * 100;
+      indicator.style.transform = "translateX(" + percent + "%)";
+    }
+
+    function setupNavigation() {
+      document.querySelectorAll(".nav-item").forEach((nav, index) => {
+        nav.addEventListener("click", () => {
+          const page = nav.getAttribute("data-page");
+          if (page) {
+            switchPage(page);
+          }
+        });
+      });
+      moveNavIndicator(0);
+    }
+
+    function setupVipToggle() {
+      const btn = document.getElementById("vipToggleBtn");
+      if (!btn) return;
+      btn.addEventListener("click", () => {
+        const cur = hmGetVipLevel();
+        const next = cur >= 5 ? 0 : cur + 1;
+        hmSetVipLevel(next);
+      });
+    }
+
+    function setupDiaryControls() {
+      const diaryBtn = document.getElementById("diaryImageBtn");
+      const diaryInput = document.getElementById("diaryImageInput");
+      const diaryText = document.getElementById("diaryInput");
+      const clearBtn = document.getElementById("clearDiaryBtn");
+
+      if (diaryBtn && diaryInput) {
+        diaryBtn.addEventListener("click", () => diaryInput.click());
+      }
+
+      if (diaryText) {
+        diaryText.addEventListener("keydown", (e) => {
+          if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) {
+            e.preventDefault();
+            handleAddDiary();
+          }
+        });
+        diaryText.addEventListener("blur", () => {
+          const val = diaryText.value.trim();
+          if (val) {
+            handleAddDiary();
+          }
+        });
+      }
+
+      if (clearBtn) {
+        clearBtn.addEventListener("click", clearAllDiaries);
+      }
+    }
+
+    function setupFriendNote() {
+      const input = document.getElementById("friendNoteInput");
+      const preview = document.getElementById("friendNotePreviewBody");
+      if (!input || !preview) return;
+      const initial = hmLoadFriendNote();
+      input.value = initial;
+      preview.textContent = initial || "還沒寫小語，先寫一段吧，好友才看得到。";
+
+      input.addEventListener("input", () => {
+        const text = input.value;
+        hmSaveFriendNote(text);
+        preview.textContent = text || "還沒寫小語，先寫一段吧，好友才看得到。";
+      });
+    }
+
+    function setupProfileBasic() {
+      const nicknameEl = document.getElementById("meNickname");
+      const genderEl = document.getElementById("meGender");
+      const cityEl = document.getElementById("meCity");
+      const taglineEl = document.getElementById("meTagline");
+      const previewEl = document.getElementById("meNicknamePreview");
+
+      const data = hmLoadProfileBasic() || {};
+      if (nicknameEl) nicknameEl.value = data.nickname || "";
+      if (genderEl) genderEl.value = data.gender || "";
+      if (cityEl) cityEl.value = data.city || "";
+      if (taglineEl) taglineEl.value = data.tagline || "";
+      if (previewEl) previewEl.textContent = data.nickname || "旅人 · Demo";
+
+      function save() {
+        const obj = {
+          nickname: nicknameEl ? nicknameEl.value.trim() : "",
+          gender: genderEl ? genderEl.value : "",
+          city: cityEl ? cityEl.value : "",
+          tagline: taglineEl ? taglineEl.value.trim() : "",
+        };
+        hmSaveProfileBasic(obj);
+        if (previewEl) previewEl.textContent = obj.nickname || "旅人 · Demo";
+      }
+
+      if (nicknameEl) nicknameEl.addEventListener("blur", save);
+      if (genderEl) genderEl.addEventListener("change", save);
+      if (cityEl) cityEl.addEventListener("change", save);
+      if (taglineEl) taglineEl.addEventListener("blur", save);
+    }
+
+    function setupProfileDetailBack() {
+      const backBtn = document.getElementById("profileBackBtn");
+      if (!backBtn) return;
+      backBtn.addEventListener("click", () => {
+        const active = document.querySelector(".nav-item.active");
+        const page = active ? active.getAttribute("data-page") : "people";
+        switchPage(page || "people");
+      });
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+      setupNavigation();
+      setupVipToggle();
+      renderPeople();
+      renderFriendsPage();
+      renderRankPage();
+      renderMyAlbum();
+      renderMyDiaries();
+      renderFootprints();
+      hmUpdateVipUI();
+      setupChatInteractions();
+      renderChatList();
+      setupDiaryControls();
+      setupFriendNote();
+      setupProfileBasic();
+      setupProfileDetailBack();
+
+      const albumInput = document.getElementById("myAlbumFileInput");
+      if (albumInput) {
+        albumInput.addEventListener("change", onMyAlbumFileChange);
+      }
+    });
+  </script>
+</body>
+</html>
