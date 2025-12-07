@@ -1372,479 +1372,478 @@
   </style>
 </head>
 <body>
+ <!-- 頂部 -->
+ <div class="top-bar">
+   <div class="top-bar-inner">
+     <div class="top-title" id="topTitle">人們 · 心遇 XinYou</div>
+     <div class="top-right" id="topRightSlot"></div>
+   </div>
+ </div>
 
-<!-- 頂部 -->
-<div class="top-bar">
-  <div class="top-bar-inner">
-    <div class="top-title" id="topTitle">人們 · 心遇 XinYou</div>
-    <div class="top-right" id="topRightSlot"></div>
-  </div>
-</div>
+ <!-- 人們頁 -->
+ <div class="page active" id="page-people">
+   <div class="people-wrapper">
+     <div class="people-grid" id="peopleGrid"></div>
+     <div class="pager">
+       <button class="pager-btn" id="nextBatchBtn">換一批看看 ➜</button>
+     </div>
+   </div>
+ </div>
 
-<!-- 人們頁 -->
-<div class="page active" id="page-people">
-  <div class="people-wrapper">
-    <div class="people-grid" id="peopleGrid"></div>
-    <div class="pager">
-      <button class="pager-btn" id="nextBatchBtn">換一批看看 ➜</button>
-    </div>
-  </div>
-</div>
+ <!-- 詳細檔案頁 -->
+ <div class="page" id="page-profileDetail">
+   <div id="profileDetailContent"></div>
+ </div>
 
-<!-- 詳細檔案頁 -->
-<div class="page" id="page-profileDetail">
-  <div id="profileDetailContent"></div>
-</div>
+ <!-- 好友頁 -->
+ <div class="page" id="page-friends">
+   <div class="tabs-row">
+     <div class="tab-btn active" data-friendtab="friends">好友</div>
+     <div class="tab-btn" data-friendtab="sent">送出申請</div>
+     <div class="tab-btn" data-friendtab="received">收到申請</div>
+   </div>
+   <ul class="list" id="friendsList"></ul>
+ </div>
 
-<!-- 好友頁 -->
-<div class="page" id="page-friends">
-  <div class="tabs-row">
-    <div class="tab-btn active" data-friendtab="friends">好友</div>
-    <div class="tab-btn" data-friendtab="sent">送出申請</div>
-    <div class="tab-btn" data-friendtab="received">收到申請</div>
-  </div>
-  <ul class="list" id="friendsList"></ul>
-</div>
+ <!-- 排行榜頁 -->
+ <div class="page" id="page-rank">
+   <div class="rank-tabs">
+     <div class="rank-tab active" data-ranktab="pop">人氣榜</div>
+     <div class="rank-tab" data-ranktab="receive">收禮榜</div>
+     <div class="rank-tab" data-ranktab="send">送禮榜</div>
+   </div>
+   <div class="rank-wrapper">
+     <div class="card rank-pyramid-card" id="rankPyramid"></div>
+     <div class="rank-list" id="rankList"></div>
+     <div class="rank-note">
+       排行榜目前為示意版。正式版會依照聊天量、禮物、互動分數計算。<br />
+       No.1 可自由選擇顯示「King」或「Queen」。
+     </div>
+   </div>
+ </div>
 
-<!-- 排行榜頁 -->
-<div class="page" id="page-rank">
-  <div class="rank-tabs">
-    <div class="rank-tab active" data-ranktab="pop">人氣榜</div>
-    <div class="rank-tab" data-ranktab="receive">收禮榜</div>
-    <div class="rank-tab" data-ranktab="send">送禮榜</div>
-  </div>
-  <div class="rank-wrapper">
-    <div class="card rank-pyramid-card" id="rankPyramid"></div>
-    <div class="rank-list" id="rankList"></div>
-    <div class="rank-note">
-      排行榜目前為示意版。正式版會依照聊天量、禮物、互動分數計算。<br />
-      No.1 可自由選擇顯示「King」或「Queen」。
-    </div>
-  </div>
-</div>
+ <!-- 聊天頁 -->
+ <div class="page" id="page-chat">
+   <div class="chat-theme-bar">
+     <div class="chat-theme-pill active" data-theme="light">淺色</div>
+     <div class="chat-theme-pill" data-theme="pink">淡粉</div>
+     <div class="chat-theme-pill" data-theme="blue">淡藍</div>
+     <div class="chat-theme-pill" data-theme="dark">深色</div>
+   </div>
+   <div class="chat-wrapper chat-theme-light" id="chatWrapper">
+     <div class="chat-messages" id="chatMessages">
+       <div class="bubble-row">
+         <div class="bubble them">
+           歡迎來到「心遇 XinYou」聊天介面示意。<br />
+           目前是前端原型，未連接真實後端。
+         </div>
+       </div>
+       <div class="bubble-row me">
+         <div class="bubble me">
+           老闆你可以切換上方聊天背景、試試輸入文字、用下面的 + 號打開貼圖 / 照片 / GIF。
+         </div>
+       </div>
+     </div>
+     <div class="chat-input-area">
+       <div class="chat-more-menu" id="chatMoreMenu">
+         <button class="chat-more-btn" data-type="sticker">😊 貼圖</button>
+         <button class="chat-more-btn" id="chatPhotoBtn">🖼 照片</button>
+         <button class="chat-more-btn" id="chatGifBtn">GIF 動圖</button>
+       </div>
+       <div class="chat-sticker-bar" id="stickerBar">
+         <button class="sticker-btn">😊</button>
+         <button class="sticker-btn">😂</button>
+         <button class="sticker-btn">🥺</button>
+         <button class="sticker-btn">❤️</button>
+         <button class="sticker-btn">👍</button>
+         <button class="sticker-btn">🔥</button>
+       </div>
+       <div class="chat-input-bar">
+         <button class="chat-plus-btn" id="chatPlusBtn">＋</button>
+         <input class="chat-input" id="chatInput" placeholder="輸入訊息..." />
+         <button class="chat-send-btn" id="chatSendBtn">傳送</button>
+       </div>
+       <input type="file" id="chatPhotoInput" accept="image/*" style="display:none" />
+       <input type="file" id="chatGifInput" accept="image/gif,image/*,video/*" style="display:none" />
+     </div>
+   </div>
+ </div>
 
-<!-- 聊天頁 -->
-<div class="page" id="page-chat">
-  <div class="chat-theme-bar">
-    <div class="chat-theme-pill active" data-theme="light">淺色</div>
-    <div class="chat-theme-pill" data-theme="pink">淡粉</div>
-    <div class="chat-theme-pill" data-theme="blue">淡藍</div>
-    <div class="chat-theme-pill" data-theme="dark">深色</div>
-  </div>
-  <div class="chat-wrapper chat-theme-light" id="chatWrapper">
-    <div class="chat-messages" id="chatMessages">
-      <div class="bubble-row">
-        <div class="bubble them">
-          歡迎來到「心遇 XinYou」聊天介面示意。<br />
-          目前是前端原型，未連接真實後端。
-        </div>
-      </div>
-      <div class="bubble-row me">
-        <div class="bubble me">
-          老闆你可以切換上方聊天背景、試試輸入文字、用下面的 + 號打開貼圖 / 照片 / GIF。
-        </div>
-      </div>
-    </div>
-    <div class="chat-input-area">
-      <div class="chat-more-menu" id="chatMoreMenu">
-        <button class="chat-more-btn" data-type="sticker">😊 貼圖</button>
-        <button class="chat-more-btn" id="chatPhotoBtn">🖼 照片</button>
-        <button class="chat-more-btn" id="chatGifBtn">GIF 動圖</button>
-      </div>
-      <div class="chat-sticker-bar" id="stickerBar">
-        <button class="sticker-btn">😊</button>
-        <button class="sticker-btn">😂</button>
-        <button class="sticker-btn">🥺</button>
-        <button class="sticker-btn">❤️</button>
-        <button class="sticker-btn">👍</button>
-        <button class="sticker-btn">🔥</button>
-      </div>
-      <div class="chat-input-bar">
-        <button class="chat-plus-btn" id="chatPlusBtn">＋</button>
-        <input class="chat-input" id="chatInput" placeholder="輸入訊息..." />
-        <button class="chat-send-btn" id="chatSendBtn">傳送</button>
-      </div>
-      <input type="file" id="chatPhotoInput" accept="image/*" style="display:none" />
-      <input type="file" id="chatGifInput" accept="image/gif,image/*,video/*" style="display:none" />
-    </div>
-  </div>
-</div>
+ <!-- 我的頁 -->
+ <div class="page" id="page-me">
+   <div class="profile-header">
+     <div class="profile-row-main">
+       <div class="profile-avatar">
+         <img src="https://picsum.photos/200/200?random=99" alt="我的頭像" />
+       </div>
+       <div>
+         <div class="profile-name">
+           我自己 · Demo
+           <span id="myVipBadge" class="vip-badge" style="display:none;"></span>
+         </div>
+         <div class="profile-sub" id="myProfileSub">台灣 · 30 歲左右 · 已上線</div>
+       </div>
+     </div>
+   </div>
 
-<!-- 我的頁 -->
-<div class="page" id="page-me">
-  <div class="profile-header">
-    <div class="profile-row-main">
-      <div class="profile-avatar">
-        <img src="https://picsum.photos/200/200?random=99" alt="我的頭像" />
-      </div>
-      <div>
-        <div class="profile-name">
-          我自己 · Demo
-          <span id="myVipBadge" class="vip-badge" style="display:none;"></span>
-        </div>
-        <div class="profile-sub" id="myProfileSub">台灣 · 30 歲左右 · 已上線</div>
-      </div>
-    </div>
-  </div>
+   <!-- HeartMeet 我的資料卡片（連動彈跳視窗資料） -->
+   <section id="hm-profile-section">
+     <div class="hm-profile-card">
+       <div class="hm-profile-header">
+         <div class="hm-profile-avatar">
+           <span id="hm-profile-avatar-text">Me</span>
+         </div>
+         <div class="hm-profile-basic">
+           <h3 id="hm-profile-name">未設定姓名</h3>
+           <p id="hm-profile-meta">身高 / 體重 未填寫</p>
+           <p id="hm-profile-region" class="hm-profile-region">居住區域：未填寫</p>
+           <p id="hm-profile-bind" class="hm-profile-bind">尚未綁定帳號</p>
+         </div>
+       </div>
 
-  <!-- HeartMeet 我的資料卡片（連動彈跳視窗資料） -->
-  <section id="hm-profile-section">
-    <div class="hm-profile-card">
-      <div class="hm-profile-header">
-        <div class="hm-profile-avatar">
-          <span id="hm-profile-avatar-text">Me</span>
-        </div>
-        <div class="hm-profile-basic">
-          <h3 id="hm-profile-name">未設定姓名</h3>
-          <p id="hm-profile-meta">身高 / 體重 未填寫</p>
-          <p id="hm-profile-region" class="hm-profile-region">居住區域：未填寫</p>
-          <p id="hm-profile-bind" class="hm-profile-bind">尚未綁定帳號</p>
-        </div>
-      </div>
+       <div class="hm-profile-social-block">
+         <div class="hm-profile-social-title-row">
+           <span class="hm-profile-social-title">社群串聯</span>
+           <span class="hm-profile-social-sub">多平台連結，增加真實感</span>
+         </div>
+         <div id="hm-profile-social-list" class="hm-profile-social-list">
+           <span class="hm-profile-social-empty">目前尚未串聯任何社群帳號</span>
+         </div>
+       </div>
 
-      <div class="hm-profile-social-block">
-        <div class="hm-profile-social-title-row">
-          <span class="hm-profile-social-title">社群串聯</span>
-          <span class="hm-profile-social-sub">多平台連結，增加真實感</span>
-        </div>
-        <div id="hm-profile-social-list" class="hm-profile-social-list">
-          <span class="hm-profile-social-empty">目前尚未串聯任何社群帳號</span>
-        </div>
-      </div>
+       <div class="hm-profile-footer">
+         <button id="hm-profile-edit-btn" class="hm-btn-outline">
+           編輯基本資料 / 社群串聯
+         </button>
+       </div>
+     </div>
+   </section>
 
-      <div class="hm-profile-footer">
-        <button id="hm-profile-edit-btn" class="hm-btn-outline">
-          編輯基本資料 / 社群串聯
-        </button>
-      </div>
-    </div>
-  </section>
+   <!-- 我的 6 張照片區 -->
+   <div class="section">
+     <div class="section-title">我的照片（最多 6 張，示意）</div>
+     <div class="my-album-note">
+       前 2 張為免費預覽，後 4 張需觀看一次廣告暫時解鎖；成為 VIP1～VIP5 後，6 張將全部永久開放（Demo 模式用按鈕切換 VIP 等級）。
+     </div>
+     <div id="myAlbumGrid" class="my-album-grid"></div>
+     <div class="my-album-vip-demo">
+       <span id="vipLevelText">目前 VIP 等級：無（Demo）</span>
+       <button id="vipLevelToggleBtn" type="button">切換 VIP 等級（0→5 循環）</button>
+     </div>
+   </div>
 
-  <!-- 我的 6 張照片區 -->
-  <div class="section">
-    <div class="section-title">我的照片（最多 6 張，示意）</div>
-    <div class="my-album-note">
-      前 2 張為免費預覽，後 4 張需觀看一次廣告暫時解鎖；成為 VIP1～VIP5 後，6 張將全部永久開放（Demo 模式用按鈕切換 VIP 等級）。
-    </div>
-    <div id="myAlbumGrid" class="my-album-grid"></div>
-    <div class="my-album-vip-demo">
-      <span id="vipLevelText">目前 VIP 等級：無（Demo）</span>
-      <button id="vipLevelToggleBtn" type="button">切換 VIP 等級（0→5 循環）</button>
-    </div>
-  </div>
+   <div class="section">
+     <div class="section-title">我的狀態（像以前即時通那樣）</div>
+     <div class="diary-list">
+       <div class="diary-item">
+         <div style="margin-bottom:6px;">
+           <span style="font-size:16px; color:#374151;">目前狀態：</span>
+           <span id="myStatusBadge" class="status-badge">
+             <span class="status-dot"></span><span id="myStatusText">已上線</span>
+           </span>
+         </div>
+         <div style="margin-top:4px; font-size:16px;">
+           <label for="statusSelect">修改狀態：</label>
+           <select id="statusSelect">
+             <option value="online">已上線</option>
+             <option value="busy">忙碌中…</option>
+             <option value="eating">用餐去…</option>
+             <option value="shower">洗澡中…</option>
+             <option value="away">暫離中…</option>
+             <option value="offline">離線中</option>
+             <option value="chatty">想聊天</option>
+           </select>
+         </div>
+         <div class="my-section-note">
+           正式版會把這個狀態同步顯示在「人們」與「好友」列表。
+         </div>
+       </div>
+     </div>
+   </div>
 
-  <div class="section">
-    <div class="section-title">我的狀態（像以前即時通那樣）</div>
-    <div class="diary-list">
-      <div class="diary-item">
-        <div style="margin-bottom:6px;">
-          <span style="font-size:16px; color:#374151;">目前狀態：</span>
-          <span id="myStatusBadge" class="status-badge">
-            <span class="status-dot"></span><span id="myStatusText">已上線</span>
-          </span>
-        </div>
-        <div style="margin-top:4px; font-size:16px;">
-          <label for="statusSelect">修改狀態：</label>
-          <select id="statusSelect">
-            <option value="online">已上線</option>
-            <option value="busy">忙碌中…</option>
-            <option value="eating">用餐去…</option>
-            <option value="shower">洗澡中…</option>
-            <option value="away">暫離中…</option>
-            <option value="offline">離線中</option>
-            <option value="chatty">想聊天</option>
-          </select>
-        </div>
-        <div class="my-section-note">
-          正式版會把這個狀態同步顯示在「人們」與「好友」列表。
-        </div>
-      </div>
-    </div>
-  </div>
+   <div class="section">
+     <div class="section-title">好友限定的小語（只有好友看得到）</div>
+     <div class="diary-list">
+       <div class="diary-item">
+         <div style="font-size:16px; margin-bottom:4px;">
+           在這裡寫一些比較私人的心情，只讓好友看得到。
+         </div>
+         <textarea id="friendNoteInput">今天好難過，希望能有好天氣出現。</textarea>
+         <div style="margin-top:8px; font-size:14px; color:#9ca3af;">
+           好友列表顯示預覽：
+         </div>
+         <div id="friendNotePreview" class="item-row3" style="margin-top:4px;">
+           <span class="label">好友限定：</span>今天好難過，希望能有好天氣出現。
+         </div>
+       </div>
+     </div>
+   </div>
 
-  <div class="section">
-    <div class="section-title">好友限定的小語（只有好友看得到）</div>
-    <div class="diary-list">
-      <div class="diary-item">
-        <div style="font-size:16px; margin-bottom:4px;">
-          在這裡寫一些比較私人的心情，只讓好友看得到。
-        </div>
-        <textarea id="friendNoteInput">今天好難過，希望能有好天氣出現。</textarea>
-        <div style="margin-top:8px; font-size:14px; color:#9ca3af;">
-          好友列表顯示預覽：
-        </div>
-        <div id="friendNotePreview" class="item-row3" style="margin-top:4px;">
-          <span class="label">好友限定：</span>今天好難過，希望能有好天氣出現。
-        </div>
-      </div>
-    </div>
-  </div>
+   <div class="section">
+     <div class="section-title">誰來看過我（最近足跡示意）</div>
+     <div class="footprint-list">
+       <div class="footprint-item">
+         <div class="footprint-avatar">
+           <img src="https://picsum.photos/200/200?random=301" alt="footprint1">
+         </div>
+         <div class="footprint-main">
+           <div class="footprint-name">小茵</div>
+           <div class="footprint-sub">來自 台北 · 2 小時前來看過你</div>
+         </div>
+       </div>
+       <div class="footprint-item">
+         <div class="footprint-avatar">
+           <img src="https://picsum.photos/200/200?random=302" alt="footprint2">
+         </div>
+         <div class="footprint-main">
+           <div class="footprint-name">Ken</div>
+           <div class="footprint-sub">來自 高雄 · 昨天晚上路過你的檔案</div>
+         </div>
+       </div>
+       <div class="footprint-item">
+         <div class="footprint-avatar">
+           <img src="https://picsum.photos/200/200?random=303" alt="footprint3">
+         </div>
+         <div class="footprint-main">
+           <div class="footprint-name">Rin</div>
+           <div class="footprint-sub">來自 新北 · 3 天前拜訪</div>
+         </div>
+       </div>
+       <div class="my-section-note">
+         正式版可以把這裡做成 VIP 才能看完整名單／時間的功能。
+       </div>
+     </div>
+   </div>
 
-  <div class="section">
-    <div class="section-title">誰來看過我（最近足跡示意）</div>
-    <div class="footprint-list">
-      <div class="footprint-item">
-        <div class="footprint-avatar">
-          <img src="https://picsum.photos/200/200?random=301" alt="footprint1">
-        </div>
-        <div class="footprint-main">
-          <div class="footprint-name">小茵</div>
-          <div class="footprint-sub">來自 台北 · 2 小時前來看過你</div>
-        </div>
-      </div>
-      <div class="footprint-item">
-        <div class="footprint-avatar">
-          <img src="https://picsum.photos/200/200?random=302" alt="footprint2">
-        </div>
-        <div class="footprint-main">
-          <div class="footprint-name">Ken</div>
-          <div class="footprint-sub">來自 高雄 · 昨天晚上路過你的檔案</div>
-        </div>
-      </div>
-      <div class="footprint-item">
-        <div class="footprint-avatar">
-          <img src="https://picsum.photos/200/200?random=303" alt="footprint3">
-        </div>
-        <div class="footprint-main">
-          <div class="footprint-name">Rin</div>
-          <div class="footprint-sub">來自 新北 · 3 天前拜訪</div>
-        </div>
-      </div>
-      <div class="my-section-note">
-        正式版可以把這裡做成 VIP 才能看完整名單／時間的功能。
-      </div>
-    </div>
-  </div>
+   <div class="section">
+     <div class="section-title">搜尋與通知設定（示意）</div>
+     <div class="form-list">
+       <div class="form-row">
+         <div class="form-label">國家 / 地區</div>
+         <div class="form-value">台灣 · 全部地區 &gt;</div>
+       </div>
+       <div class="form-row">
+         <div class="form-label">接受好友申請</div>
+         <div class="toggle on"><div class="toggle-knob"></div></div>
+       </div>
+       <div class="form-row">
+         <div class="form-label">聊天通知</div>
+         <div class="toggle on"><div class="toggle-knob"></div></div>
+       </div>
+     </div>
+     <div class="my-section-note">
+       這裡之後可以連到真正的設定頁，讓用戶細調通知、搜尋條件等。
+     </div>
+   </div>
 
-  <div class="section">
-    <div class="section-title">搜尋與通知設定（示意）</div>
-    <div class="form-list">
-      <div class="form-row">
-        <div class="form-label">國家 / 地區</div>
-        <div class="form-value">台灣 · 全部地區 &gt;</div>
-      </div>
-      <div class="form-row">
-        <div class="form-label">接受好友申請</div>
-        <div class="toggle on"><div class="toggle-knob"></div></div>
-      </div>
-      <div class="form-row">
-        <div class="form-label">聊天通知</div>
-        <div class="toggle on"><div class="toggle-knob"></div></div>
-      </div>
-    </div>
-    <div class="my-section-note">
-      這裡之後可以連到真正的設定頁，讓用戶細調通知、搜尋條件等。
-    </div>
-  </div>
+   <div class="section">
+     <div class="section-title">我的日記（示意，之後可限制免費 5 篇）</div>
+     <div class="diary-list">
+       <div class="diary-item">
+         <div class="diary-date">2025-12-05</div>
+         <div>今天看了「心遇 XinYou」V3 原型，感覺已經有正式交友 App 雛形。</div>
+       </div>
+       <div class="diary-item">
+         <div class="diary-date">2025-11-30</div>
+         <div>未來可能會加入簽到、送花、排行榜積分，先專心把基礎做好。</div>
+       </div>
+     </div>
+   </div>
 
-  <div class="section">
-    <div class="section-title">我的日記（示意，之後可限制免費 5 篇）</div>
-    <div class="diary-list">
-      <div class="diary-item">
-        <div class="diary-date">2025-12-05</div>
-        <div>今天看了「心遇 XinYou」V3 原型，感覺已經有正式交友 App 雛形。</div>
-      </div>
-      <div class="diary-item">
-        <div class="diary-date">2025-11-30</div>
-        <div>未來可能會加入簽到、送花、排行榜積分，先專心把基礎做好。</div>
-      </div>
-    </div>
-  </div>
+   <!-- 帳號與安全：已移到最底部 -->
+   <div class="section">
+     <div class="section-title">帳號與安全</div>
+     <div class="diary-list">
+       <div class="diary-item">
+         <div style="font-size:16px; margin-bottom:6px;">
+           若你是在他人裝置上使用，建議離開前先登出，以免個人資料被他人查看。
+         </div>
+         <button id="hm-logout-btn" type="button" class="hm-btn-outline">
+           登出目前帳號（清除本機暫存資料）
+         </button>
+         <div style="margin-top:8px; font-size:13px; color:#9ca3af;">
+           Demo：登出會清除本機的綁定資訊、基本資料與相簿暫存，下次進入時會重新跳出綁定與填寫資料的視窗。
+         </div>
+       </div>
+     </div>
+   </div>
+ </div>
 
-  <!-- 帳號與安全：已移到最底部 -->
-  <div class="section">
-    <div class="section-title">帳號與安全</div>
-    <div class="diary-list">
-      <div class="diary-item">
-        <div style="font-size:16px; margin-bottom:6px;">
-          若你是在他人裝置上使用，建議離開前先登出，以免個人資料被他人查看。
-        </div>
-        <button id="hm-logout-btn" type="button" class="hm-btn-outline">
-          登出目前帳號（清除本機暫存資料）
-        </button>
-        <div style="margin-top:8px; font-size:13px; color:#9ca3af;">
-          Demo：登出會清除本機的綁定資訊、基本資料與相簿暫存，下次進入時會重新跳出綁定與填寫資料的視窗。
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
+ <!-- 底部導航 -->
+ <div class="bottom-nav">
+   <div class="nav-item active" data-page="people">
+     <div class="nav-item-inner">
+       <div class="nav-icon">人</div>
+       <span>巧遇</span>
+     </div>
+   </div>
+   <div class="nav-item" data-page="friends">
+     <div class="nav-item-inner">
+       <div class="nav-icon">友</div>
+       <span>好友</span>
+     </div>
+   </div>
+   <div class="nav-item" data-page="rank">
+     <div class="nav-item-inner">
+       <div class="nav-icon">冠</div>
+       <span>排行榜</span>
+     </div>
+   </div>
+   <div class="nav-item" data-page="chat">
+     <div class="nav-item-inner">
+       <div class="nav-icon">聊</div>
+       <span>聊天</span>
+     </div>
+   </div>
+   <div class="nav-item" data-page="me">
+     <div class="nav-item-inner">
+       <div class="nav-icon">我</div>
+       <span>我的</span>
+     </div>
+   </div>
+ </div>
 
-<!-- 底部導航 -->
-<div class="bottom-nav">
-  <div class="nav-item active" data-page="people">
-    <div class="nav-item-inner">
-      <div class="nav-icon">人</div>
-      <span>巧遇</span>
-    </div>
-  </div>
-  <div class="nav-item" data-page="friends">
-    <div class="nav-item-inner">
-      <div class="nav-icon">友</div>
-      <span>好友</span>
-    </div>
-  </div>
-  <div class="nav-item" data-page="rank">
-    <div class="nav-item-inner">
-      <div class="nav-icon">冠</div>
-      <span>排行榜</span>
-    </div>
-  </div>
-  <div class="nav-item" data-page="chat">
-    <div class="nav-item-inner">
-      <div class="nav-icon">聊</div>
-      <span>聊天</span>
-    </div>
-  </div>
-  <div class="nav-item" data-page="me">
-    <div class="nav-item-inner">
-      <div class="nav-icon">我</div>
-      <span>我的</span>
-    </div>
-  </div>
-</div>
+ <!-- 全螢幕 Viewer -->
+ <div class="photo-viewer" id="photoViewer">
+   <img src="" alt="photo">
+   <div class="photo-viewer-close" onclick="closeViewer()">✕</div>
+ </div>
 
-<!-- 全螢幕 Viewer -->
-<div class="photo-viewer" id="photoViewer">
-  <img src="" alt="photo">
-  <div class="photo-viewer-close" onclick="closeViewer()">✕</div>
-</div>
+ <!-- 登入綁定 Modal -->
+ <div id="hm-login-modal" class="hm-modal-backdrop">
+   <div class="hm-modal">
+     <div class="hm-modal-header">
+       <h2>選擇登入方式 · 綁定帳號</h2>
+       <p>先綁定一個常用的系統帳號，之後儲值與代幣都會跟這個帳號一起走。</p>
+     </div>
+     <div>
+       <button id="hm-login-google" class="hm-btn-primary">
+         以 Google 帳號登入
+       </button>
+       <button id="hm-login-facebook" class="hm-btn-secondary">
+         <span>以 Facebook 帳號登入</span>
+       </button>
+       <button id="hm-login-apple" class="hm-btn-secondary">
+         <span>以 Apple 帳號登入</span>
+       </button>
+     </div>
+     <p class="hm-privacy-text">
+       ※ Demo 版本不會真的連到 Google / Facebook / Apple，僅模擬綁定流程。
+     </p>
+   </div>
+ </div>
 
-<!-- 登入綁定 Modal -->
-<div id="hm-login-modal" class="hm-modal-backdrop">
-  <div class="hm-modal">
-    <div class="hm-modal-header">
-      <h2>選擇登入方式 · 綁定帳號</h2>
-      <p>先綁定一個常用的系統帳號，之後儲值與代幣都會跟這個帳號一起走。</p>
-    </div>
-    <div>
-      <button id="hm-login-google" class="hm-btn-primary">
-        以 Google 帳號登入
-      </button>
-      <button id="hm-login-facebook" class="hm-btn-secondary">
-        <span>以 Facebook 帳號登入</span>
-      </button>
-      <button id="hm-login-apple" class="hm-btn-secondary">
-        <span>以 Apple 帳號登入</span>
-      </button>
-    </div>
-    <p class="hm-privacy-text">
-      ※ Demo 版本不會真的連到 Google / Facebook / Apple，僅模擬綁定流程。
-    </p>
-  </div>
-</div>
+ <!-- 基本資料彈跳視窗：HeartMeet Profile Modal -->
+ <div id="hm-profile-modal" class="hm-modal-backdrop">
+   <div class="hm-modal">
+     <div class="hm-modal-header">
+       <h2>完成基本資料，開始配對</h2>
+       <p>為了提升真實度與配對品質，請先填寫以下資訊。</p>
+     </div>
 
-<!-- 基本資料彈跳視窗：HeartMeet Profile Modal -->
-<div id="hm-profile-modal" class="hm-modal-backdrop">
-  <div class="hm-modal">
-    <div class="hm-modal-header">
-      <h2>完成基本資料，開始配對</h2>
-      <p>為了提升真實度與配對品質，請先填寫以下資訊。</p>
-    </div>
+     <form id="hm-profile-form">
+       <div class="hm-form-group">
+         <label for="hm-name">* <span class="hm-required">*</span>稱呼（暱稱）</label>
+         <input type="text" id="hm-name" name="name" placeholder="給自己一個好記的稱呼" required />
+       </div>
 
-    <form id="hm-profile-form">
-      <div class="hm-form-group">
-        <label for="hm-name">* <span class="hm-required">*</span>稱呼（暱稱）</label>
-        <input type="text" id="hm-name" name="name" placeholder="給自己一個好記的稱呼" required />
-      </div>
+       <div class="hm-form-group hm-inline">
+         <div>
+           <label for="hm-height">* <span class="hm-required">*</span>身高 (cm)</label>
+           <input type="number" id="hm-height" name="height" min="120" max="230" placeholder="例如：172" required />
+         </div>
+         <div>
+           <label for="hm-weight">* <span class="hm-required">*</span>體重 (kg)</label>
+           <input type="number" id="hm-weight" name="weight" min="35" max="200" placeholder="例如：65" required />
+         </div>
+       </div>
 
-      <div class="hm-form-group hm-inline">
-        <div>
-          <label for="hm-height">* <span class="hm-required">*</span>身高 (cm)</label>
-          <input type="number" id="hm-height" name="height" min="120" max="230" placeholder="例如：172" required />
-        </div>
-        <div>
-          <label for="hm-weight">* <span class="hm-required">*</span>體重 (kg)</label>
-          <input type="number" id="hm-weight" name="weight" min="35" max="200" placeholder="例如：65" required />
-        </div>
-      </div>
+       <div class="hm-form-group">
+         <label for="hm-region">居住區域（可稍後再填）</label>
+         <input
+           type="text"
+           id="hm-region"
+           name="region"
+           placeholder="例如：台北市 信義區 / 花蓮縣 瑞穗鄉"
+         />
+       </div>
 
-      <div class="hm-form-group">
-        <label for="hm-region">居住區域（可稍後再填）</label>
-        <input
-          type="text"
-          id="hm-region"
-          name="region"
-          placeholder="例如：台北市 信義區 / 花蓮縣 瑞穗鄉"
-        />
-      </div>
+       <div class="hm-form-group">
+         <label>社群帳號串聯（可選填，增加信任感）</label>
+         <p class="hm-help-text">
+           Threads / X / IG / FB 皆可先略過，之後也可以在「我的資料」中再補上或修改。
+         </p>
 
-      <div class="hm-form-group">
-        <label>社群帳號串聯（可選填，增加信任感）</label>
-        <p class="hm-help-text">
-          Threads / X / IG / FB 皆可先略過，之後也可以在「我的資料」中再補上或修改。
-        </p>
+         <div class="hm-social-row">
+           <span class="hm-social-label">Threads</span>
+           <input
+             type="text"
+             id="hm-threads"
+             name="threads"
+             placeholder="貼上 Threads 個人頁連結或帳號（選填）"
+           />
+         </div>
 
-        <div class="hm-social-row">
-          <span class="hm-social-label">Threads</span>
-          <input
-            type="text"
-            id="hm-threads"
-            name="threads"
-            placeholder="貼上 Threads 個人頁連結或帳號（選填）"
-          />
-        </div>
+         <div class="hm-social-row">
+           <span class="hm-social-label">X (Twitter)</span>
+           <input
+             type="text"
+             id="hm-x"
+             name="x"
+             placeholder="貼上 X 個人頁連結或帳號（選填）"
+           />
+         </div>
 
-        <div class="hm-social-row">
-          <span class="hm-social-label">X (Twitter)</span>
-          <input
-            type="text"
-            id="hm-x"
-            name="x"
-            placeholder="貼上 X 個人頁連結或帳號（選填）"
-          />
-        </div>
+         <div class="hm-social-row">
+           <span class="hm-social-label">Instagram</span>
+           <input
+             type="text"
+             id="hm-instagram"
+             name="instagram"
+             placeholder="貼上 IG 個人頁連結或帳號（選填）"
+           />
+         </div>
 
-        <div class="hm-social-row">
-          <span class="hm-social-label">Instagram</span>
-          <input
-            type="text"
-            id="hm-instagram"
-            name="instagram"
-            placeholder="貼上 IG 個人頁連結或帳號（選填）"
-          />
-        </div>
+         <div class="hm-social-row">
+           <span class="hm-social-label">Facebook</span>
+           <input
+             type="text"
+             id="hm-facebook"
+             name="facebook"
+             placeholder="貼上 FB 個人頁連結或帳號（選填）"
+           />
+         </div>
 
-        <div class="hm-social-row">
-          <span class="hm-social-label">Facebook</span>
-          <input
-            type="text"
-            id="hm-facebook"
-            name="facebook"
-            placeholder="貼上 FB 個人頁連結或帳號（選填）"
-          />
-        </div>
+         <div class="hm-social-row">
+           <span class="hm-social-label">其他</span>
+           <input
+             type="text"
+             id="hm-other"
+             name="other"
+             placeholder="例如：LINE ID / 官方網站 / YouTube 頻道（選填）"
+           />
+         </div>
+       </div>
 
-        <div class="hm-social-row">
-          <span class="hm-social-label">其他</span>
-          <input
-            type="text"
-            id="hm-other"
-            name="other"
-            placeholder="例如：LINE ID / 官方網站 / YouTube 頻道（選填）"
-          />
-        </div>
-      </div>
+       <div class="hm-form-group hm-checkbox-group">
+         <label>
+           <input type="checkbox" id="hm-agree" required />
+           我已閱讀並同意 HeartMeet 的服務條款與隱私政策
+         </label>
+       </div>
 
-      <div class="hm-form-group hm-checkbox-group">
-        <label>
-          <input type="checkbox" id="hm-agree" required />
-          我已閱讀並同意 HeartMeet 的服務條款與隱私政策
-        </label>
-      </div>
+       <div class="hm-modal-footer">
+         <button type="submit" class="hm-btn-primary">完成並開始使用</button>
+       </div>
 
-      <div class="hm-modal-footer">
-        <button type="submit" class="hm-btn-primary">完成並開始使用</button>
-      </div>
+       <p class="hm-privacy-text">
+         ※ 部分資料只用於系統配對與實名感驗證，不會公開顯示您的真實姓名。
+       </p>
+     </form>
+   </div>
+ </div>
 
-      <p class="hm-privacy-text">
-        ※ 部分資料只用於系統配對與實名感驗證，不會公開顯示您的真實姓名。
-      </p>
-    </form>
-  </div>
-</div>
-
-<script>
+ <script>
   // ==== 假資料：人們 ====
   const people = [
     {
@@ -1855,7 +1854,15 @@
       avatar: "https://picsum.photos/300/400?random=1",
       status: "online",
       statusText: "已上線",
-      vipLevel: 3
+      vipLevel: 3,
+      album: [
+        "https://picsum.photos/400/400?random=101",
+        "https://picsum.photos/400/400?random=102",
+        "https://picsum.photos/400/400?random=103",
+        "https://picsum.photos/400/400?random=104",
+        "https://picsum.photos/400/400?random=105",
+        "https://picsum.photos/400/400?random=106"
+      ]
     },
     {
       id: 2,
@@ -1865,7 +1872,15 @@
       avatar: "https://picsum.photos/300/400?random=2",
       status: "eating",
       statusText: "用餐去…",
-      vipLevel: 5
+      vipLevel: 5,
+      album: [
+        "https://picsum.photos/400/400?random=201",
+        "https://picsum.photos/400/400?random=202",
+        "https://picsum.photos/400/400?random=203",
+        "https://picsum.photos/400/400?random=204",
+        "https://picsum.photos/400/400?random=205",
+        "https://picsum.photos/400/400?random=206"
+      ]
     },
     {
       id: 3,
@@ -1875,7 +1890,15 @@
       avatar: "httpsum.photos/300/400?random=3".replace("httpsum","https://pics"),
       status: "away",
       statusText: "暫離中…",
-      vipLevel: 1
+      vipLevel: 1,
+      album: [
+        "https://picsum.photos/400/400?random=301",
+        "https://picsum.photos/400/400?random=302",
+        "https://picsum.photos/400/400?random=303",
+        "https://picsum.photos/400/400?random=304",
+        "https://picsum.photos/400/400?random=305",
+        "https://picsum.photos/400/400?random=306"
+      ]
     },
     {
       id: 4,
@@ -1885,7 +1908,15 @@
       avatar: "https://picsum.photos/300/400?random=4",
       status: "online",
       statusText: "想聊天",
-      vipLevel: 2
+      vipLevel: 2,
+      album: [
+        "https://picsum.photos/400/400?random=401",
+        "https://picsum.photos/400/400?random=402",
+        "https://picsum.photos/400/400?random=403",
+        "https://picsum.photos/400/400?random=404",
+        "https://picsum.photos/400/400?random=405",
+        "https://picsum.photos/400/400?random=406"
+      ]
     },
     {
       id: 5,
@@ -1895,7 +1926,15 @@
       avatar: "https://picsum.photos/300/400?random=5",
       status: "busy",
       statusText: "忙碌中…",
-      vipLevel: 4
+      vipLevel: 4,
+      album: [
+        "https://picsum.photos/400/400?random=501",
+        "https://picsum.photos/400/400?random=502",
+        "https://picsum.photos/400/400?random=503",
+        "https://picsum.photos/400/400?random=504",
+        "https://picsum.photos/400/400?random=505",
+        "https://picsum.photos/400/400?random=506"
+      ]
     },
     {
       id: 6,
@@ -1905,7 +1944,15 @@
       avatar: "https://picsum.photos/300/400?random=6",
       status: "shower",
       statusText: "洗澡中…",
-      vipLevel: 1
+      vipLevel: 1,
+      album: [
+        "https://picsum.photos/400/400?random=601",
+        "https://picsum.photos/400/400?random=602",
+        "https://picsum.photos/400/400?random=603",
+        "https://picsum.photos/400/400?random=604",
+        "https://picsum.photos/400/400?random=605",
+        "https://picsum.photos/400/400?random=606"
+      ]
     },
     {
       id: 7,
@@ -1915,7 +1962,15 @@
       avatar: "https://picsum.photos/300/400?random=7",
       status: "online",
       statusText: "已上線",
-      vipLevel: 2
+      vipLevel: 2,
+      album: [
+        "https://picsum.photos/400/400?random=701",
+        "https://picsum.photos/400/400?random=702",
+        "https://picsum.photos/400/400?random=703",
+        "https://picsum.photos/400/400?random=704",
+        "https://picsum.photos/400/400?random=705",
+        "https://picsum.photos/400/400?random=706"
+      ]
     },
     {
       id: 8,
@@ -1925,7 +1980,15 @@
       avatar: "https://picsum.photos/300/400?random=8",
       status: "away",
       statusText: "離線中",
-      vipLevel: 0
+      vipLevel: 0,
+      album: [
+        "https://picsum.photos/400/400?random=801",
+        "https://picsum.photos/400/400?random=802",
+        "https://picsum.photos/400/400?random=803",
+        "https://picsum.photos/400/400?random=804",
+        "https://picsum.photos/400/400?random=805",
+        "https://picsum.photos/400/400?random=806"
+      ]
     }
   ];
 
@@ -2046,7 +2109,7 @@
 
   function createTabBadgeHTML(num) {
     if (!num) return "";
-    return `<span class="friend-tab-badge">${num}</span>`;
+    return '<span class="friend-tab-badge">' + num + '</span>';
   }
 
   function updateFriendTabCounts() {
@@ -2068,7 +2131,6 @@
       return;
     }
     if (rel === "received") {
-      // 對方本來就對你送出申請 → 直接視為同意
       hmAcceptFriend(id);
       return;
     }
@@ -2123,99 +2185,95 @@
       (p.statusText || "已上線") + "</span></span>";
 
     const vipLevel = typeof p.vipLevel === "number" ? p.vipLevel : 0;
-    const vipTag = `<span class="vip-badge">VIP${vipLevel}</span>`;
+    const vipTag = '<span class="vip-badge">VIP' + vipLevel + '</span>';
 
     const relation = hmGetRelation(p.id);
     let actionHtml = "";
 
     if (relation === "friend") {
-      actionHtml = `<button class="btn btn-primary" onclick="openChatWith(${p.id})">1 對 1 聊天</button>`;
+      actionHtml = '<button class="btn btn-primary" onclick="openChatWith(' + p.id + ')">1 對 1 聊天</button>';
     } else if (relation === "sent") {
-      actionHtml = `<button class="btn" disabled>已送出好友申請</button>`;
+      actionHtml = '<button class="btn" disabled>已送出好友申請</button>';
     } else if (relation === "received") {
-      actionHtml = `
-        <button class="btn btn-primary btn-sm" onclick="hmAcceptFriend(${p.id})">同意好友申請</button>
-        <button class="btn btn-sm" onclick="hmRejectFriend(${p.id})">拒絕</button>
-      `;
+      actionHtml = ''
+        + '<button class="btn btn-primary btn-sm" onclick="hmAcceptFriend(' + p.id + ')">同意好友申請</button>'
+        + '<button class="btn btn-sm" onclick="hmRejectFriend(' + p.id + ')">拒絕</button>';
     } else {
-      actionHtml = `<button class="btn btn-primary" onclick="hmAddFriend(${p.id})">加入好友</button>`;
+      actionHtml = '<button class="btn btn-primary" onclick="hmAddFriend(' + p.id + ')">加入好友</button>';
     }
 
-    const totalSlots = (typeof MY_ALBUM_SLOTS === "number" ? MY_ALBUM_SLOTS : 6);
+    const totalSlots = (Array.isArray(p.album) && p.album.length > 0)
+      ? p.album.length
+      : 6;
+
     const myVipLevel = hmGetVipLevel();
     const unlocked = hmAlbumIsUnlocked();
 
     const albumHtml = Array.from({ length: totalSlots }).map((_, idx) => {
-      const src = hmGetAlbumPhotoSrc(idx);
+      const src = hmGetPersonAlbumPhotoSrc(p.id, idx);
       const isFree = idx < 2;
       const isLocked = !isFree && myVipLevel === 0 && !unlocked;
       const lockedClass = isLocked ? " locked" : "";
-      return `
-        <div class="album-item${lockedClass}" onclick="handleStrangerAlbumClick(${idx})">
-          <img src="${src}" alt="photo${idx + 1}" />
-          <button class="set-cover-btn" onclick="event.stopPropagation(); setAsAvatar(${idx})">設為頭貼</button>
-          <div class="album-gift-btn" onclick="event.stopPropagation(); sendGiftAnimation(this)">💝 送禮</div>
-        </div>
-      `;
+      return ''
+        + '<div class="album-item' + lockedClass + '" onclick="handleStrangerAlbumClick(' + p.id + ',' + idx + ')">'
+        + '  <img src="' + src + '" alt="photo' + (idx + 1) + '" />'
+        + '  <button class="set-cover-btn" onclick="event.stopPropagation(); setAsAvatar(' + idx + ')">設為頭貼</button>'
+        + '  <div class="album-gift-btn" onclick="event.stopPropagation(); sendGiftAnimation(this)">💝 送禮</div>'
+        + '</div>';
     }).join("");
 
-    profileDetailContent.innerHTML = `
-      <div class="profile-header">
-        <div class="profile-row-main">
-          <div class="profile-avatar">
-            <img src="${p.avatar}" alt="${p.name}" />
-          </div>
-          <div>
-            <div class="profile-name">${p.name} ${vipTag}</div>
-            <div class="profile-sub">${p.ageText} · 台灣 · 暫無更多介紹</div>
-            <div style="margin-top:6px; font-size:15px;">${statusBadgeHtml}</div>
-          </div>
-        </div>
-        <div class="profile-actions">
-          <button class="btn">封鎖 / 刪除</button>
-          ${actionHtml}
-        </div>
-      </div>
-
-      <div class="section">
-        <div class="profile-cta-row">
-          <button class="big-cta-btn primary" onclick="sendGiftAnimationFromHeader(this)">🎁 送禮物</button>
-        </div>
-      </div>
-
-      <div class="section">
-        <div class="section-title">相簿（每張都有送禮入口）</div>
-        <div class="album-grid">
-          ${albumHtml}
-        </div>
-        <div class="album-note">
-          相簿僅示意，正式版可以上傳自己的照片、設定可見範圍與解鎖方式。<br/>
-          Demo：前兩張為免費預覽，後四張需觀看廣告才可在 30 分鐘內解鎖。
-        </div>
-      </div>
-
-      <div class="section">
-        <div class="section-title">基本資料</div>
-        <table class="info-table">
-          <tr><td class="info-key">暱稱</td><td class="info-value">${p.name}</td></tr>
-          <tr><td class="info-key">性別</td><td class="info-value">未設定</td></tr>
-          <tr><td class="info-key">年齡層</td><td class="info-value">${p.ageText}</td></tr>
-          <tr><td class="info-key">國家</td><td class="info-value">台灣</td></tr>
-          <tr><td class="info-key">地區</td><td class="info-value">未設定</td></tr>
-          <tr><td class="info-key">自我介紹</td><td class="info-value">${p.desc}</td></tr>
-        </table>
-      </div>
-
-      <div class="section">
-        <div class="section-title">自介日記（示意）</div>
-        <div class="diary-list">
-          <div class="diary-item">
-            <div class="diary-date">2025-11-25</div>
-            <div>這裡之後可以顯示對方的 5 篇代表日記，讓人更了解他。</div>
-          </div>
-        </div>
-      </div>
-    `;
+    profileDetailContent.innerHTML = ''
+      + '<div class="profile-header">'
+      + '  <div class="profile-row-main">'
+      + '    <div class="profile-avatar">'
+      + '      <img src="' + p.avatar + '" alt="' + p.name + '" />'
+      + '    </div>'
+      + '    <div>'
+      + '      <div class="profile-name">' + p.name + ' ' + vipTag + '</div>'
+      + '      <div class="profile-sub">' + p.ageText + ' · 台灣 · 暫無更多介紹</div>'
+      + '      <div style="margin-top:6px; font-size:15px;">' + statusBadgeHtml + '</div>'
+      + '    </div>'
+      + '  </div>'
+      + '  <div class="profile-actions">'
+      + '    <button class="btn">封鎖 / 刪除</button>'
+      +      actionHtml
+      + '  </div>'
+      + '</div>'
+      + '<div class="section">'
+      + '  <div class="profile-cta-row">'
+      + '    <button class="big-cta-btn primary" onclick="sendGiftAnimationFromHeader(this)">🎁 送禮物</button>'
+      + '  </div>'
+      + '</div>'
+      + '<div class="section">'
+      + '  <div class="section-title">相簿（每張都有送禮入口）</div>'
+      + '  <div class="album-grid">'
+      +       albumHtml
+      + '  </div>'
+      + '  <div class="album-note">'
+      + '    相簿僅示意，正式版可以上傳自己的照片、設定可見範圍與解鎖方式。<br/>'
+      + '    Demo：前兩張為免費預覽，後四張需觀看廣告才可在 30 分鐘內解鎖。'
+      + '  </div>'
+      + '</div>'
+      + '<div class="section">'
+      + '  <div class="section-title">基本資料</div>'
+      + '  <table class="info-table">'
+      + '    <tr><td class="info-key">暱稱</td><td class="info-value">' + p.name + '</td></tr>'
+      + '    <tr><td class="info-key">性別</td><td class="info-value">未設定</td></tr>'
+      + '    <tr><td class="info-key">年齡層</td><td class="info-value">' + p.ageText + '</td></tr>'
+      + '    <tr><td class="info-key">國家</td><td class="info-value">台灣</td></tr>'
+      + '    <tr><td class="info-key">地區</td><td class="info-value">未設定</td></tr>'
+      + '    <tr><td class="info-key">自我介紹</td><td class="info-value">' + p.desc + '</td></tr>'
+      + '  </table>'
+      + '</div>'
+      + '<div class="section">'
+      + '  <div class="section-title">自介日記（示意）</div>'
+      + '  <div class="diary-list">'
+      + '    <div class="diary-item">'
+      + '      <div class="diary-date">2025-11-25</div>'
+      + '      <div>這裡之後可以顯示對方的 5 篇代表日記，讓人更了解他。</div>'
+      + '    </div>'
+      + '  </div>'
+      + '</div>';
 
     showPage("profileDetail");
     topTitleEl.textContent = p.name;
@@ -2245,11 +2303,10 @@
     if (ids.length === 0) {
       const li = document.createElement("li");
       li.className = "list-item";
-      li.innerHTML = `
-        <div class="item-main">
-          <div class="item-row2" style="color:#9ca3af;">目前此分類沒有資料（Demo）</div>
-        </div>
-      `;
+      li.innerHTML = ''
+        + '<div class="item-main">'
+        + '  <div class="item-row2" style="color:#9ca3af;">目前此分類沒有資料（Demo）</div>'
+        + '</div>';
       friendsListEl.appendChild(li);
       return;
     }
@@ -2267,41 +2324,38 @@
       let extraActionsHtml = "";
 
       if (type === "friends") {
-        row3Html = `<div class="item-row3"><span class="label">好友限定：</span>${noteText}</div>`;
+        row3Html = '<div class="item-row3"><span class="label">好友限定：</span>' + noteText + '</div>';
       } else if (type === "sent") {
-        row3Html = `<div class="item-row3"><span class="label">狀態：</span>已送出好友申請，等待對方回應</div>`;
-        extraActionsHtml = `
-          <div class="item-row3">
-            <button class="btn btn-sm" onclick="hmCancelFriendRequest(${id})">取消申請</button>
-          </div>
-        `;
+        row3Html = '<div class="item-row3"><span class="label">狀態：</span>已送出好友申請，等待對方回應</div>';
+        extraActionsHtml = ''
+          + '<div class="item-row3">'
+          + '  <button class="btn btn-sm" onclick="hmCancelFriendRequest(' + id + ')">取消申請</button>'
+          + '</div>';
       } else if (type === "received") {
-        row3Html = `<div class="item-row3"><span class="label">狀態：</span>對你發送了好友申請</div>`;
-        extraActionsHtml = `
-          <div class="item-row3">
-            <button class="btn btn-primary btn-sm" onclick="hmAcceptFriend(${id})">同意</button>
-            <button class="btn btn-sm" onclick="hmRejectFriend(${id})">拒絕</button>
-          </div>
-        `;
+        row3Html = '<div class="item-row3"><span class="label">狀態：</span>對你發送了好友申請</div>';
+        extraActionsHtml = ''
+          + '<div class="item-row3">'
+          + '  <button class="btn btn-primary btn-sm" onclick="hmAcceptFriend(' + id + ')">同意</button>'
+          + '  <button class="btn btn-sm" onclick="hmRejectFriend(' + id + ')">拒絕</button>'
+          + '</div>';
       }
 
-      li.innerHTML = `
-        <div class="avatar">
-          <img src="${p.avatar}" alt="${p.name}" />
-        </div>
-        <div class="item-main">
-          <div class="item-row1">
-            <div class="item-row1-left">
-              <span class="item-name">${p.name}</span>
-              <span class="item-mood">😊</span>
-            </div>
-            ${statusHtml}
-          </div>
-          <div class="item-row2">${p.desc || (p.ageText || "")}</div>
-          ${row3Html}
-          ${extraActionsHtml}
-        </div>
-      `;
+      li.innerHTML = ''
+        + '<div class="avatar">'
+        + '  <img src="' + p.avatar + '" alt="' + p.name + '" />'
+        + '</div>'
+        + '<div class="item-main">'
+        + '  <div class="item-row1">'
+        + '    <div class="item-row1-left">'
+        + '      <span class="item-name">' + p.name + '</span>'
+        + '      <span class="item-mood">😊</span>'
+        + '    </div>'
+        +      statusHtml
+        + '  </div>'
+        + '  <div class="item-row2">' + (p.desc || (p.ageText || "")) + '</div>'
+        +      row3Html
+        +      extraActionsHtml
+        + '</div>';
 
       const avatarEl = li.querySelector(".avatar");
       const mainEl = li.querySelector(".item-main");
@@ -2369,65 +2423,65 @@
     const sixth = data[5];
     const rest = data.slice(6);
 
-    let pyramidHtml = `
-      <div class="rank-row">
-        <div class="rank-card">
-          <div class="rank-badge">
-            <span class="icon">👑</span>
-            <span>${king.title}</span>
-          </div>
-          <div class="rank-avatar-wrap king">
-            <div class="rank-avatar">
-              <img src="${king.avatar}" alt="${king.name}" />
-            </div>
-          </div>
-          <div class="rank-name">${king.name}</div>
-          <div class="rank-sub">${king.city} · ${king.age}</div>
-        </div>
-      </div>
-    `;
+    let pyramidHtml = ''
+      + '<div class="rank-row">'
+      + '  <div class="rank-card">'
+      + '    <div class="rank-badge">'
+      + '      <span class="icon">👑</span>'
+      + '      <span>' + king.title + '</span>'
+      + '    </div>'
+      + '    <div class="rank-avatar-wrap king">'
+      + '      <div class="rank-avatar">'
+      + '        <img src="' + king.avatar + '" alt="' + king.name + '" />'
+      + '      </div>'
+      + '    </div>'
+      + '    <div class="rank-name">' + king.name + '</div>'
+      + '    <div class="rank-sub">' + king.city + ' · ' + king.age + '</div>'
+      + '  </div>'
+      + '</div>';
 
-    pyramidHtml += `
-      <div class="rank-row">
-        ${second ? `
-        <div class="rank-card">
-          <div class="rank-avatar-wrap">
-            <div class="rank-avatar medium">
-              <img src="${second.avatar}" alt="${second.name}" />
-            </div>
-          </div>
-          <div class="rank-name">${second.name}</div>
-          <div class="rank-sub">${second.title} · ${second.city}</div>
-        </div>` : ""}
-        ${third ? `
-        <div class="rank-card">
-          <div class="rank-avatar-wrap">
-            <div class="rank-avatar medium">
-              <img src="${third.avatar}" alt="${third.name}" />
-            </div>
-          </div>
-          <div class="rank-name">${third.name}</div>
-          <div class="rank-sub">${third.title} · ${third.city}</div>
-        </div>` : ""}
-      </div>
-    `;
+    pyramidHtml += '<div class="rank-row">';
+    if (second) {
+      pyramidHtml += ''
+        + '<div class="rank-card">'
+        + '  <div class="rank-avatar-wrap">'
+        + '    <div class="rank-avatar medium">'
+        + '      <img src="' + second.avatar + '" alt="' + second.name + '" />'
+        + '    </div>'
+        + '  </div>'
+        + '  <div class="rank-name">' + second.name + '</div>'
+        + '  <div class="rank-sub">' + second.title + ' · ' + second.city + '</div>'
+        + '</div>';
+    }
+    if (third) {
+      pyramidHtml += ''
+        + '<div class="rank-card">'
+        + '  <div class="rank-avatar-wrap">'
+        + '    <div class="rank-avatar medium">'
+        + '      <img src="' + third.avatar + '" alt="' + third.name + '" />'
+        + '    </div>'
+        + '  </div>'
+        + '  <div class="rank-name">' + third.name + '</div>'
+        + '  <div class="rank-sub">' + third.title + ' · ' + third.city + '</div>'
+        + '</div>';
+    }
+    pyramidHtml += '</div>';
 
-    pyramidHtml += `<div class="rank-row">`;
+    pyramidHtml += '<div class="rank-row">';
     [fourth, fifth, sixth].forEach(item => {
       if (!item) return;
-      pyramidHtml += `
-        <div class="rank-card">
-          <div class="rank-avatar-wrap">
-            <div class="rank-avatar small">
-              <img src="${item.avatar}" alt="${item.name}" />
-            </div>
-          </div>
-          <div class="rank-name">${item.name}</div>
-          <div class="rank-sub">${item.title} · ${item.city}</div>
-        </div>
-      `;
+      pyramidHtml += ''
+        + '<div class="rank-card">'
+        + '  <div class="rank-avatar-wrap">'
+        + '    <div class="rank-avatar small">'
+        + '      <img src="' + item.avatar + '" alt="' + item.name + '" />'
+        + '    </div>'
+        + '  </div>'
+        + '  <div class="rank-name">' + item.name + '</div>'
+        + '  <div class="rank-sub">' + item.title + ' · ' + item.city + '</div>'
+        + '</div>';
     });
-    pyramidHtml += `</div>`;
+    pyramidHtml += '</div>';
 
     rankPyramidEl.innerHTML = pyramidHtml;
 
@@ -2435,17 +2489,16 @@
     rest.forEach(item => {
       const li = document.createElement("div");
       li.className = "rank-list-item";
-      li.innerHTML = `
-        <div class="rank-pos">${item.pos}</div>
-        <div class="rank-list-avatar">
-          <img src="${item.avatar}" alt="${item.name}" />
-        </div>
-        <div class="rank-list-main">
-          <div class="rank-list-name">${item.name} · ${item.title}</div>
-          <div class="rank-list-sub">${item.city} · ${item.age}</div>
-        </div>
-        <div class="rank-score">${item.score} 分</div>
-      `;
+      li.innerHTML = ''
+        + '<div class="rank-pos">' + item.pos + '</div>'
+        + '<div class="rank-list-avatar">'
+        + '  <img src="' + item.avatar + '" alt="' + item.name + '" />'
+        + '</div>'
+        + '<div class="rank-list-main">'
+        + '  <div class="rank-list-name">' + item.name + ' · ' + item.title + '</div>'
+        + '  <div class="rank-list-sub">' + item.city + ' · ' + item.age + '</div>'
+        + '</div>'
+        + '<div class="rank-score">' + item.score + ' 分</div>';
       rankListEl.appendChild(li);
     });
   }
@@ -2470,12 +2523,11 @@
     if (pageName === "me") {
       const btn = document.createElement("button");
       btn.className = "icon-button";
-      btn.innerHTML = `
-        <svg class="icon-gear" viewBox="0 0 20 20" fill="none">
-          <path d="M9.999 12.5a2.5 2.5 0 1 0 0-5.001 2.5 2.5 0 0 0 0 5z" stroke="#4B5563" stroke-width="1.3" />
-          <path d="M15.167 8.583a5.53 5.53 0 0 0-.11-.44l1.16-1.174a.55.55 0 0 0 .09-.648l-1.1-1.905a.55.55 0 0 0-.628-.26l-1.62.49a5.43 5.43 0 0 0-.77-.44l-.25-1.68A.55.55 0 0 0 11.41 2h-2.2a.55.55 0 0 0-.546.46l-.25 1.68a5.42 5.42 0 0 0-.77.44l-1.62-.49a.55.55 0 0 0-.629.26L4.295 5.3a.55.55 0 0 0 .09.649l1.16 1.173c-.05.144-.087.291-.11.441L4.5 8.999a.55.55 0 0 0-.5.546v2.91c0 .29.219.53.5.546l1.935.12c.034.145.077.288.129.429l-1.178 1.24a.55.55 0 0 0-.067.659l1.2 1.856a.55.55 0 0 0 .622.239l1.74-.56c.13.073.263.14.4.2l.27 1.78a.55.55 0 0 0 .545.46h2.2a.55.55 0 0 0 .545-.46l.27-1.78c.137-.06.27-.127.4-.2l1.74.56a.55.55 0 0 0 .622-.239l1.2-1.857a.55.55 0 0 0-.068-.658l-1.177-1.24c.052-.141.095-.284.129-.429l1.935-.12a.55.55 0 0 0 .5-.547v-2.91a.55.55 0 0 0-.5-.546L15.167 8.583z" stroke="#4B5563" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
-      `;
+      btn.innerHTML = ''
+        + '<svg class="icon-gear" viewBox="0 0 20 20" fill="none">'
+        + '<path d="M9.999 12.5a2.5 2.5 0 1 0 0-5.001 2.5 2.5 0 0 0 0 5z" stroke="#4B5563" stroke-width="1.3" />'
+        + '<path d="M15.167 8.583a5.53 5.53 0 0 0-.11-.44l1.16-1.174a.55.55 0 0 0 .09-.648l-1.1-1.905a.55.55 0 0 0-.628-.26l-1.62.49a5.43 5.43 0 0 0-.77-.44l-.25-1.68A.55.55 0 0 0 11.41 2h-2.2a.55.55 0 0 0-.546.46l-.25 1.68a5.42 5.42 0 0 0-.77.44l-1.62-.49a.55.55 0 0 0-.629.26L4.295 5.3a.55.55 0 0 0 .09.649l1.16 1.173c-.05.144-.087.291-.11.441L4.5 8.999a.55.55 0 0 0-.5.546v2.91c0 .29.219.53.5.546l1.935.12c.034.145.077.288.129.429l-1.178 1.24a.55.55 0 0 0-.067.659l1.2 1.856a.55.55 0 0 0 .622.239l1.74-.56c.13.073.263.14.4.2l.27 1.78a.55.55 0 0 0 .545.46h2.2a.55.55 0 0 0 .545-.46l.27-1.78c.137-.06.27-.127.4-.2l1.74.56a.55.55 0 0 0 .622-.239l1.2-1.857a.55.55 0 0 0-.068-.658l-1.177-1.24c.052-.141.095-.284.129-.429l1.935-.12a.55.55 0 0 0 .5-.547v-2.91a.55.55 0 0 0-.5-.546L15.167 8.583z" stroke="#4B5563" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>'
+        + '</svg>';
       btn.addEventListener("click", () => {
         alert("設定面板之後會接上真正的功能（目前為示意）。");
       });
@@ -2604,11 +2656,10 @@
   function sendImageMessage(dataUrl, label) {
     const row = document.createElement("div");
     row.className = "bubble-row me";
-    row.innerHTML = `
-      <div class="bubble me">
-        <img src="${dataUrl}" alt="${label}" class="chat-image" />
-      </div>
-    `;
+    row.innerHTML = ''
+      + '<div class="bubble me">'
+      + '  <img src="' + dataUrl + '" alt="' + label + '" class="chat-image" />'
+      + '</div>';
     chatMessagesEl.appendChild(row);
     chatMessagesEl.scrollTop = chatMessagesEl.scrollHeight;
   }
@@ -2711,6 +2762,18 @@
   window.openPhotoViewer = openPhotoViewer;
   window.closeViewer = closeViewer;
 
+  // 依「使用者 id + 第幾張」取得對方的相簿照片
+  function hmGetPersonAlbumPhotoSrc(personId, idx) {
+    const p = getPersonById(personId);
+    if (p && Array.isArray(p.album) && p.album[idx]) {
+      return p.album[idx];
+    }
+    if (albumPhotos && albumPhotos[idx]) {
+      return albumPhotos[idx];
+    }
+    return "https://picsum.photos/400/400?random=" + (901 + idx);
+  }
+
   function spawnHeart(x, y) {
     const h = document.createElement("div");
     h.className = "gift-heart";
@@ -2731,7 +2794,12 @@
     alert("這邊之後會打開送禮物面板。");
   }
   function setAsAvatar(idx) {
-    const newAvatar = hmGetAlbumPhotoSrc(idx);
+    let newAvatar;
+    if (currentProfileId != null) {
+      newAvatar = hmGetPersonAlbumPhotoSrc(currentProfileId, idx);
+    } else {
+      newAvatar = hmGetAlbumPhotoSrc(idx);
+    }
     const avatarImg = document.querySelector(".profile-avatar img");
     if (avatarImg) avatarImg.src = newAvatar;
     alert("已把這張照片設為頭貼！（Demo）");
@@ -3108,9 +3176,8 @@
       if (isLocked) {
         const overlay = document.createElement("div");
         overlay.className = "my-album-lock-overlay";
-        overlay.innerHTML = `
-          <div>🔒 鎖定照片<br>觀看一次廣告即可在 30 分鐘內解鎖 6 張照片</div>
-        `;
+        overlay.innerHTML = ''
+          + '<div>🔒 鎖定照片<br>觀看一次廣告即可在 30 分鐘內解鎖 6 張照片</div>';
         const btn = document.createElement("button");
         btn.type = "button";
         btn.className = "my-album-lock-btn";
@@ -3134,16 +3201,17 @@
     hmAlbumUnlockFor30Minutes();
   }
 
-  function handleStrangerAlbumClick(idx) {
+  function handleStrangerAlbumClick(personId, idx) {
     const vip = hmGetVipLevel();
     if (idx < 2 || vip > 0 || hmAlbumIsUnlocked()) {
-      openPhotoViewer(hmGetAlbumPhotoSrc(idx));
+      openPhotoViewer(hmGetPersonAlbumPhotoSrc(personId, idx));
     } else {
       hmShowAlbumAdPrompt();
     }
   }
   window.handleStrangerAlbumClick = handleStrangerAlbumClick;
   window.hmGetAlbumPhotoSrc = hmGetAlbumPhotoSrc;
+  window.hmGetPersonAlbumPhotoSrc = hmGetPersonAlbumPhotoSrc;
 
   document.addEventListener("DOMContentLoaded", function () {
     pickRandomBatch();
@@ -3281,6 +3349,6 @@
       });
     }
   });
-</script>
+ </script>
 </body>
 </html>
