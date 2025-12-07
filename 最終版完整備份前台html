@@ -291,6 +291,31 @@
       display: flex;
       align-items: center;
     }
+    .profile-main {
+      flex: 1;
+      min-width: 0;
+    }
+    .profile-name-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+    .profile-status-inline {
+      flex-shrink: 0;
+    }
+    .profile-status-edit {
+      margin-top: 6px;
+      display: flex;
+      justify-content: flex-end;
+    }
+    .profile-status-edit select {
+      font-size: 14px;
+      padding: 4px 6px;
+    }
+    .profile-status-inline .status-badge {
+      margin-top: 0;
+    }
     .profile-avatar {
       width: 80px;
       height: 80px;
@@ -537,8 +562,61 @@
     .chat-wrapper {
       display: flex;
       flex-direction: column;
-      height: calc(100vh - 60px - 64px);
+      flex: 1;
+      min-height: 0;
     }
+    /* 聊天列表 + 右側滑入視窗 */
+    #page-chat {
+      position: relative;
+    }
+    .chat-panel {
+      position: fixed;
+      top: 60px;
+      left: 0;
+      right: 0;
+      bottom: 64px;
+      background: #ffffff;
+      display: flex;
+      flex-direction: column;
+      transform: translateX(100%);
+      transition: transform 0.25s ease-out;
+      box-shadow: -2px 0 8px rgba(15,23,42,0.15);
+      z-index: 35;
+    }
+    .chat-panel.show {
+      transform: translateX(0);
+    }
+    .chat-panel-header {
+      height: 48px;
+      display: flex;
+      align-items: center;
+      padding: 0 10px;
+      border-bottom: 0.5px solid #e5e7eb;
+    }
+    .chat-back-btn {
+      border: none;
+      background: transparent;
+      font-size: 22px;
+      margin-right: 8px;
+      cursor: pointer;
+    }
+    .chat-panel-title {
+      font-size: 18px;
+      font-weight: 600;
+    }
+    .chat-panel-subtitle {
+      font-size: 12px;
+      color: #9ca3af;
+      margin-left: 2px;
+      margin-top: 2px;
+    }
+    .chat-panel-body {
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+      min-height: 0;
+    }
+
     .chat-messages {
       flex: 1;
       overflow-y: auto;
@@ -1424,50 +1502,62 @@
 
  <!-- 聊天頁 -->
  <div class="page" id="page-chat">
-   <div class="chat-theme-bar">
-     <div class="chat-theme-pill active" data-theme="light">淺色</div>
-     <div class="chat-theme-pill" data-theme="pink">淡粉</div>
-     <div class="chat-theme-pill" data-theme="blue">淡藍</div>
-     <div class="chat-theme-pill" data-theme="dark">深色</div>
+   <div class="section chat-list-section">
+     <div class="section-title">聊天列表</div>
+     <ul class="list" id="chatThreadList"></ul>
    </div>
-   <div class="chat-wrapper chat-theme-light" id="chatWrapper">
-     <div class="chat-messages" id="chatMessages">
-       <div class="bubble-row">
-         <div class="bubble them">
-           歡迎來到「心遇 XinYou」聊天介面示意。<br />
-           目前是前端原型，未連接真實後端。
-         </div>
-       </div>
-       <div class="bubble-row me">
-         <div class="bubble me">
-           老闆你可以切換上方聊天背景、試試輸入文字、用下面的 + 號打開貼圖 / 照片 / GIF。
-         </div>
+
+   <!-- 右側滑入的聊天室視窗 -->
+   <div class="chat-panel" id="chatPanel">
+     <div class="chat-panel-header">
+       <button class="chat-back-btn" id="chatBackBtn">←</button>
+       <div>
+         <div class="chat-panel-title" id="chatPanelTitle">聊天</div>
+         <div class="chat-panel-subtitle" id="chatPanelSubtitle"></div>
        </div>
      </div>
-     <div class="chat-input-area">
-       <div class="chat-more-menu" id="chatMoreMenu">
-         <button class="chat-more-btn" data-type="sticker">😊 貼圖</button>
-         <button class="chat-more-btn" id="chatPhotoBtn">🖼 照片</button>
-         <button class="chat-more-btn" id="chatGifBtn">GIF 動圖</button>
+     <div class="chat-panel-body">
+       <div class="chat-theme-bar">
+         <div class="chat-theme-pill active" data-theme="light">淺色</div>
+         <div class="chat-theme-pill" data-theme="pink">淡粉</div>
+         <div class="chat-theme-pill" data-theme="blue">淡藍</div>
+         <div class="chat-theme-pill" data-theme="dark">深色</div>
        </div>
-       <div class="chat-sticker-bar" id="stickerBar">
-         <button class="sticker-btn">😊</button>
-         <button class="sticker-btn">😂</button>
-         <button class="sticker-btn">🥺</button>
-         <button class="sticker-btn">❤️</button>
-         <button class="sticker-btn">👍</button>
-         <button class="sticker-btn">🔥</button>
+       <div class="chat-wrapper chat-theme-light" id="chatWrapper">
+         <div class="chat-messages" id="chatMessages">
+           <div class="bubble-row">
+             <div class="bubble them">
+               請先從左側「聊天列表」選擇官方訊息或好友，再開始對話。（Demo）
+             </div>
+           </div>
+         </div>
+         <div class="chat-input-area">
+           <div class="chat-more-menu" id="chatMoreMenu">
+             <button class="chat-more-btn" data-type="sticker">😊 貼圖</button>
+             <button class="chat-more-btn" id="chatPhotoBtn">🖼 照片</button>
+             <button class="chat-more-btn" id="chatGifBtn">GIF 動圖</button>
+           </div>
+           <div class="chat-sticker-bar" id="stickerBar">
+             <button class="sticker-btn">😊</button>
+             <button class="sticker-btn">😂</button>
+             <button class="sticker-btn">🥺</button>
+             <button class="sticker-btn">❤️</button>
+             <button class="sticker-btn">👍</button>
+             <button class="sticker-btn">🔥</button>
+           </div>
+           <div class="chat-input-bar">
+             <button class="chat-plus-btn" id="chatPlusBtn">＋</button>
+             <input class="chat-input" id="chatInput" placeholder="輸入訊息..." />
+             <button class="chat-send-btn" id="chatSendBtn">傳送</button>
+           </div>
+           <input type="file" id="chatPhotoInput" accept="image/*" style="display:none" />
+           <input type="file" id="chatGifInput" accept="image/gif,image/*,video/*" style="display:none" />
+         </div>
        </div>
-       <div class="chat-input-bar">
-         <button class="chat-plus-btn" id="chatPlusBtn">＋</button>
-         <input class="chat-input" id="chatInput" placeholder="輸入訊息..." />
-         <button class="chat-send-btn" id="chatSendBtn">傳送</button>
-       </div>
-       <input type="file" id="chatPhotoInput" accept="image/*" style="display:none" />
-       <input type="file" id="chatGifInput" accept="image/gif,image/*,video/*" style="display:none" />
      </div>
    </div>
  </div>
+
 
  <!-- 我的頁 -->
  <div class="page" id="page-me">
@@ -1476,12 +1566,31 @@
        <div class="profile-avatar">
          <img src="https://picsum.photos/200/200?random=99" alt="我的頭像" />
        </div>
-       <div>
-         <div class="profile-name">
-           我自己 · Demo
-           <span id="myVipBadge" class="vip-badge" style="display:none;"></span>
+       <div class="profile-main">
+         <div class="profile-name-row">
+           <div class="profile-name">
+             我自己 · Demo
+             <span id="myVipBadge" class="vip-badge" style="display:none;"></span>
+           </div>
+           <div class="profile-status-inline">
+             <span id="myStatusBadge" class="status-badge">
+               <span class="status-dot"></span><span id="myStatusText">已上線</span>
+             </span>
+           </div>
          </div>
          <div class="profile-sub" id="myProfileSub">台灣 · 30 歲左右 · 已上線</div>
+         <div class="profile-status-edit">
+           <label for="statusSelect" style="font-size:14px; margin-right:4px;">狀態：</label>
+           <select id="statusSelect">
+             <option value="online">已上線</option>
+             <option value="busy">忙碌中…</option>
+             <option value="eating">用餐去…</option>
+             <option value="shower">洗澡中…</option>
+             <option value="away">暫離中…</option>
+             <option value="offline">離線中</option>
+             <option value="chatty">想聊天</option>
+           </select>
+         </div>
        </div>
      </div>
    </div>
@@ -1529,35 +1638,6 @@
      <div class="my-album-vip-demo">
        <span id="vipLevelText">目前 VIP 等級：無（Demo）</span>
        <button id="vipLevelToggleBtn" type="button">切換 VIP 等級（0→5 循環）</button>
-     </div>
-   </div>
-
-   <div class="section">
-     <div class="section-title">我的狀態（像以前即時通那樣）</div>
-     <div class="diary-list">
-       <div class="diary-item">
-         <div style="margin-bottom:6px;">
-           <span style="font-size:16px; color:#374151;">目前狀態：</span>
-           <span id="myStatusBadge" class="status-badge">
-             <span class="status-dot"></span><span id="myStatusText">已上線</span>
-           </span>
-         </div>
-         <div style="margin-top:4px; font-size:16px;">
-           <label for="statusSelect">修改狀態：</label>
-           <select id="statusSelect">
-             <option value="online">已上線</option>
-             <option value="busy">忙碌中…</option>
-             <option value="eating">用餐去…</option>
-             <option value="shower">洗澡中…</option>
-             <option value="away">暫離中…</option>
-             <option value="offline">離線中</option>
-             <option value="chatty">想聊天</option>
-           </select>
-         </div>
-         <div class="my-section-note">
-           正式版會把這個狀態同步顯示在「人們」與「好友」列表。
-         </div>
-       </div>
      </div>
    </div>
 
@@ -1616,6 +1696,26 @@
    </div>
 
    <div class="section">
+     <div class="section-title">我的日記（免費 5 則，VIP 可至 30 則）</div>
+     <div class="diary-list" id="myDiaryList"></div>
+     <div class="diary-list">
+       <div class="diary-item">
+         <div id="myDiaryLimitText" style="font-size:14px; color:#6b7280; margin-bottom:6px;">
+           免費用戶可建立 5 則代表日記；升級 VIP 後可擴充到 30 則。這些日記會成為你對外展示的重點資料。（Demo）
+         </div>
+         <textarea id="myDiaryInput" placeholder="寫一則想讓別人看到的心情日記..."></textarea>
+         <div style="margin-top:6px; display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+           <input type="file" id="myDiaryImageInput" accept="image/*" capture="environment" style="font-size:13px;" />
+           <button type="button" class="hm-btn-outline" id="myDiaryAddBtn">新增日記</button>
+         </div>
+       </div>
+     </div>
+   </div>
+
+
+   <!-- 帳號與安全：已移到最底部 -->
+   
+<div class="section">
      <div class="section-title">搜尋與通知設定（示意）</div>
      <div class="form-list">
        <div class="form-row">
@@ -1636,21 +1736,6 @@
      </div>
    </div>
 
-   <div class="section">
-     <div class="section-title">我的日記（示意，之後可限制免費 5 篇）</div>
-     <div class="diary-list">
-       <div class="diary-item">
-         <div class="diary-date">2025-12-05</div>
-         <div>今天看了「心遇 XinYou」V3 原型，感覺已經有正式交友 App 雛形。</div>
-       </div>
-       <div class="diary-item">
-         <div class="diary-date">2025-11-30</div>
-         <div>未來可能會加入簽到、送花、排行榜積分，先專心把基礎做好。</div>
-       </div>
-     </div>
-   </div>
-
-   <!-- 帳號與安全：已移到最底部 -->
    <div class="section">
      <div class="section-title">帳號與安全</div>
      <div class="diary-list">
@@ -2011,6 +2096,13 @@
   let currentBatch = [];
   let currentProfileId = null; // 目前正在查看的檔案 id（給相簿解鎖後重刷用）
 
+  // 封鎖名單（示意，僅儲存在前端）
+  let blockedIds = [];
+
+  function hmIsBlocked(id) {
+    return blockedIds.includes(id);
+  }
+
   function shuffleArray(arr) {
     const copy = arr.slice();
     for (let i = copy.length - 1; i > 0; i--) {
@@ -2021,13 +2113,18 @@
   }
 
   function pickRandomBatch() {
-    const shuffled = shuffleArray(people);
+    const available = people.filter(p => !hmIsBlocked(p.id));
+    const shuffled = shuffleArray(available);
     currentBatch = shuffled.slice(0, 4);
   }
 
   function renderPeopleGrid() {
-    if (currentBatch.length === 0) pickRandomBatch();
+    if (currentBatch.length === 0 || currentBatch.every(p => hmIsBlocked(p.id))) {
+      pickRandomBatch();
+    }
     peopleGridEl.innerHTML = "";
+    const visibleBatch = currentBatch.filter(p => !hmIsBlocked(p.id));
+    currentBatch = visibleBatch;
     currentBatch.forEach(p => {
       const card = document.createElement("div");
       card.className = "people-card";
@@ -2091,6 +2188,58 @@
   let sentRequestIds = [5];      // 你送出的好友申請
   let receivedRequestIds = [7];  // 對你送出的好友申請
 
+  // 封鎖 / 檢舉相關（示意）
+  function hmBlockUser(id) {
+    if (!blockedIds.includes(id)) {
+      blockedIds.push(id);
+    }
+    // 被封鎖時，從好友與申請清單中移除
+    friendIds = friendIds.filter(x => x !== id);
+    sentRequestIds = sentRequestIds.filter(x => x !== id);
+    receivedRequestIds = receivedRequestIds.filter(x => x !== id);
+
+    // 簡單刷新人們與好友畫面（示意）
+    if (typeof renderPeopleGrid === "function") {
+      currentBatch = [];
+      renderPeopleGrid();
+    }
+    if (typeof renderFriendsPage === "function") {
+      renderFriendsPage();
+    }
+    alert("已封鎖此用戶（Demo 版僅記錄在本機）");
+  }
+
+  function hmReportUser(id) {
+    const p = getPersonById(id);
+    alert("已送出對「" + (p ? p.name : "此用戶") + "」的舉報（Demo 示意）\n正式版會送到後端審核。");
+  }
+
+  function hmBlockOrReport(id) {
+    const p = getPersonById(id);
+    if (!p) return;
+
+    const choice = window.prompt(
+      "請選擇動作：\n1：封鎖此用戶\n2：僅舉報檢舉\n3：封鎖 + 舉報\n（輸入 1 / 2 / 3）",
+      "1"
+    );
+    if (!choice) return;
+
+    if (choice === "1") {
+      hmBlockUser(id);
+    } else if (choice === "2") {
+      hmReportUser(id);
+    } else if (choice === "3") {
+      hmBlockUser(id);
+      hmReportUser(id);
+    } else {
+      alert("未執行任何動作。");
+      return;
+    }
+
+    // Demo：封鎖 / 檢舉後回到「人們」頁
+    showPage("people");
+  }
+
   let currentFriendTab = "friends";
   let friendTabFriendsEl = null;
   let friendTabSentEl = null;
@@ -2149,6 +2298,9 @@
     if (!friendIds.includes(id)) friendIds.push(id);
     updateFriendTabCounts();
     renderFriendsList(currentFriendTab);
+    // 新增：同步建立聊天對話室
+    ensureFriendChatThread(id);
+    renderChatThreadList();
     alert("已成為好友，可以開始 1 對 1 聊天！（Demo）");
   }
 
@@ -2235,7 +2387,7 @@
       + '    </div>'
       + '  </div>'
       + '  <div class="profile-actions">'
-      + '    <button class="btn">封鎖 / 刪除</button>'
+      + '    <button class="btn" onclick="hmBlockOrReport(' + p.id + ')">封鎖 / 舉報</button>'
       +      actionHtml
       + '  </div>'
       + '</div>'
@@ -2546,6 +2698,11 @@
       showPage(pageName);
     }
     renderTopRightForPage(pageName);
+
+    // 切換到其他頁面時，自動關閉聊天室滑窗
+    if (pageName !== "chat") {
+      hideChatPanel();
+    }
   }
 
   // 開啟聊天：只有好友可以
@@ -2555,13 +2712,9 @@
       alert("只有成為好友後才能使用 1 對 1 聊天。（Demo）");
       return;
     }
-    const p = getPersonById(id);
+    ensureFriendChatThread(id);
     switchPage("chat");
-    if (p) {
-      topTitleEl.textContent = "與 " + p.name + " 聊天";
-    } else {
-      topTitleEl.textContent = "聊天";
-    }
+    openChatThread("friend-" + id);
   }
 
   window.openChatWith = openChatWith;
@@ -2608,7 +2761,8 @@
     });
   });
 
-  // 聊天送出 & + 功能
+
+  // 聊天送出 & + 功能（改為列表式對話：官方 + 好友）
   const chatMessagesEl = document.getElementById("chatMessages");
   const chatInputEl = document.getElementById("chatInput");
   const chatSendBtn = document.getElementById("chatSendBtn");
@@ -2620,17 +2774,285 @@
   const chatGifBtn = document.getElementById("chatGifBtn");
   const chatPhotoInput = document.getElementById("chatPhotoInput");
   const chatGifInput = document.getElementById("chatGifInput");
+  const chatThreadListEl = document.getElementById("chatThreadList");
+  const chatPanel = document.getElementById("chatPanel");
+  const chatBackBtn = document.getElementById("chatBackBtn");
+  const chatPanelTitleEl = document.getElementById("chatPanelTitle");
+  const chatPanelSubtitleEl = document.getElementById("chatPanelSubtitle");
 
-  function sendChat() {
-    const text = chatInputEl.value.trim();
-    if (!text) return;
-    const row = document.createElement("div");
-    row.className = "bubble-row me";
-    row.innerHTML = '<div class="bubble me">' + text + "</div>";
-    chatMessagesEl.appendChild(row);
-    chatInputEl.value = "";
+  let currentChatThreadId = null;
+  const chatThreads = {};
+  const chatHistories = {};
+
+  function ensureChatThread(thread) {
+    if (!thread || !thread.id) return;
+    if (!chatThreads[thread.id]) {
+      chatThreads[thread.id] = thread;
+    }
+    if (!chatHistories[thread.id]) {
+      chatHistories[thread.id] = [];
+    }
+  }
+
+  function ensureFriendChatThread(personId) {
+    const p = getPersonById(personId);
+    if (!p) return;
+    const id = "friend-" + personId;
+    if (!chatThreads[id]) {
+      ensureChatThread({
+        id,
+        personId,
+        title: p.name,
+        preview: p.desc || "成為好友後即可開始聊天。",
+        isOfficial: false,
+        pinned: false,
+        avatar: p.avatar,
+        unread: 0
+      });
+    }
+  }
+
+  function showChatPanel(thread) {
+    if (!chatPanel) return;
+    chatPanel.classList.add("show");
+
+    if (chatPanelTitleEl) {
+      if (thread && thread.isOfficial) {
+        chatPanelTitleEl.textContent = "心遇小精靈";
+      } else if (thread && thread.personId) {
+        const p = getPersonById(thread.personId);
+        chatPanelTitleEl.textContent = (p && p.name) ? p.name : (thread.title || "聊天");
+      } else if (thread && thread.title) {
+        chatPanelTitleEl.textContent = thread.title;
+      } else {
+        chatPanelTitleEl.textContent = "聊天";
+      }
+    }
+
+    if (chatPanelSubtitleEl) {
+      if (thread && thread.isOfficial) {
+        chatPanelSubtitleEl.textContent = "官方訊息 / 系統公告";
+      } else if (thread && thread.personId) {
+        chatPanelSubtitleEl.textContent = "1 對 1 聊天";
+      } else {
+        chatPanelSubtitleEl.textContent = "";
+      }
+    }
+  }
+
+  function hideChatPanel() {
+    if (!chatPanel) return;
+    chatPanel.classList.remove("show");
+  }
+
+  function renderChatThreadList() {
+    if (!chatThreadListEl) return;
+    const threads = Object.values(chatThreads).filter(t => !t.hidden);
+
+    threads.sort((a, b) => {
+      if (a.pinned && !b.pinned) return -1;
+      if (!a.pinned && b.pinned) return 1;
+      return 0;
+    });
+
+    chatThreadListEl.innerHTML = "";
+
+    threads.forEach(thread => {
+      const li = document.createElement("li");
+      li.className = "list-item";
+      li.dataset.threadId = thread.id;
+
+      const avatarDiv = document.createElement("div");
+      avatarDiv.className = "avatar";
+      avatarDiv.innerHTML = '<img src="' + (thread.avatar || "https://picsum.photos/200/200?random=990") + '" alt="' + thread.title + '">';
+      li.appendChild(avatarDiv);
+
+      const main = document.createElement("div");
+      main.className = "item-main";
+
+      const row1 = document.createElement("div");
+      row1.className = "item-row1";
+
+      const left = document.createElement("div");
+      left.className = "item-row1-left";
+
+      const nameSpan = document.createElement("span");
+      nameSpan.className = "item-name";
+      nameSpan.textContent = thread.title;
+      left.appendChild(nameSpan);
+
+      if (thread.isOfficial) {
+        const moodSpan = document.createElement("span");
+        moodSpan.className = "item-mood";
+        moodSpan.textContent = "📢";
+        left.appendChild(moodSpan);
+      }
+
+      row1.appendChild(left);
+
+      if (thread.unread && thread.unread > 0) {
+        const badge = document.createElement("span");
+        badge.className = "friend-tab-badge";
+        badge.textContent = thread.unread > 99 ? "99+" : String(thread.unread);
+        row1.appendChild(badge);
+      }
+
+      main.appendChild(row1);
+
+      const row2 = document.createElement("div");
+      row2.className = "item-row2";
+      row2.textContent = thread.preview || "";
+      main.appendChild(row2);
+
+      if (thread.isOfficial) {
+        const row3 = document.createElement("div");
+        row3.className = "item-row3";
+        row3.innerHTML = '<span class="label">官方通知：</span>此聊天室會放置系統公告、活動通知，可刪除（Demo）。';
+        main.appendChild(row3);
+      }
+
+      li.appendChild(main);
+
+      if (thread.isOfficial) {
+        const delBtn = document.createElement("button");
+        delBtn.type = "button";
+        delBtn.className = "btn btn-sm";
+        delBtn.textContent = "刪除";
+        delBtn.style.marginLeft = "8px";
+        delBtn.addEventListener("click", (e) => {
+          e.stopPropagation();
+          if (!confirm("確定要從列表中移除官方訊息嗎？（Demo）")) return;
+          thread.hidden = true;
+          if (currentChatThreadId === thread.id) {
+            currentChatThreadId = null;
+            if (chatMessagesEl) {
+              chatMessagesEl.innerHTML = "";
+            }
+            topTitleEl.textContent = "聊天";
+          }
+          renderChatThreadList();
+        });
+        li.appendChild(delBtn);
+      }
+
+      li.addEventListener("click", () => {
+        openChatThread(thread.id);
+      });
+
+      chatThreadListEl.appendChild(li);
+    });
+  }
+
+  function renderChatMessages(threadId) {
+    if (!chatMessagesEl) return;
+    const msgs = chatHistories[threadId] || [];
+
+    chatMessagesEl.innerHTML = "";
+
+    if (!msgs.length) {
+      const row = document.createElement("div");
+      row.className = "bubble-row";
+      row.innerHTML = '<div class="bubble them">尚未開始聊天，先傳一則訊息試試看。（Demo）</div>';
+      chatMessagesEl.appendChild(row);
+      return;
+    }
+
+    msgs.forEach(msg => {
+      const row = document.createElement("div");
+      row.className = "bubble-row" + (msg.from === "me" ? " me" : "");
+      let inner = "";
+
+      if (msg.type === "image" && msg.dataUrl) {
+        inner = '<img src="' + msg.dataUrl + '" alt="' + (msg.label || "image") + '" class="chat-image" />';
+      } else {
+        inner = (msg.text || "").replace(/\n/g, "<br>");
+      }
+
+      row.innerHTML = '<div class="bubble ' + (msg.from === "me" ? "me" : "them") + '">' + inner + "</div>";
+      chatMessagesEl.appendChild(row);
+    });
+
     chatMessagesEl.scrollTop = chatMessagesEl.scrollHeight;
   }
+
+  function openChatThread(threadId) {
+    const thread = chatThreads[threadId];
+    if (!thread) return;
+
+    currentChatThreadId = threadId;
+    thread.unread = 0;
+    renderChatThreadList();
+
+    // 保持頂部標題為「聊天」，實際對話對象顯示在聊天室視窗內
+    topTitleEl.textContent = "聊天";
+
+    renderChatMessages(threadId);
+    showChatPanel(thread);
+  }
+
+  function initChatModule() {
+    if (!chatThreadListEl) return;
+
+    // 官方聊天室
+    ensureChatThread({
+      id: "official",
+      title: "心遇小精靈（官方）",
+      preview: "歡迎加入心遇 XinYou！有任何問題可以在這裡詢問我。",
+      isOfficial: true,
+      pinned: true,
+      avatar: "https://picsum.photos/200/200?random=991",
+      unread: 1
+    });
+
+    if (!chatHistories["official"] || chatHistories["official"].length === 0) {
+      chatHistories["official"] = [
+        {
+          from: "them",
+          type: "text",
+          text: "歡迎來到「心遇 XinYou」聊天介面示意。\n目前是前端原型，未連接真實後端。"
+        },
+        {
+          from: "me",
+          type: "text",
+          text: "老闆你可以切換上方聊天背景、試試輸入文字、用下面的 + 號打開貼圖 / 照片 / GIF。"
+        }
+      ];
+    }
+
+    // 依照現有好友列表建立對話室
+    friendIds.forEach(fid => {
+      ensureFriendChatThread(fid);
+    });
+
+    renderChatThreadList();
+  }
+
+  function sendChat() {
+    if (!chatInputEl) return;
+    const text = chatInputEl.value.trim();
+    if (!text) return;
+    if (!currentChatThreadId) {
+      alert("請先從上方聊天列表選擇一個對話，再輸入訊息。（Demo）");
+      return;
+    }
+    const msgs = chatHistories[currentChatThreadId] || (chatHistories[currentChatThreadId] = []);
+    msgs.push({
+      from: "me",
+      type: "text",
+      text,
+      ts: Date.now()
+    });
+
+    const thread = chatThreads[currentChatThreadId];
+    if (thread) {
+      thread.preview = text;
+    }
+
+    chatInputEl.value = "";
+    renderChatMessages(currentChatThreadId);
+    renderChatThreadList();
+  }
+
   chatSendBtn.addEventListener("click", sendChat);
   chatInputEl.addEventListener("keydown", e => {
     if (e.key === "Enter") {
@@ -2654,30 +3076,41 @@
   });
 
   function sendImageMessage(dataUrl, label) {
-    const row = document.createElement("div");
-    row.className = "bubble-row me";
-    row.innerHTML = ''
-      + '<div class="bubble me">'
-      + '  <img src="' + dataUrl + '" alt="' + label + '" class="chat-image" />'
-      + '</div>';
-    chatMessagesEl.appendChild(row);
-    chatMessagesEl.scrollTop = chatMessagesEl.scrollHeight;
+    if (!currentChatThreadId) {
+      alert("請先從上方聊天列表選擇一個對話，再傳送圖片。（Demo）");
+      return;
+    }
+    const msgs = chatHistories[currentChatThreadId] || (chatHistories[currentChatThreadId] = []);
+    msgs.push({
+      from: "me",
+      type: "image",
+      dataUrl,
+      label,
+      ts: Date.now()
+    });
+
+    const thread = chatThreads[currentChatThreadId];
+    if (thread && !thread.preview) {
+      thread.preview = label === "gif" ? "[GIF]" : "[圖片]";
+    }
+
+    renderChatMessages(currentChatThreadId);
+    renderChatThreadList();
   }
 
   chatPhotoBtn.addEventListener("click", () => {
     chatPhotoInput.click();
   });
-
   chatGifBtn.addEventListener("click", () => {
     chatGifInput.click();
   });
 
-  chatPhotoInput.addEventListener("change", (e) => {
+  chatPhotoInput.addEventListener("change", e => {
     const file = e.target.files && e.target.files[0];
     if (!file) return;
     const reader = new FileReader();
-    reader.onload = function(ev) {
-      const dataUrl = ev.target.result;
+    reader.onload = ev => {
+      const dataUrl = ev.target && ev.target.result;
       if (!dataUrl) return;
       sendImageMessage(dataUrl, "photo");
     };
@@ -2685,12 +3118,12 @@
     e.target.value = "";
   });
 
-  chatGifInput.addEventListener("change", (e) => {
+  chatGifInput.addEventListener("change", e => {
     const file = e.target.files && e.target.files[0];
     if (!file) return;
     const reader = new FileReader();
-    reader.onload = function(ev) {
-      const dataUrl = ev.target.result;
+    reader.onload = ev => {
+      const dataUrl = ev.target && ev.target.result;
       if (!dataUrl) return;
       sendImageMessage(dataUrl, "gif");
     };
@@ -2700,7 +3133,7 @@
 
   stickerBar.querySelectorAll(".sticker-btn").forEach(btn => {
     btn.addEventListener("click", () => {
-      const emo = btn.textContent;
+      const emo = btn.textContent || "";
       chatInputEl.value += emo;
       chatInputEl.focus();
     });
@@ -2748,6 +3181,113 @@
     friendNotePreview.innerHTML = '<span class="label">好友限定：</span>' + t;
   }
   friendNoteInput.addEventListener("input", updateFriendNotePreview);
+
+  // 我的日記（免費 5 則，VIP 可至 30 則）模組
+  function hmGetDiaryLimit() {
+    const vip = hmGetVipLevel();
+    return vip > 0 ? 30 : 5;
+  }
+
+  function hmLoadDiaries() {
+    try {
+      const raw = localStorage.getItem("hmMyDiaries");
+      if (!raw) return [];
+      const arr = JSON.parse(raw);
+      return Array.isArray(arr) ? arr : [];
+    } catch (e) {
+      return [];
+    }
+  }
+
+  function hmSaveDiaries(list) {
+    try {
+      localStorage.setItem("hmMyDiaries", JSON.stringify(list));
+    } catch (e) {}
+  }
+
+  function hmDeleteDiary(diaryId) {
+    const list = hmLoadDiaries().filter(d => d.id !== diaryId);
+    hmSaveDiaries(list);
+    renderMyDiaries();
+  }
+
+  function renderMyDiaries() {
+    const listEl = document.getElementById("myDiaryList");
+    const limitTextEl = document.getElementById("myDiaryLimitText");
+    if (!listEl || !limitTextEl) return;
+
+    const diaries = hmLoadDiaries();
+    const limit = hmGetDiaryLimit();
+    const vip = hmGetVipLevel();
+
+    limitTextEl.textContent = vip > 0
+      ? "目前已建立 " + diaries.length + " 則日記，VIP 身份最多可建立 " + limit + " 則。"
+      : "目前已建立 " + diaries.length + " 則日記，免費版最多可建立 " + limit + " 則，升級 VIP 後可到 30 則。";
+
+    listEl.innerHTML = "";
+
+    if (!diaries.length) {
+      const empty = document.createElement("div");
+      empty.className = "diary-item";
+      empty.innerHTML = '<div class="diary-date">尚未建立任何日記</div><div>可以寫幾句想讓別人看到的自我介紹或心情。</div>';
+      listEl.appendChild(empty);
+      return;
+    }
+
+    diaries.slice().reverse().forEach(diary => {
+      const item = document.createElement("div");
+      item.className = "diary-item";
+
+      const header = document.createElement("div");
+      header.style.display = "flex";
+      header.style.justifyContent = "space-between";
+      header.style.alignItems = "center";
+
+      const dateDiv = document.createElement("div");
+      dateDiv.className = "diary-date";
+      const time = diary.createdAt ? new Date(diary.createdAt) : new Date();
+      const y = time.getFullYear();
+      const m = String(time.getMonth() + 1).padStart(2, "0");
+      const day = String(time.getDate()).padStart(2, "0");
+      const hh = String(time.getHours()).padStart(2, "0");
+      const mm = String(time.getMinutes()).padStart(2, "0");
+      dateDiv.textContent = y + "-" + m + "-" + day + " " + hh + ":" + mm;
+
+      const delBtn = document.createElement("button");
+      delBtn.type = "button";
+      delBtn.className = "btn btn-sm";
+      delBtn.textContent = "刪除";
+      delBtn.addEventListener("click", () => {
+        if (confirm("確定要刪除這則日記嗎？（Demo）")) {
+          hmDeleteDiary(diary.id);
+        }
+      });
+
+      header.appendChild(dateDiv);
+      header.appendChild(delBtn);
+      item.appendChild(header);
+
+      if (diary.image) {
+        const img = document.createElement("img");
+        img.src = diary.image;
+        img.alt = "日記圖片";
+        img.style.maxWidth = "100%";
+        img.style.borderRadius = "12px";
+        img.style.marginTop = "6px";
+        img.style.marginBottom = "6px";
+        item.appendChild(img);
+      }
+
+      if (diary.text) {
+        const textDiv = document.createElement("div");
+        textDiv.innerHTML = String(diary.text).replace(/\n/g, "<br>");
+        item.appendChild(textDiv);
+      }
+
+      listEl.appendChild(item);
+    });
+  }
+
 
   // Viewer & 送禮動畫
   function openPhotoViewer(src) {
@@ -3005,6 +3545,7 @@
     } catch (e) {}
     hmUpdateVipUI();
     renderMyAlbum();
+    renderMyDiaries();
     if (pages.profileDetail.classList.contains("active") && currentProfileId != null) {
       openProfileDetail(currentProfileId);
     }
@@ -3107,33 +3648,29 @@
     const grid = document.getElementById("myAlbumGrid");
     if (!grid) return;
     const photos = hmLoadAlbumPhotos();
-    const vip = hmGetVipLevel();
-    const unlocked = hmAlbumIsUnlocked();
 
     grid.innerHTML = "";
 
     for (let i = 0; i < MY_ALBUM_SLOTS; i++) {
-      const isFree = i < 2;
-      const isLocked = !isFree && vip === 0 && !unlocked;
-
       const slot = document.createElement("div");
       slot.className = "my-album-item";
 
       const img = document.createElement("img");
-      img.id = "myAlbumImg_" + i;
-      const src = hmGetAlbumPhotoSrc(i);
-      img.src = src || "";
-      if (!photos[i]) {
-        img.style.opacity = "0.3";
+      img.alt = "我的相簿照片 " + (i + 1);
+      if (photos[i]) {
+        img.src = photos[i];
+        img.style.objectFit = "cover";
+      } else {
+        img.style.objectFit = "contain";
       }
       slot.appendChild(img);
 
       const label = document.createElement("div");
-      label.className = "my-album-slot-label";
-      if (isFree) {
-        label.textContent = "第 " + (i + 1) + " 張 · 免費預覽";
+      label.className = "my-album-label";
+      if (i < 2) {
+        label.textContent = "第 " + (i + 1) + " 張 · 對外免費預覽";
       } else {
-        label.textContent = "第 " + (i + 1) + " 張 · 需解鎖";
+        label.textContent = "第 " + (i + 1) + " 張 · 對陌生人為鎖定照片（需解鎖後才會顯示）";
       }
       slot.appendChild(label);
 
@@ -3158,8 +3695,8 @@
         const file = e.target.files && e.target.files[0];
         if (!file) return;
         const reader = new FileReader();
-        reader.onload = function (ev) {
-          const result = ev.target.result;
+        reader.onload = (ev) => {
+          const result = ev.target && ev.target.result;
           if (!result) return;
           const arr = hmLoadAlbumPhotos();
           arr[i] = result;
@@ -3173,26 +3710,10 @@
         reader.readAsDataURL(file);
       });
 
-      if (isLocked) {
-        const overlay = document.createElement("div");
-        overlay.className = "my-album-lock-overlay";
-        overlay.innerHTML = ''
-          + '<div>🔒 鎖定照片<br>觀看一次廣告即可在 30 分鐘內解鎖 6 張照片</div>';
-        const btn = document.createElement("button");
-        btn.type = "button";
-        btn.className = "my-album-lock-btn";
-        btn.textContent = "觀看廣告暫時解鎖（Demo）";
-        btn.addEventListener("click", (e) => {
-          e.stopPropagation();
-          hmAlbumUnlockFor30Minutes();
-        });
-        overlay.appendChild(btn);
-        slot.appendChild(overlay);
-      }
-
       grid.appendChild(slot);
     }
   }
+
 
   function hmShowAlbumAdPrompt() {
     const go = confirm("這 4 張照片需觀看一段廣告才能在 30 分鐘內解鎖。\n要前往廣告頁（Demo）嗎？");
@@ -3213,6 +3734,12 @@
   window.hmGetAlbumPhotoSrc = hmGetAlbumPhotoSrc;
   window.hmGetPersonAlbumPhotoSrc = hmGetPersonAlbumPhotoSrc;
 
+  if (chatBackBtn) {
+    chatBackBtn.addEventListener("click", () => {
+      hideChatPanel();
+    });
+  }
+
   document.addEventListener("DOMContentLoaded", function () {
     pickRandomBatch();
     renderPeopleGrid();
@@ -3232,6 +3759,63 @@
     // 初始化 VIP & 我的照片
     hmUpdateVipUI();
     renderMyAlbum();
+    renderMyDiaries();
+    initChatModule();
+
+    // 我的日記輸入元件綁定
+    const diaryInput = document.getElementById("myDiaryInput");
+    const diaryImageInput = document.getElementById("myDiaryImageInput");
+    const diaryAddBtn = document.getElementById("myDiaryAddBtn");
+    let diaryPendingImage = null;
+
+    if (diaryImageInput) {
+      diaryImageInput.addEventListener("change", (e) => {
+        const file = e.target.files && e.target.files[0];
+        if (!file) {
+          diaryPendingImage = null;
+          return;
+        }
+        const reader = new FileReader();
+        reader.onload = (ev) => {
+          diaryPendingImage = ev.target && ev.target.result;
+        };
+        reader.readAsDataURL(file);
+      });
+    }
+
+    function handleDiaryAdd() {
+      if (!diaryInput) return;
+      const text = diaryInput.value.trim();
+      if (!text && !diaryPendingImage) {
+        alert("請至少輸入一些文字或選擇一張圖片。");
+        return;
+      }
+      const list = hmLoadDiaries();
+      const limit = hmGetDiaryLimit();
+      if (list.length >= limit) {
+        alert("目前最多只能建立 " + limit + " 則日記。若要更多可以考慮升級 VIP（Demo）。");
+        return;
+      }
+      const now = new Date();
+      const diary = {
+        id: now.getTime(),
+        text,
+        image: diaryPendingImage,
+        createdAt: now.toISOString()
+      };
+      list.push(diary);
+      hmSaveDiaries(list);
+      diaryInput.value = "";
+      if (diaryImageInput) {
+        diaryImageInput.value = "";
+      }
+      diaryPendingImage = null;
+      renderMyDiaries();
+    }
+
+    if (diaryAddBtn) {
+      diaryAddBtn.addEventListener("click", handleDiaryAdd);
+    }
 
     const vipToggleBtn = document.getElementById("vipLevelToggleBtn");
     if (vipToggleBtn) {
