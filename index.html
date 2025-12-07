@@ -1561,11 +1561,10 @@
 
  <!-- 我的頁 -->
  <div class="page" id="page-me">
-   <input type="file" id="myAvatarFileInput" accept="image/*" style="display:none" />
    <div class="profile-header">
      <div class="profile-row-main">
-       <div class="profile-avatar" id="myMainAvatar">
-         <img id="myMainAvatarImg" src="https://picsum.photos/200/200?random=99" alt="我的頭像" />
+       <div class="profile-avatar">
+         <img src="https://picsum.photos/200/200?random=99" alt="我的頭像" />
        </div>
        <div class="profile-main">
          <div class="profile-name-row">
@@ -1591,9 +1590,6 @@
              <option value="offline">離線中</option>
              <option value="chatty">想聊天</option>
            </select>
-         </div>
-         <div style="margin-top:8px; text-align:right;">
-           <button id="myAvatarUploadBtn" type="button" class="btn btn-sm">更換大頭貼</button>
          </div>
        </div>
      </div>
@@ -1709,11 +1705,8 @@
          </div>
          <textarea id="myDiaryInput" placeholder="寫一則想讓別人看到的心情日記..."></textarea>
          <div style="margin-top:6px; display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
-           <button type="button" class="hm-btn-outline" id="myDiaryUploadImageBtn">上傳圖片</button>
-           <button type="button" class="hm-btn-outline" id="myDiaryUploadPhotoBtn">拍照上傳</button>
+           <input type="file" id="myDiaryImageInput" accept="image/*" capture="environment" style="font-size:13px;" />
            <button type="button" class="hm-btn-outline" id="myDiaryAddBtn">新增日記</button>
-           <input type="file" id="myDiaryImageInputGallery" accept="image/*" style="display:none" />
-           <input type="file" id="myDiaryImageInputCamera" accept="image/*" capture="environment" style="display:none" />
          </div>
        </div>
      </div>
@@ -2376,6 +2369,7 @@
       return ''
         + '<div class="album-item' + lockedClass + '" onclick="handleStrangerAlbumClick(' + p.id + ',' + idx + ')">'
         + '  <img src="' + src + '" alt="photo' + (idx + 1) + '" />'
+        + '  <button class="set-cover-btn" onclick="event.stopPropagation(); setAsAvatar(' + idx + ')">設為頭貼</button>'
         + '  <div class="album-gift-btn" onclick="event.stopPropagation(); sendGiftAnimation(this)">💝 送禮</div>'
         + '</div>';
     }).join("");
@@ -2432,15 +2426,6 @@
       + '    </div>'
       + '  </div>'
       + '</div>';
-
-    const detailAvatarImg = profileDetailContent.querySelector(".profile-header .profile-avatar img");
-    if (detailAvatarImg) {
-      detailAvatarImg.addEventListener("click", function () {
-        if (detailAvatarImg.src) {
-          openPhotoViewer(detailAvatarImg.src);
-        }
-      });
-    }
 
     showPage("profileDetail");
     topTitleEl.textContent = p.name;
@@ -3197,67 +3182,6 @@
   }
   friendNoteInput.addEventListener("input", updateFriendNotePreview);
 
-  // 我的大頭貼（只在「我的資料」中上傳與更換）
-  function hmLoadMyAvatar() {
-    try {
-      return localStorage.getItem("hmMyAvatar") || "";
-    } catch (e) {
-      return "";
-    }
-  }
-
-  function hmSaveMyAvatar(dataUrl) {
-    try {
-      if (dataUrl) {
-        localStorage.setItem("hmMyAvatar", dataUrl);
-      } else {
-        localStorage.removeItem("hmMyAvatar");
-      }
-    } catch (e) {
-      console.warn("儲存大頭貼失敗：", e);
-    }
-  }
-
-  function hmInitMyAvatar() {
-    const avatarImg = document.getElementById("myMainAvatarImg");
-    const avatarFileInput = document.getElementById("myAvatarFileInput");
-    const avatarBtn = document.getElementById("myAvatarUploadBtn");
-    if (!avatarImg || !avatarFileInput || !avatarBtn) return;
-
-    const stored = hmLoadMyAvatar();
-    if (stored) {
-      avatarImg.src = stored;
-    }
-
-    avatarBtn.addEventListener("click", function () {
-      avatarFileInput.click();
-    });
-
-    avatarFileInput.addEventListener("change", function (e) {
-      const file = e.target.files && e.target.files[0];
-      if (!file) return;
-      if (!file.type || !file.type.startsWith("image/")) {
-        alert("請選擇圖片檔案作為大頭貼。");
-        avatarFileInput.value = "";
-        return;
-      }
-      const reader = new FileReader();
-      reader.onload = function (ev) {
-        const dataUrl = ev.target && ev.target.result;
-        if (!dataUrl) return;
-        avatarImg.src = dataUrl;
-        hmSaveMyAvatar(dataUrl);
-      };
-      reader.readAsDataURL(file);
-    });
-
-    avatarImg.addEventListener("click", function () {
-      if (avatarImg.src) {
-        openPhotoViewer(avatarImg.src);
-      }
-    });
-  }
-
   // 我的日記（免費 5 則，VIP 可至 30 則）模組
   function hmGetDiaryLimit() {
     const vip = hmGetVipLevel();
@@ -3733,18 +3657,13 @@
 
       const img = document.createElement("img");
       img.alt = "我的相簿照片 " + (i + 1);
-      const src = hmGetAlbumPhotoSrc(i);
-      img.src = src;
       if (photos[i]) {
+        img.src = photos[i];
         img.style.objectFit = "cover";
       } else {
         img.style.objectFit = "contain";
       }
       slot.appendChild(img);
-
-      slot.addEventListener("click", function () {
-        openPhotoViewer(hmGetAlbumPhotoSrc(i));
-      });
 
       const label = document.createElement("div");
       label.className = "my-album-label";
@@ -3845,24 +3764,14 @@
 
     // 我的日記輸入元件綁定
     const diaryInput = document.getElementById("myDiaryInput");
-    const diaryImageInputGallery = document.getElementById("myDiaryImageInputGallery");
-    const diaryImageInputCamera = document.getElementById("myDiaryImageInputCamera");
-    const diaryUploadImageBtn = document.getElementById("myDiaryUploadImageBtn");
-    const diaryUploadPhotoBtn = document.getElementById("myDiaryUploadPhotoBtn");
+    const diaryImageInput = document.getElementById("myDiaryImageInput");
     const diaryAddBtn = document.getElementById("myDiaryAddBtn");
     let diaryPendingImage = null;
 
-    function bindDiaryImageInput(inputEl) {
-      if (!inputEl) return;
-      inputEl.addEventListener("change", (e) => {
+    if (diaryImageInput) {
+      diaryImageInput.addEventListener("change", (e) => {
         const file = e.target.files && e.target.files[0];
         if (!file) {
-          diaryPendingImage = null;
-          return;
-        }
-        if (!file.type || !file.type.startsWith("image/")) {
-          alert("請選擇圖片檔案。");
-          inputEl.value = "";
           diaryPendingImage = null;
           return;
         }
@@ -3873,21 +3782,6 @@
         reader.readAsDataURL(file);
       });
     }
-
-    if (diaryUploadImageBtn && diaryImageInputGallery) {
-      diaryUploadImageBtn.addEventListener("click", () => {
-        diaryImageInputGallery.click();
-      });
-    }
-
-    if (diaryUploadPhotoBtn && diaryImageInputCamera) {
-      diaryUploadPhotoBtn.addEventListener("click", () => {
-        diaryImageInputCamera.click();
-      });
-    }
-
-    bindDiaryImageInput(diaryImageInputGallery);
-    bindDiaryImageInput(diaryImageInputCamera);
 
     function handleDiaryAdd() {
       if (!diaryInput) return;
@@ -3912,11 +3806,8 @@
       list.push(diary);
       hmSaveDiaries(list);
       diaryInput.value = "";
-      if (diaryImageInputGallery) {
-        diaryImageInputGallery.value = "";
-      }
-      if (diaryImageInputCamera) {
-        diaryImageInputCamera.value = "";
+      if (diaryImageInput) {
+        diaryImageInput.value = "";
       }
       diaryPendingImage = null;
       renderMyDiaries();
@@ -3951,7 +3842,6 @@
         profileModal.style.display = "flex";
       }
       hmInitProfileCard();
-    hmInitMyAvatar();
     }
 
     const btnGoogle = document.getElementById("hm-login-google");
@@ -4046,3 +3936,4 @@
  </script>
 </body>
 </html>
+
