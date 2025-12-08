@@ -1561,11 +1561,10 @@
 
  <!-- 我的頁 -->
  <div class="page" id="page-me">
-   <input type="file" id="myAvatarFileInput" accept="image/*" style="display:none" />
    <div class="profile-header">
      <div class="profile-row-main">
-       <div class="profile-avatar" id="myMainAvatar">
-         <img id="myMainAvatarImg" src="https://picsum.photos/200/200?random=99" alt="我的頭像" />
+       <div class="profile-avatar">
+         <img src="https://picsum.photos/200/200?random=99" alt="我的頭像" />
        </div>
        <div class="profile-main">
          <div class="profile-name-row">
@@ -1591,9 +1590,6 @@
              <option value="offline">離線中</option>
              <option value="chatty">想聊天</option>
            </select>
-         </div>
-         <div style="margin-top:8px; text-align:right;">
-           <button id="myAvatarUploadBtn" type="button" class="btn btn-sm">更換大頭貼</button>
          </div>
        </div>
      </div>
@@ -1629,11 +1625,6 @@
            編輯基本資料 / 社群串聯
          </button>
        </div>
-     </div>
-     <div class="hm-profile-delete-wrap" style="margin-top: 12px; padding: 0 16px 0;">
-       <button id="hm-delete-account-btn" type="button" class="hm-btn-outline" style="width: 100%; border-color: #f97373; color: #b91c1c;">
-         刪除帳號並清除本機所有資料
-       </button>
      </div>
    </section>
 
@@ -1713,26 +1704,9 @@
            免費用戶可建立 5 則代表日記；升級 VIP 後可擴充到 30 則。這些日記會成為你對外展示的重點資料。（Demo）
          </div>
          <textarea id="myDiaryInput" placeholder="寫一則想讓別人看到的心情日記..."></textarea>
-        <div id="myDiaryImagePreviewWrapper" style="margin-top:6px; display:none;">
-          <div style="font-size:13px; color:#6b7280; margin-bottom:4px;">已選擇圖片預覽：</div>
-          <img id="myDiaryImagePreview" alt="日記圖片預覽" style="max-width:70%; border-radius:12px; display:block;" />
-        </div>
          <div style="margin-top:6px; display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
-           <button type="button" class="hm-btn-outline" id="myDiaryUploadImageBtn">上傳圖片</button>
-           <button type="button" class="hm-btn-outline" id="myDiaryUploadPhotoBtn">拍照上傳</button>
+           <input type="file" id="myDiaryImageInput" accept="image/*" capture="environment" style="font-size:13px;" />
            <button type="button" class="hm-btn-outline" id="myDiaryAddBtn">新增日記</button>
-           <select id="myDiaryImageSizeSelect" style="padding:4px 8px; font-size:12px; border-radius:999px; border:1px solid #e5e7eb; background:#fff;">
-             <option value="m">圖：中</option>
-             <option value="s">圖：小</option>
-             <option value="l">圖：大</option>
-           </select>
-           <select id="myDiaryFontSizeSelect" style="padding:4px 8px; font-size:12px; border-radius:999px; border:1px solid #e5e7eb; background:#fff;">
-             <option value="m">字：中</option>
-             <option value="s">字：小</option>
-             <option value="l">字：大</option>
-           </select>
-           <input type="file" id="myDiaryImageInputGallery" accept="image/*" style="display:none" />
-           <input type="file" id="myDiaryImageInputCamera" accept="image/*" capture="environment" style="display:none" />
          </div>
        </div>
      </div>
@@ -1870,39 +1844,12 @@
        </div>
 
        <div class="hm-form-group">
-         <label for="hm-region-city">居住城市</label>
-         <select id="hm-region-city" name="regionCity">
-           <option value="">請選擇城市</option>
-           <option value="台北市">台北市</option>
-           <option value="新北市">新北市</option>
-           <option value="基隆市">基隆市</option>
-           <option value="桃園市">桃園市</option>
-           <option value="新竹市">新竹市</option>
-           <option value="新竹縣">新竹縣</option>
-           <option value="苗栗縣">苗栗縣</option>
-           <option value="台中市">台中市</option>
-           <option value="彰化縣">彰化縣</option>
-           <option value="南投縣">南投縣</option>
-           <option value="雲林縣">雲林縣</option>
-           <option value="嘉義市">嘉義市</option>
-           <option value="嘉義縣">嘉義縣</option>
-           <option value="台南市">台南市</option>
-           <option value="高雄市">高雄市</option>
-           <option value="屏東縣">屏東縣</option>
-           <option value="宜蘭縣">宜蘭縣</option>
-           <option value="花蓮縣">花蓮縣</option>
-           <option value="台東縣">台東縣</option>
-           <option value="澎湖縣">澎湖縣</option>
-           <option value="金門縣">金門縣</option>
-           <option value="連江縣">連江縣</option>
-           <option value="其他">其他</option>
-         </select>
+         <label for="hm-region">居住區域（可稍後再填）</label>
          <input
            type="text"
-           id="hm-region-other"
-           name="regionOther"
-           placeholder="若選擇「其他」，請在此輸入城市或地區"
-           style="margin-top: 8px; display: none;"
+           id="hm-region"
+           name="region"
+           placeholder="例如：台北市 信義區 / 花蓮縣 瑞穗鄉"
          />
        </div>
 
@@ -2422,6 +2369,7 @@
       return ''
         + '<div class="album-item' + lockedClass + '" onclick="handleStrangerAlbumClick(' + p.id + ',' + idx + ')">'
         + '  <img src="' + src + '" alt="photo' + (idx + 1) + '" />'
+        + '  <button class="set-cover-btn" onclick="event.stopPropagation(); setAsAvatar(' + idx + ')">設為頭貼</button>'
         + '  <div class="album-gift-btn" onclick="event.stopPropagation(); sendGiftAnimation(this)">💝 送禮</div>'
         + '</div>';
     }).join("");
@@ -2478,15 +2426,6 @@
       + '    </div>'
       + '  </div>'
       + '</div>';
-
-    const detailAvatarImg = profileDetailContent.querySelector(".profile-header .profile-avatar img");
-    if (detailAvatarImg) {
-      detailAvatarImg.addEventListener("click", function () {
-        if (detailAvatarImg.src) {
-          openPhotoViewer(detailAvatarImg.src);
-        }
-      });
-    }
 
     showPage("profileDetail");
     topTitleEl.textContent = p.name;
@@ -3243,67 +3182,6 @@
   }
   friendNoteInput.addEventListener("input", updateFriendNotePreview);
 
-  // 我的大頭貼（只在「我的資料」中上傳與更換）
-  function hmLoadMyAvatar() {
-    try {
-      return localStorage.getItem("hmMyAvatar") || "";
-    } catch (e) {
-      return "";
-    }
-  }
-
-  function hmSaveMyAvatar(dataUrl) {
-    try {
-      if (dataUrl) {
-        localStorage.setItem("hmMyAvatar", dataUrl);
-      } else {
-        localStorage.removeItem("hmMyAvatar");
-      }
-    } catch (e) {
-      console.warn("儲存大頭貼失敗：", e);
-    }
-  }
-
-  function hmInitMyAvatar() {
-    const avatarImg = document.getElementById("myMainAvatarImg");
-    const avatarFileInput = document.getElementById("myAvatarFileInput");
-    const avatarBtn = document.getElementById("myAvatarUploadBtn");
-    if (!avatarImg || !avatarFileInput || !avatarBtn) return;
-
-    const stored = hmLoadMyAvatar();
-    if (stored) {
-      avatarImg.src = stored;
-    }
-
-    avatarBtn.addEventListener("click", function () {
-      avatarFileInput.click();
-    });
-
-    avatarFileInput.addEventListener("change", function (e) {
-      const file = e.target.files && e.target.files[0];
-      if (!file) return;
-      if (!file.type || !file.type.startsWith("image/")) {
-        alert("請選擇圖片檔案作為大頭貼。");
-        avatarFileInput.value = "";
-        return;
-      }
-      const reader = new FileReader();
-      reader.onload = function (ev) {
-        const dataUrl = ev.target && ev.target.result;
-        if (!dataUrl) return;
-        avatarImg.src = dataUrl;
-        hmSaveMyAvatar(dataUrl);
-      };
-      reader.readAsDataURL(file);
-    });
-
-    avatarImg.addEventListener("click", function () {
-      if (avatarImg.src) {
-        openPhotoViewer(avatarImg.src);
-      }
-    });
-  }
-
   // 我的日記（免費 5 則，VIP 可至 30 則）模組
   function hmGetDiaryLimit() {
     const vip = hmGetVipLevel();
@@ -3333,25 +3211,7 @@
     renderMyDiaries();
   }
 
-  
-  function hmGetDiaryFontSizePx(size) {
-    if (size === "s") return "14px";
-    if (size === "l") return "18px";
-    return "16px";
-  }
-
-  function hmApplyDiaryImageSizeStyles(img, size) {
-    if (!img) return;
-    let maxWidth = "70%";
-    if (size === "s") maxWidth = "45%";
-    if (size === "l") maxWidth = "100%";
-    img.style.maxWidth = maxWidth;
-    img.style.borderRadius = "12px";
-    img.style.marginTop = "6px";
-    img.style.marginBottom = "6px";
-  }
-
-function renderMyDiaries() {
+  function renderMyDiaries() {
     const listEl = document.getElementById("myDiaryList");
     const limitTextEl = document.getElementById("myDiaryLimitText");
     if (!listEl || !limitTextEl) return;
@@ -3411,22 +3271,16 @@ function renderMyDiaries() {
         const img = document.createElement("img");
         img.src = diary.image;
         img.alt = "日記圖片";
-        const size = diary.imageSize || "m";
-        hmApplyDiaryImageSizeStyles(img, size);
-        img.addEventListener("click", () => {
-          if (img.src) {
-            openPhotoViewer(img.src);
-          }
-        });
+        img.style.maxWidth = "100%";
+        img.style.borderRadius = "12px";
+        img.style.marginTop = "6px";
+        img.style.marginBottom = "6px";
         item.appendChild(img);
       }
 
       if (diary.text) {
         const textDiv = document.createElement("div");
         textDiv.innerHTML = String(diary.text).replace(/\n/g, "<br>");
-        const fontSizePx = hmGetDiaryFontSizePx(diary.fontSize || "m");
-        textDiv.style.fontSize = fontSizePx;
-        textDiv.style.marginTop = "4px";
         item.appendChild(textDiv);
       }
 
@@ -3512,18 +3366,6 @@ function renderMyDiaries() {
     }
   }
 
-
-  function hmGetProfileData() {
-    try {
-      const str = localStorage.getItem("hmProfileData");
-      if (!str) return null;
-      return JSON.parse(str);
-    } catch (e) {
-      console.warn("讀取 hmProfileData 失敗：", e);
-      return null;
-    }
-  }
-
   function hmSetAuthProvider(provider) {
     try {
       localStorage.setItem("hmAuthProvider", provider);
@@ -3587,7 +3429,7 @@ function renderMyDiaries() {
     const region = profile && profile.region ? profile.region : "未填寫";
 
     nameEl.textContent = name;
-    regionEl.textContent = "台灣 · " + region;
+    regionEl.textContent = "居住區域：" + region;
 
     if (height || weight) {
       const hText = height ? height + "cm" : "身高未填寫";
@@ -3815,18 +3657,13 @@ function renderMyDiaries() {
 
       const img = document.createElement("img");
       img.alt = "我的相簿照片 " + (i + 1);
-      const src = hmGetAlbumPhotoSrc(i);
-      img.src = src;
       if (photos[i]) {
+        img.src = photos[i];
         img.style.objectFit = "cover";
       } else {
         img.style.objectFit = "contain";
       }
       slot.appendChild(img);
-
-      slot.addEventListener("click", function () {
-        openPhotoViewer(hmGetAlbumPhotoSrc(i));
-      });
 
       const label = document.createElement("div");
       label.className = "my-album-label";
@@ -3927,100 +3764,24 @@ function renderMyDiaries() {
 
     // 我的日記輸入元件綁定
     const diaryInput = document.getElementById("myDiaryInput");
-    const diaryImageInputGallery = document.getElementById("myDiaryImageInputGallery");
-    const diaryImageInputCamera = document.getElementById("myDiaryImageInputCamera");
-    const diaryUploadImageBtn = document.getElementById("myDiaryUploadImageBtn");
-    const diaryUploadPhotoBtn = document.getElementById("myDiaryUploadPhotoBtn");
+    const diaryImageInput = document.getElementById("myDiaryImageInput");
     const diaryAddBtn = document.getElementById("myDiaryAddBtn");
-    const diaryImagePreviewWrapper = document.getElementById("myDiaryImagePreviewWrapper");
-    const diaryImagePreview = document.getElementById("myDiaryImagePreview");
-    const diaryImageSizeSelect = document.getElementById("myDiaryImageSizeSelect");
-    const diaryFontSizeSelect = document.getElementById("myDiaryFontSizeSelect");
-
     let diaryPendingImage = null;
-    let diaryPendingImageSize = (diaryImageSizeSelect && diaryImageSizeSelect.value) || "m";
-    let diaryPendingFontSize = (diaryFontSizeSelect && diaryFontSizeSelect.value) || "m";
 
-    if (diaryInput) {
-      diaryInput.style.fontSize = hmGetDiaryFontSizePx(diaryPendingFontSize);
-    }
-
-    function clearDiaryImagePreview() {
-      diaryPendingImage = null;
-      if (diaryImagePreviewWrapper) {
-        diaryImagePreviewWrapper.style.display = "none";
-      }
-      if (diaryImagePreview) {
-        diaryImagePreview.removeAttribute("src");
-      }
-    }
-
-    function bindDiaryImageInput(inputEl) {
-      if (!inputEl) return;
-      inputEl.addEventListener("change", (e) => {
+    if (diaryImageInput) {
+      diaryImageInput.addEventListener("change", (e) => {
         const file = e.target.files && e.target.files[0];
         if (!file) {
-          clearDiaryImagePreview();
-          return;
-        }
-        if (!file.type || !file.type.startsWith("image/")) {
-          alert("請選擇圖片檔案。");
-          inputEl.value = "";
-          clearDiaryImagePreview();
+          diaryPendingImage = null;
           return;
         }
         const reader = new FileReader();
         reader.onload = (ev) => {
-          const dataUrl = ev.target && ev.target.result;
-          if (!dataUrl) {
-            clearDiaryImagePreview();
-            return;
-          }
-          diaryPendingImage = dataUrl;
-          if (diaryImagePreview) {
-            diaryImagePreview.src = dataUrl;
-            if (diaryImagePreviewWrapper) {
-              diaryImagePreviewWrapper.style.display = "block";
-            }
-            hmApplyDiaryImageSizeStyles(diaryImagePreview, diaryPendingImageSize);
-          }
+          diaryPendingImage = ev.target && ev.target.result;
         };
         reader.readAsDataURL(file);
       });
     }
-
-    if (diaryUploadImageBtn && diaryImageInputGallery) {
-      diaryUploadImageBtn.addEventListener("click", () => {
-        diaryImageInputGallery.click();
-      });
-    }
-
-    if (diaryUploadPhotoBtn && diaryImageInputCamera) {
-      diaryUploadPhotoBtn.addEventListener("click", () => {
-        diaryImageInputCamera.click();
-      });
-    }
-
-    if (diaryImageSizeSelect) {
-      diaryImageSizeSelect.addEventListener("change", () => {
-        diaryPendingImageSize = diaryImageSizeSelect.value || "m";
-        if (diaryImagePreview && diaryPendingImage) {
-          hmApplyDiaryImageSizeStyles(diaryImagePreview, diaryPendingImageSize);
-        }
-      });
-    }
-
-    if (diaryFontSizeSelect) {
-      diaryFontSizeSelect.addEventListener("change", () => {
-        diaryPendingFontSize = diaryFontSizeSelect.value || "m";
-        if (diaryInput) {
-          diaryInput.style.fontSize = hmGetDiaryFontSizePx(diaryPendingFontSize);
-        }
-      });
-    }
-
-    bindDiaryImageInput(diaryImageInputGallery);
-    bindDiaryImageInput(diaryImageInputCamera);
 
     function handleDiaryAdd() {
       if (!diaryInput) return;
@@ -4040,20 +3801,15 @@ function renderMyDiaries() {
         id: now.getTime(),
         text,
         image: diaryPendingImage,
-        imageSize: diaryPendingImage ? diaryPendingImageSize : null,
-        fontSize: diaryPendingFontSize,
         createdAt: now.toISOString()
       };
       list.push(diary);
       hmSaveDiaries(list);
       diaryInput.value = "";
-      if (diaryImageInputGallery) {
-        diaryImageInputGallery.value = "";
+      if (diaryImageInput) {
+        diaryImageInput.value = "";
       }
-      if (diaryImageInputCamera) {
-        diaryImageInputCamera.value = "";
-      }
-      clearDiaryImagePreview();
+      diaryPendingImage = null;
       renderMyDiaries();
     }
 
@@ -4083,11 +3839,9 @@ function renderMyDiaries() {
       hmSetAuthProvider(provider);
       if (loginModal) loginModal.style.display = "none";
       if (!hmHasCompletedProfile() && profileModal) {
-        hmPrepareProfileFormForEdit();
         profileModal.style.display = "flex";
       }
       hmInitProfileCard();
-      hmInitMyAvatar();
     }
 
     const btnGoogle = document.getElementById("hm-login-google");
@@ -4104,114 +3858,14 @@ function renderMyDiaries() {
       btnApple.addEventListener("click", () => handleFakeLogin("apple"));
     }
 
-
-
-    function hmPrepareProfileFormForEdit() {
-      const profile = hmGetProfileData();
-      const isFirstTime = !hmHasCompletedProfile();
-
-      const nameInput = document.getElementById("hm-name");
-      const heightInput = document.getElementById("hm-height");
-      const weightInput = document.getElementById("hm-weight");
-      const regionCityEl = document.getElementById("hm-region-city");
-      const regionOtherEl = document.getElementById("hm-region-other");
-
-      const cityOptions = [
-        "台北市","新北市","基隆市","桃園市","新竹市","新竹縣",
-        "苗栗縣","台中市","彰化縣","南投縣","雲林縣",
-        "嘉義市","嘉義縣","台南市","高雄市","屏東縣",
-        "宜蘭縣","花蓮縣","台東縣","澎湖縣","金門縣","連江縣"
-      ];
-
-      // 姓名 / 身高 / 體重：首次可填，之後鎖定
-      if (nameInput && heightInput && weightInput) {
-        if (isFirstTime) {
-          nameInput.disabled = false;
-          heightInput.disabled = false;
-          weightInput.disabled = false;
-        } else {
-          if (profile) {
-            if (profile.name && !nameInput.value) nameInput.value = profile.name;
-            if (profile.height && !heightInput.value) heightInput.value = profile.height;
-            if (profile.weight && !weightInput.value) weightInput.value = profile.weight;
-          }
-          nameInput.disabled = true;
-          heightInput.disabled = true;
-          weightInput.disabled = true;
-        }
-      }
-
-      // 居住城市 + 其他
-      if (regionCityEl && regionOtherEl) {
-        let region = (profile && profile.region) || "";
-        let matchedCity = cityOptions.includes(region) ? region : "";
-
-        if (matchedCity) {
-          regionCityEl.value = matchedCity;
-          regionOtherEl.style.display = "none";
-          regionOtherEl.value = "";
-        } else if (region) {
-          regionCityEl.value = "其他";
-          regionOtherEl.style.display = "block";
-          regionOtherEl.value = region;
-        } else {
-          regionCityEl.value = "";
-          regionOtherEl.style.display = "none";
-          regionOtherEl.value = "";
-        }
-
-        regionCityEl.addEventListener("change", function () {
-          if (this.value === "其他") {
-            regionOtherEl.style.display = "block";
-          } else {
-            regionOtherEl.style.display = "none";
-            regionOtherEl.value = "";
-          }
-        });
-      }
-
-      // 社群帳號填入舊資料
-      if (profile && profile.socials) {
-        const s = profile.socials;
-        const threadsEl = document.getElementById("hm-threads");
-        const xEl = document.getElementById("hm-x");
-        const igEl = document.getElementById("hm-instagram");
-        const fbEl = document.getElementById("hm-facebook");
-        const otherEl = document.getElementById("hm-other");
-        if (threadsEl) threadsEl.value = s.threads || "";
-        if (xEl) xEl.value = s.x || "";
-        if (igEl) igEl.value = s.instagram || "";
-        if (fbEl) fbEl.value = s.facebook || "";
-        if (otherEl) otherEl.value = s.other || "";
-      }
-    }
-
     if (form) {
       form.addEventListener("submit", function (e) {
         e.preventDefault();
 
-        const isFirstTime = !hmHasCompletedProfile();
-
-        const nameInput = document.getElementById("hm-name");
-        const heightInput = document.getElementById("hm-height");
-        const weightInput = document.getElementById("hm-weight");
-        const regionCityEl = document.getElementById("hm-region-city");
-        const regionOtherEl = document.getElementById("hm-region-other");
-
-        const name = nameInput ? nameInput.value.trim() : "";
-        const height = heightInput ? heightInput.value.trim() : "";
-        const weight = weightInput ? weightInput.value.trim() : "";
-
-        let regionCity = regionCityEl ? regionCityEl.value.trim() : "";
-        let regionOther = regionOtherEl ? regionOtherEl.value.trim() : "";
-
-        let region = "";
-        if (regionCity === "其他") {
-          region = regionOther || "";
-        } else {
-          region = regionCity || "";
-        }
-
+        const name = document.getElementById("hm-name").value.trim();
+        const height = document.getElementById("hm-height").value.trim();
+        const weight = document.getElementById("hm-weight").value.trim();
+        const region = document.getElementById("hm-region").value.trim();
         const threads = document.getElementById("hm-threads").value.trim();
         const x = document.getElementById("hm-x").value.trim();
         const instagram = document.getElementById("hm-instagram").value.trim();
@@ -4219,59 +3873,41 @@ function renderMyDiaries() {
         const other = document.getElementById("hm-other").value.trim();
         const agree = document.getElementById("hm-agree").checked;
 
-        if (isFirstTime) {
-          if (!name) {
-            alert("請填寫稱呼（暱稱）");
-            return;
-          }
-          if (!height || !weight) {
-            alert("身高與體重為必填欄位");
-            return;
-          }
-          if (!agree) {
-            alert("請勾選同意服務條款與隱私政策");
-            return;
-          }
+        if (!name) {
+          alert("請填寫稱呼（暱稱）");
+          return;
+        }
+        if (!height || !weight) {
+          alert("身高與體重為必填欄位");
+          return;
+        }
+        if (!agree) {
+          alert("請勾選同意服務條款與隱私政策");
+          return;
         }
 
-        let profileData;
-        if (isFirstTime) {
-          profileData = {
-            name,
-            height,
-            weight,
-            region,
-            socials: { threads, x, instagram, facebook, other },
-            createdAt: new Date().toISOString()
-          };
-        } else {
-          // 後續僅更新居住區域與社群帳號，不變更姓名與身高體重
-          const existing = hmGetProfileData() || {};
-          profileData = Object.assign({}, existing, {
-            region,
-            socials: { threads, x, instagram, facebook, other }
-          });
-        }
+        const profileData = {
+          name,
+          height,
+          weight,
+          region,
+          socials: { threads, x, instagram, facebook, other },
+          createdAt: new Date().toISOString()
+        };
 
         hmSaveProfileData(profileData);
         if (profileModal) profileModal.style.display = "none";
 
         hmInitProfileCard();
-        console.log("HeartMeet 基本資料已更新：", profileData);
-      });
-    }
-    hmInitProfileCard();
         console.log("HeartMeet 基本資料已完成：", profileData);
       });
     }
 
     hmInitProfileCard();
-    hmInitMyAvatar();
 
     const editBtn = document.getElementById("hm-profile-edit-btn");
     if (editBtn && profileModal) {
       editBtn.addEventListener("click", function () {
-        hmPrepareProfileFormForEdit();
         profileModal.style.display = "flex";
       });
     }
@@ -4296,29 +3932,8 @@ function renderMyDiaries() {
         location.reload();
       });
     }
-
-
-    const deleteBtn = document.getElementById("hm-delete-account-btn");
-    if (deleteBtn) {
-      deleteBtn.addEventListener("click", function () {
-        if (!confirm("確定要刪除帳號並清除本機所有資料嗎？\n（包含基本資料、綁定系統、VIP 等級與相簿照片 Demo 資料）")) {
-          return;
-        }
-        try {
-          localStorage.removeItem("hmProfileData");
-          localStorage.removeItem("hmProfileCompleted");
-          localStorage.removeItem("hmAuthProvider");
-          localStorage.removeItem("hmVipLevel");
-          localStorage.removeItem("hmMyAlbumPhotos");
-          localStorage.removeItem("hmAlbumUnlockUntil");
-          sessionStorage.removeItem("hmAlbumUnlocked");
-        } catch (e) {
-          console.warn("刪除帳號時清除 localStorage / sessionStorage 失敗：", e);
-        }
-        location.reload();
-      });
-    }
   });
  </script>
 </body>
 </html>
+
