@@ -1564,8 +1564,7 @@
    <div class="profile-header">
      <div class="profile-row-main">
        <div class="profile-avatar">
-         <img id="myAvatarImage" src="https://picsum.photos/200/200?random=99" alt="我的頭像" />
-         <button type="button" class="hm-btn-outline" id="myAvatarChangeBtn" style="margin-top:8px; font-size:13px;">更換頭貼</button>
+         <img id="myAvatarImage" src="https://picsum.photos/200/200?random=99" alt="我的頭像" style="cursor:pointer;" />
          <input type="file" id="myAvatarFileInput" accept="image/*" capture="environment" style="display:none;" />
        </div>
        <div class="profile-main">
@@ -2378,7 +2377,6 @@
       return ''
         + '<div class="album-item' + lockedClass + '" onclick="handleStrangerAlbumClick(' + p.id + ',' + idx + ')">'
         + '  <img src="' + src + '" alt="photo' + (idx + 1) + '" />'
-        + '  <button class="set-cover-btn" onclick="event.stopPropagation(); setAsAvatar(' + idx + ')">設為頭貼</button>'
         + '  <div class="album-gift-btn" onclick="event.stopPropagation(); sendGiftAnimation(this)">💝 送禮</div>'
         + '</div>';
     }).join("");
@@ -3415,48 +3413,7 @@
 
   
   
-  function hmInitAvatar() {
-    try {
-      const imgEl = document.getElementById("myAvatarImage");
-      if (!imgEl) return;
-      const dataUrl = localStorage.getItem("hmAvatarImage");
-      if (dataUrl) {
-        imgEl.src = dataUrl;
-      }
-    } catch (e) {
-      console.warn("初始化頭貼失敗：", e);
-    }
-  }
-
-  function hmBindAvatarUploader() {
-    const imgEl = document.getElementById("myAvatarImage");
-    const btn = document.getElementById("myAvatarChangeBtn");
-    const input = document.getElementById("myAvatarFileInput");
-    if (!imgEl || !btn || !input) return;
-
-    btn.addEventListener("click", function () {
-      input.click();
-    });
-
-    input.addEventListener("change", function (e) {
-      const file = e.target.files && e.target.files[0];
-      if (!file) return;
-      const reader = new FileReader();
-      reader.onload = function (ev) {
-        const result = ev.target && ev.target.result;
-        if (!result) return;
-        imgEl.src = result;
-        try {
-          localStorage.setItem("hmAvatarImage", result);
-        } catch (err) {
-          console.warn("儲存頭貼失敗：", err);
-        }
-      };
-      reader.readAsDataURL(file);
-    });
-  }
-
-function hmFillProfileForm(options) {
+  function hmFillProfileForm(options) {
     const opts = options || {};
     const nameInput = document.getElementById("hm-name");
     const heightInput = document.getElementById("hm-height");
@@ -3514,6 +3471,71 @@ function hmFillProfileForm(options) {
         agreeInput.disabled = false;
         agreeInput.checked = false;
       }
+    }
+  }
+
+
+  function hmInitAvatar() {
+    try {
+      const imgEl = document.getElementById("myAvatarImage");
+      if (!imgEl) return;
+      const dataUrl = localStorage.getItem("hmAvatarImage");
+      if (dataUrl) {
+        imgEl.src = dataUrl;
+      }
+    } catch (e) {
+      console.warn("初始化頭貼失敗：", e);
+    }
+  }
+
+  function hmBindAvatarUploader() {
+    const imgEl = document.getElementById("myAvatarImage");
+    const input = document.getElementById("myAvatarFileInput");
+    if (!imgEl || !input) return;
+
+    imgEl.addEventListener("click", function () {
+      input.click();
+    });
+
+    input.addEventListener("change", function (e) {
+      const file = e.target.files && e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = function (ev) {
+        const result = ev.target && ev.target.result;
+        if (!result) return;
+        imgEl.src = result;
+        try {
+          localStorage.setItem("hmAvatarImage", result);
+        } catch (err) {
+          console.warn("儲存頭貼失敗：", err);
+        }
+        // 同步到對外資料卡片頭像背景
+        try {
+          hmApplyAvatarToProfileCard();
+        } catch (e2) {
+          console.warn("同步對外頭貼失敗：", e2);
+        }
+      };
+      reader.readAsDataURL(file);
+    });
+  }
+
+  function hmApplyAvatarToProfileCard() {
+    const avatarWrapper = document.querySelector(".hm-profile-avatar");
+    const avatarTextEl = document.getElementById("hm-profile-avatar-text");
+    if (!avatarWrapper || !avatarTextEl) return;
+    const dataUrl = localStorage.getItem("hmAvatarImage");
+    if (dataUrl) {
+      avatarWrapper.style.backgroundImage = "url('" + dataUrl + "')";
+      avatarWrapper.style.backgroundSize = "cover";
+      avatarWrapper.style.backgroundPosition = "center";
+      avatarWrapper.style.color = "transparent";
+    } else {
+      avatarWrapper.style.backgroundImage = "";
+      avatarWrapper.style.backgroundSize = "";
+      avatarWrapper.style.backgroundPosition = "";
+      avatarWrapper.style.color = "#fff";
     }
   }
 
