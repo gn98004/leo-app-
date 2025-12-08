@@ -1564,12 +1564,14 @@
    <div class="profile-header">
      <div class="profile-row-main">
        <div class="profile-avatar">
-         <img src="https://picsum.photos/200/200?random=99" alt="我的頭像" />
+         <img id="myAvatarImage" src="https://picsum.photos/200/200?random=99" alt="我的頭像" />
+         <button type="button" class="hm-btn-outline" id="myAvatarChangeBtn" style="margin-top:8px; font-size:13px;">更換頭貼</button>
+         <input type="file" id="myAvatarFileInput" accept="image/*" capture="environment" style="display:none;" />
        </div>
        <div class="profile-main">
          <div class="profile-name-row">
            <div class="profile-name">
-             我自己 · Demo
+             <span id="myProfileName">未設定姓名</span>
              <span id="myVipBadge" class="vip-badge" style="display:none;"></span>
            </div>
            <div class="profile-status-inline">
@@ -1578,7 +1580,7 @@
              </span>
            </div>
          </div>
-         <div class="profile-sub" id="myProfileSub">台灣 · 30 歲左右 · 已上線</div>
+         <div class="profile-sub" id="myProfileSub">台灣 · 尚未填寫居住區域與身高體重</div>
          <div class="profile-status-edit">
            <label for="statusSelect" style="font-size:14px; margin-right:4px;">狀態：</label>
            <select id="statusSelect">
@@ -1705,7 +1707,14 @@
          </div>
          <textarea id="myDiaryInput" placeholder="寫一則想讓別人看到的心情日記..."></textarea>
          <div style="margin-top:6px; display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
-           <input type="file" id="myDiaryImageInput" accept="image/*" capture="environment" style="font-size:13px;" />
+           <input type="file" id="myDiaryImageUpload" accept="image/*" style="display:none;" />
+           <input type="file" id="myDiaryImageCamera" accept="image/*" capture="environment" style="display:none;" />
+           <button type="button" class="hm-btn-outline" id="myDiaryImageUploadBtn">上傳照片</button>
+           <button type="button" class="hm-btn-outline" id="myDiaryImageCameraBtn">拍照</button>
+           <div style="display:flex; align-items:center; gap:4px;">
+             <input type="range" id="myDiaryImageSize" min="40" max="100" value="80" style="width:120px;" />
+             <span id="myDiaryImageSizeText" style="font-size:12px; color:#6b7280;">照片大小：80%</span>
+           </div>
            <button type="button" class="hm-btn-outline" id="myDiaryAddBtn">新增日記</button>
          </div>
        </div>
@@ -1856,7 +1865,7 @@
        <div class="hm-form-group">
          <label>社群帳號串聯（可選填，增加信任感）</label>
          <p class="hm-help-text">
-           Threads / X / IG / FB 皆可先略過，之後也可以在「我的資料」中再補上或修改。
+           Threads / X / IG / FB 皆可先略過，之後也可以在「我的資料」中再補上或修改社群帳號。
          </p>
 
          <div class="hm-social-row">
@@ -3271,7 +3280,7 @@
         const img = document.createElement("img");
         img.src = diary.image;
         img.alt = "日記圖片";
-        img.style.maxWidth = "100%";
+        img.style.maxWidth = (diary.imageSize || 100) + "%";
         img.style.borderRadius = "12px";
         img.style.marginTop = "6px";
         img.style.marginBottom = "6px";
@@ -3404,7 +3413,111 @@
     }
   }
 
-  function hmInitProfileCard() {
+  
+  
+  function hmInitAvatar() {
+    try {
+      const imgEl = document.getElementById("myAvatarImage");
+      if (!imgEl) return;
+      const dataUrl = localStorage.getItem("hmAvatarImage");
+      if (dataUrl) {
+        imgEl.src = dataUrl;
+      }
+    } catch (e) {
+      console.warn("初始化頭貼失敗：", e);
+    }
+  }
+
+  function hmBindAvatarUploader() {
+    const imgEl = document.getElementById("myAvatarImage");
+    const btn = document.getElementById("myAvatarChangeBtn");
+    const input = document.getElementById("myAvatarFileInput");
+    if (!imgEl || !btn || !input) return;
+
+    btn.addEventListener("click", function () {
+      input.click();
+    });
+
+    input.addEventListener("change", function (e) {
+      const file = e.target.files && e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = function (ev) {
+        const result = ev.target && ev.target.result;
+        if (!result) return;
+        imgEl.src = result;
+        try {
+          localStorage.setItem("hmAvatarImage", result);
+        } catch (err) {
+          console.warn("儲存頭貼失敗：", err);
+        }
+      };
+      reader.readAsDataURL(file);
+    });
+  }
+
+function hmFillProfileForm(options) {
+    const opts = options || {};
+    const nameInput = document.getElementById("hm-name");
+    const heightInput = document.getElementById("hm-height");
+    const weightInput = document.getElementById("hm-weight");
+    const regionInput = document.getElementById("hm-region");
+    const threadsInput = document.getElementById("hm-threads");
+    const xInput = document.getElementById("hm-x");
+    const igInput = document.getElementById("hm-instagram");
+    const fbInput = document.getElementById("hm-facebook");
+    const otherInput = document.getElementById("hm-other");
+    const agreeInput = document.getElementById("hm-agree");
+
+    if (!nameInput) return;
+
+    let profile = null;
+    const dataStr = localStorage.getItem("hmProfileData");
+    if (dataStr) {
+      try {
+        profile = JSON.parse(dataStr);
+      } catch (e) {
+        console.warn("解析 hmProfileData 失敗（fill form）：", e);
+      }
+    }
+    profile = profile || {};
+
+    const socials = profile.socials || {};
+
+    // 基本欄位
+    nameInput.value = profile.name || "";
+    heightInput.value = profile.height || "";
+    weightInput.value = profile.weight || "";
+    regionInput.value = profile.region || "";
+
+    // 社群欄位
+    threadsInput.value = socials.threads || "";
+    xInput.value = socials.x || "";
+    igInput.value = socials.instagram || "";
+    fbInput.value = socials.facebook || "";
+    otherInput.value = socials.other || "";
+
+    const lockBasic = !!opts.lockBasic;
+
+    // 控制是否可編輯
+    nameInput.readOnly = lockBasic;
+    heightInput.readOnly = lockBasic;
+    weightInput.readOnly = lockBasic;
+    regionInput.readOnly = lockBasic;
+
+    if (agreeInput) {
+      if (lockBasic) {
+        // 已完成基本資料後再次開啟，只編輯社群帳號，條款視為已同意
+        agreeInput.checked = true;
+        agreeInput.disabled = true;
+      } else {
+        agreeInput.disabled = false;
+        agreeInput.checked = false;
+      }
+    }
+  }
+
+function hmInitProfileCard() {
     const dataStr = localStorage.getItem("hmProfileData");
     const nameEl = document.getElementById("hm-profile-name");
     const metaEl = document.getElementById("hm-profile-meta");
@@ -3522,7 +3635,56 @@
     }
   }
 
-  // ================== VIP & 我的 6 張照片（本機示意） ==================
+  
+  function hmInitMyProfileHeader() {
+    try {
+      const dataStr = localStorage.getItem("hmProfileData");
+      const nameSpan = document.getElementById("myProfileName");
+      const subEl = document.getElementById("myProfileSub");
+      const statusTextEl = document.getElementById("myStatusText");
+
+      if (!nameSpan || !subEl) return;
+
+      let profile = null;
+      if (dataStr) {
+        try {
+          profile = JSON.parse(dataStr);
+        } catch (e) {
+          console.warn("解析 hmProfileData 失敗（header）：", e);
+        }
+      }
+
+      const name = profile && profile.name ? profile.name : "未設定姓名";
+      const height = profile && profile.height ? profile.height : "";
+      const weight = profile && profile.weight ? profile.weight : "";
+      const region = profile && profile.region ? profile.region : "";
+
+      nameSpan.textContent = name;
+
+      let subText = "台灣";
+      if (region) {
+        subText += " · " + region;
+      }
+
+      if (height || weight) {
+        let hw = "";
+        if (height) hw += height + "cm";
+        if (height && weight) hw += " / ";
+        if (weight) hw += weight + "kg";
+        if (hw) subText += " · " + hw;
+      }
+
+      if (statusTextEl && statusTextEl.textContent) {
+        subText += " · " + statusTextEl.textContent;
+      }
+
+      subEl.textContent = subText;
+    } catch (e) {
+      console.warn("初始化我的資料頁頭時發生錯誤：", e);
+    }
+  }
+
+// ================== VIP & 我的 6 張照片（本機示意） ==================
   const MY_ALBUM_SLOTS = 6;
   let myAlbumPhotosCache = null;
 
@@ -3764,12 +3926,19 @@
 
     // 我的日記輸入元件綁定
     const diaryInput = document.getElementById("myDiaryInput");
-    const diaryImageInput = document.getElementById("myDiaryImageInput");
+    const diaryImageUpload = document.getElementById("myDiaryImageUpload");
+    const diaryImageCamera = document.getElementById("myDiaryImageCamera");
+    const diaryImageUploadBtn = document.getElementById("myDiaryImageUploadBtn");
+    const diaryImageCameraBtn = document.getElementById("myDiaryImageCameraBtn");
+    const diaryImageSize = document.getElementById("myDiaryImageSize");
+    const diaryImageSizeText = document.getElementById("myDiaryImageSizeText");
     const diaryAddBtn = document.getElementById("myDiaryAddBtn");
     let diaryPendingImage = null;
+    let diaryPendingImageSize = diaryImageSize ? (Number(diaryImageSize.value) || 80) : 80;
 
-    if (diaryImageInput) {
-      diaryImageInput.addEventListener("change", (e) => {
+    function bindDiaryFileInput(inputEl) {
+      if (!inputEl) return;
+      inputEl.addEventListener("change", (e) => {
         const file = e.target.files && e.target.files[0];
         if (!file) {
           diaryPendingImage = null;
@@ -3781,6 +3950,25 @@
         };
         reader.readAsDataURL(file);
       });
+    }
+
+    if (diaryImageUploadBtn && diaryImageUpload) {
+      diaryImageUploadBtn.addEventListener("click", () => diaryImageUpload.click());
+    }
+    if (diaryImageCameraBtn && diaryImageCamera) {
+      diaryImageCameraBtn.addEventListener("click", () => diaryImageCamera.click());
+    }
+
+    bindDiaryFileInput(diaryImageUpload);
+    bindDiaryFileInput(diaryImageCamera);
+
+    if (diaryImageSize && diaryImageSizeText) {
+      const updateDiarySizeLabel = () => {
+        diaryPendingImageSize = Number(diaryImageSize.value) || 80;
+        diaryImageSizeText.textContent = "照片大小：" + diaryPendingImageSize + "%";
+      };
+      diaryImageSize.addEventListener("input", updateDiarySizeLabel);
+      updateDiarySizeLabel();
     }
 
     function handleDiaryAdd() {
@@ -3801,14 +3989,14 @@
         id: now.getTime(),
         text,
         image: diaryPendingImage,
+        imageSize: diaryPendingImageSize,
         createdAt: now.toISOString()
       };
       list.push(diary);
       hmSaveDiaries(list);
       diaryInput.value = "";
-      if (diaryImageInput) {
-        diaryImageInput.value = "";
-      }
+      if (diaryImageUpload) diaryImageUpload.value = "";
+      if (diaryImageCamera) diaryImageCamera.value = "";
       diaryPendingImage = null;
       renderMyDiaries();
     }
@@ -3839,9 +4027,16 @@
       hmSetAuthProvider(provider);
       if (loginModal) loginModal.style.display = "none";
       if (!hmHasCompletedProfile() && profileModal) {
+        // 初次綁定後，開啟完整基本資料填寫
+        const headerTitle = profileModal.querySelector(".hm-modal-header h2");
+        const headerSub = profileModal.querySelector(".hm-modal-header p");
+        if (headerTitle) headerTitle.textContent = "完成基本資料，開始配對";
+        if (headerSub) headerSub.textContent = "為了提升真實度與配對品質，請先填寫以下資訊。";
+        hmFillProfileForm({ lockBasic: false });
         profileModal.style.display = "flex";
       }
       hmInitProfileCard();
+      hmInitMyProfileHeader();
     }
 
     const btnGoogle = document.getElementById("hm-login-google");
@@ -3862,6 +4057,8 @@
       form.addEventListener("submit", function (e) {
         e.preventDefault();
 
+        const alreadyCompleted = hmHasCompletedProfile();
+
         const name = document.getElementById("hm-name").value.trim();
         const height = document.getElementById("hm-height").value.trim();
         const weight = document.getElementById("hm-weight").value.trim();
@@ -3873,41 +4070,83 @@
         const other = document.getElementById("hm-other").value.trim();
         const agree = document.getElementById("hm-agree").checked;
 
-        if (!name) {
-          alert("請填寫稱呼（暱稱）");
-          return;
+        let existingProfile = null;
+        try {
+          const raw = localStorage.getItem("hmProfileData");
+          if (raw) existingProfile = JSON.parse(raw);
+        } catch (err) {
+          console.warn("解析現有 Profile 失敗：", err);
         }
-        if (!height || !weight) {
-          alert("身高與體重為必填欄位");
-          return;
-        }
-        if (!agree) {
-          alert("請勾選同意服務條款與隱私政策");
-          return;
+        if (!existingProfile) existingProfile = {};
+
+        if (!alreadyCompleted || !existingProfile.name || !existingProfile.height || !existingProfile.weight) {
+          // 第一次完成基本資料（或本機資料缺失），需要完整驗證
+          if (!name) {
+            alert("請填寫稱呼（暱稱）");
+            return;
+          }
+          if (!height || !weight) {
+            alert("身高與體重為必填欄位");
+            return;
+          }
+          if (!agree) {
+            alert("請勾選同意服務條款與隱私政策");
+            return;
+          }
+        } else {
+          // 已完成基本資料後再次開啟，只允許修改社群帳號
+          // 不再強制檢查稱呼 / 身高 / 體重
         }
 
-        const profileData = {
-          name,
-          height,
-          weight,
-          region,
-          socials: { threads, x, instagram, facebook, other },
-          createdAt: new Date().toISOString()
-        };
+        let profileData;
+        if (!alreadyCompleted || !existingProfile.name || !existingProfile.height || !existingProfile.weight) {
+          // 初次建立或補齊缺漏，全部寫入
+          profileData = {
+            name,
+            height,
+            weight,
+            region,
+            socials: { threads, x, instagram, facebook, other },
+            createdAt: existingProfile.createdAt || new Date().toISOString()
+          };
+        } else {
+          // 之後只更新社群帳號，其餘基本資料沿用舊值
+          profileData = Object.assign({}, existingProfile, {
+            socials: { threads, x, instagram, facebook, other }
+          });
+        }
 
         hmSaveProfileData(profileData);
         if (profileModal) profileModal.style.display = "none";
 
         hmInitProfileCard();
-        console.log("HeartMeet 基本資料已完成：", profileData);
+        hmInitMyProfileHeader();
+        console.log(alreadyCompleted ? "HeartMeet 社群資料已更新：" : "HeartMeet 基本資料已完成：", profileData);
       });
     }
 
     hmInitProfileCard();
+    hmInitMyProfileHeader();
+    hmInitAvatar();
+    hmBindAvatarUploader();
 
     const editBtn = document.getElementById("hm-profile-edit-btn");
     if (editBtn && profileModal) {
       editBtn.addEventListener("click", function () {
+        const isCompleted = hmHasCompletedProfile();
+        const headerTitle = profileModal.querySelector(".hm-modal-header h2");
+        const headerSub = profileModal.querySelector(".hm-modal-header p");
+
+        if (isCompleted) {
+          if (headerTitle) headerTitle.textContent = "編輯社群帳號";
+          if (headerSub) headerSub.textContent = "基本資料（稱呼、身高、體重、居住區域）已鎖定，如需修改請刪除帳號重新建立。本畫面僅供補上或調整社群帳號。";
+          hmFillProfileForm({ lockBasic: true });
+        } else {
+          if (headerTitle) headerTitle.textContent = "完成基本資料，開始配對";
+          if (headerSub) headerSub.textContent = "為了提升真實度與配對品質，請先填寫以下資訊。";
+          hmFillProfileForm({ lockBasic: false });
+        }
+
         profileModal.style.display = "flex";
       });
     }
@@ -3925,6 +4164,7 @@
           localStorage.removeItem("hmVipLevel");
           localStorage.removeItem("hmMyAlbumPhotos");
           localStorage.removeItem("hmAlbumUnlockUntil");
+          localStorage.removeItem("hmAvatarImage");
           sessionStorage.removeItem("hmAlbumUnlocked");
         } catch (e) {
           console.warn("登出時清除 localStorage / sessionStorage 失敗：", e);
