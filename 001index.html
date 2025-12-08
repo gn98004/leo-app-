@@ -1564,9 +1564,21 @@
    <div class="profile-header">
      <div class="profile-row-main">
        <div class="profile-avatar">
-         <img id="myAvatarImage" src="https://picsum.photos/200/200?random=99" alt="我的頭像" style="cursor:pointer;" />
-         <input type="file" id="myAvatarFileInput" accept="image/*" style="display:none;" onchange="hmHandleAvatarFile(this)" />
-       </div>
+  <img
+    id="myAvatarImage"
+    src="https://picsum.photos/200/200?random=99"
+    alt="我的頭像"
+    style="cursor:pointer;"
+    onclick="document.getElementById('myAvatarFileInput').click();"
+  />
+  <input
+    type="file"
+    id="myAvatarFileInput"
+    accept="image/*"
+    style="display:none;"
+    onchange="hmHandleAvatarFile(this)"
+  />
+</div>
 
        <div class="profile-main">
          <div class="profile-name-row">
@@ -3476,7 +3488,6 @@
   }
 
 
-  
   function hmInitAvatar() {
     try {
       const imgEl = document.getElementById("myAvatarImage");
@@ -3484,11 +3495,6 @@
       const dataUrl = localStorage.getItem("hmAvatarImage");
       if (dataUrl) {
         imgEl.src = dataUrl;
-        try {
-          hmApplyAvatarToProfileCard();
-        } catch (e2) {
-          console.warn("初始化同步對外頭貼失敗：", e2);
-        }
       }
     } catch (e) {
       console.warn("初始化頭貼失敗：", e);
@@ -3496,33 +3502,33 @@
   }
 
   
-  function hmHandleAvatarFile(inputEl) {
-    try {
-      if (!inputEl || !inputEl.files || !inputEl.files[0]) return;
-      const file = inputEl.files[0];
-      const imgEl = document.getElementById("myAvatarImage");
-      if (!imgEl) return;
-      const reader = new FileReader();
-      reader.onload = function (ev) {
-        const result = ev.target && ev.target.result;
-        if (!result) return;
-        imgEl.src = result;
-        try {
-          localStorage.setItem("hmAvatarImage", result);
-        } catch (err) {
-          console.warn("儲存頭貼失敗：", err);
-        }
-        try {
-          hmApplyAvatarToProfileCard();
-        } catch (e2) {
-          console.warn("同步對外頭貼失敗：", e2);
-        }
-      };
-      reader.readAsDataURL(file);
-    } catch (e) {
-      console.warn("hmHandleAvatarFile 發生錯誤：", e);
-    }
+function hmHandleAvatarFile(inputEl) {
+  try {
+    const imgEl = document.getElementById("myAvatarImage");
+    if (!inputEl || !imgEl) return;
+    const file = inputEl.files && inputEl.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = function (ev) {
+      const result = ev.target && ev.target.result;
+      if (!result) return;
+      imgEl.src = result;
+      try {
+        localStorage.setItem("hmAvatarImage", result);
+      } catch (err) {
+        console.warn("儲存頭貼失敗：", err);
+      }
+      try {
+        hmApplyAvatarToProfileCard();
+      } catch (e2) {
+        console.warn("同步對外頭貼失敗：", e2);
+      }
+    };
+    reader.readAsDataURL(file);
+  } catch (e) {
+    console.warn("處理頭貼上傳失敗：", e);
   }
+}
 
 function hmBindAvatarUploader() {
     const imgEl = document.getElementById("myAvatarImage");
