@@ -3495,24 +3495,42 @@
       const dataUrl = localStorage.getItem("hmAvatarImage");
       if (dataUrl) {
         imgEl.src = dataUrl;
+        try {
+          hmApplyAvatarToProfileCard();
+        } catch (e2) {
+          console.warn("同步對外頭貼失敗：", e2);
+        }
       }
     } catch (e) {
       console.warn("初始化頭貼失敗：", e);
     }
   }
 
-  
 function hmHandleAvatarFile(inputEl) {
   try {
     const imgEl = document.getElementById("myAvatarImage");
     if (!inputEl || !imgEl) return;
     const file = inputEl.files && inputEl.files[0];
     if (!file) return;
+
+    // 先用 Object URL 讓各種瀏覽器（含 iOS / Android）立即預覽
+    try {
+      const objectUrl = URL.createObjectURL(file);
+      imgEl.src = objectUrl;
+      try {
+        hmApplyAvatarToProfileCard();
+      } catch (e3) {
+        console.warn("同步對外頭貼失敗 (object URL)：", e3);
+      }
+    } catch (eObj) {
+      console.warn("建立 Object URL 失敗：", eObj);
+    }
+
+    // 再用 FileReader 讀成 base64，存進 localStorage，供下次載入使用
     const reader = new FileReader();
     reader.onload = function (ev) {
       const result = ev.target && ev.target.result;
       if (!result) return;
-      imgEl.src = result;
       try {
         localStorage.setItem("hmAvatarImage", result);
       } catch (err) {
@@ -3521,7 +3539,7 @@ function hmHandleAvatarFile(inputEl) {
       try {
         hmApplyAvatarToProfileCard();
       } catch (e2) {
-        console.warn("同步對外頭貼失敗：", e2);
+        console.warn("同步對外頭貼失敗 (base64)：", e2);
       }
     };
     reader.readAsDataURL(file);
@@ -3531,48 +3549,32 @@ function hmHandleAvatarFile(inputEl) {
 }
 
 function hmBindAvatarUploader() {
-    const imgEl = document.getElementById("myAvatarImage");
-    const input = document.getElementById("myAvatarFileInput");
-    const btn = document.getElementById("myAvatarChangeBtn");
-    if (!imgEl || !input) return;
+  const imgEl = document.getElementById("myAvatarImage");
+  const input = document.getElementById("myAvatarFileInput");
+  const btn = document.getElementById("myAvatarChangeBtn");
+  if (!imgEl || !input) return;
 
-    // 按鈕：更換頭貼
-    if (btn) {
-      btn.addEventListener("click", function () {
-        input.click();
-      });
-    }
-
-    // 若未來仍想支援點擊頭像上傳，也可以保留
-    imgEl.addEventListener("click", function () {
-      // 如不想點頭像觸發，可以把這行註解掉
+  // 按鈕：更換頭貼
+  if (btn) {
+    btn.onclick = function () {
       input.click();
-    });
-
-    input.addEventListener("change", function (e) {
-      const file = e.target.files && e.target.files[0];
-      if (!file) return;
-      const reader = new FileReader();
-      reader.onload = function (ev) {
-        const result = ev.target && ev.target.result;
-        if (!result) return;
-        imgEl.src = result;
-        try {
-          localStorage.setItem("hmAvatarImage", result);
-        } catch (err) {
-          console.warn("儲存頭貼失敗：", err);
-        }
-        // 同步到對外資料卡片頭像背景
-        try {
-          hmApplyAvatarToProfileCard();
-        } catch (e2) {
-          console.warn("同步對外頭貼失敗：", e2);
-        }
-      };
-      reader.readAsDataURL(file);
-    });
+    };
   }
 
+  // 點擊頭像也能開啟上傳（iOS / Android / Desktop 通用）
+  imgEl.onclick = function () {
+    input.click();
+  };
+
+  // 統一走 hmHandleAvatarFile，確保各環境一致
+  input.onchange = function () {
+    try {
+      hmHandleAvatarFile(input);
+    } catch (e) {
+      console.warn("頭貼變更處理失敗：", e);
+    }
+  };
+}
 
 function hmApplyAvatarToProfileCard() {
     const avatarWrapper = document.querySelector(".hm-profile-avatar");
