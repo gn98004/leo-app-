@@ -1,0 +1,967 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <title>心遇 XinYou - Demo（簡化版）</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+  <style>
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", "Microsoft JhengHei", sans-serif;
+      background: #f3f4f6;
+      color: #111827;
+      font-size: 16px;
+    }
+    .top-bar {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      height: 56px;
+      padding: 0 16px;
+      background: #ffffff;
+      border-bottom: 0.5px solid #e5e7eb;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 20px;
+    }
+    main {
+      padding-bottom: 70px;
+    }
+    .page {
+      display: none;
+      padding: 12px 12px 0;
+    }
+    .page.active {
+      display: block;
+    }
+    .card {
+      background: #ffffff;
+      border-radius: 16px;
+      box-shadow: 0 2px 4px rgba(15, 23, 42, 0.08);
+      padding: 12px 14px;
+      margin-bottom: 12px;
+    }
+    .page-title {
+      font-size: 18px;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+    /* 人們 */
+    .people-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+    }
+    .people-card {
+      border-radius: 14px;
+      overflow: hidden;
+      background: #ffffff;
+      border: 1px solid #e5e7eb;
+      cursor: pointer;
+    }
+    .people-photo {
+      width: 100%;
+      padding-top: 140%;
+      position: relative;
+      background: #e5e7eb;
+    }
+    .people-photo-inner {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 26px;
+    }
+    .people-info {
+      padding: 6px 8px 8px;
+    }
+    .people-name-row {
+      display: flex;
+      justify-content: space-between;
+      font-size: 14px;
+      margin-bottom: 2px;
+    }
+    .people-name {
+      font-weight: 600;
+    }
+    .people-age {
+      color: #6b7280;
+    }
+    .people-desc {
+      font-size: 13px;
+      color: #6b7280;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    /* 好友 */
+    .friend-item {
+      display: flex;
+      align-items: center;
+      padding: 10px 0;
+      border-bottom: 0.5px solid #e5e7eb;
+      cursor: pointer;
+    }
+    .friend-avatar {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: #e5e7eb;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-right: 10px;
+      font-size: 20px;
+    }
+    .friend-main {
+      flex: 1;
+      min-width: 0;
+    }
+    .friend-name-row {
+      display: flex;
+      justify-content: space-between;
+      font-size: 15px;
+    }
+    .friend-name {
+      font-weight: 600;
+    }
+    .friend-last {
+      font-size: 12px;
+      color: #6b7280;
+      margin-top: 2px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    /* 排行榜 */
+    .rank-top-row {
+      display: flex;
+      justify-content: center;
+      gap: 18px;
+      margin-top: 4px;
+      margin-bottom: 10px;
+    }
+    .rank-card {
+      text-align: center;
+    }
+    .rank-avatar-big {
+      width: 80px;
+      height: 80px;
+      border-radius: 999px;
+      border: 3px solid gold;
+      background: #e5e7eb;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 30px;
+      margin: 0 auto 4px;
+    }
+    .rank-avatar-mid {
+      width: 60px;
+      height: 60px;
+      border-radius: 999px;
+      border: 2px solid silver;
+      background: #e5e7eb;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      margin: 0 auto 4px;
+    }
+    .rank-name {
+      font-size: 14px;
+      font-weight: 600;
+    }
+    .rank-score {
+      font-size: 12px;
+      color: #6b7280;
+    }
+    .rank-list-item {
+      display: flex;
+      align-items: center;
+      padding: 6px 0;
+      border-bottom: 0.5px solid #e5e7eb;
+      font-size: 14px;
+    }
+    .rank-pos {
+      width: 22px;
+      color: #6b7280;
+    }
+    .rank-list-name {
+      flex: 1;
+    }
+    .rank-list-score {
+      font-size: 12px;
+      color: #4b5563;
+    }
+    /* 我的 */
+    .my-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 8px;
+    }
+    .my-avatar {
+      width: 56px;
+      height: 56px;
+      border-radius: 16px;
+      background: #e5e7eb;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+    }
+    .my-main {
+      flex: 1;
+      min-width: 0;
+    }
+    .my-name {
+      font-size: 18px;
+      font-weight: 700;
+    }
+    .my-sub {
+      font-size: 13px;
+      color: #6b7280;
+    }
+    .my-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 14px;
+      margin-top: 4px;
+    }
+    .vip-label {
+      font-size: 13px;
+      color: #4b5563;
+    }
+    .vip-badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 2px 8px;
+      border-radius: 999px;
+      font-size: 12px;
+      background: #fef3c7;
+      color: #92400e;
+    }
+    .btn {
+      border-radius: 999px;
+      border: 1px solid #d1d5db;
+      padding: 6px 10px;
+      font-size: 14px;
+      background: #ffffff;
+      cursor: pointer;
+    }
+    .btn-primary {
+      background: #2563eb;
+      border-color: #2563eb;
+      color: #ffffff;
+    }
+    .btn-sm {
+      padding: 3px 8px;
+      font-size: 12px;
+    }
+    textarea {
+      width: 100%;
+      min-height: 72px;
+      border-radius: 10px;
+      border: 1px solid #d1d5db;
+      padding: 8px;
+      font-size: 14px;
+      resize: vertical;
+      outline: none;
+    }
+    textarea:focus {
+      border-color: #2563eb;
+      box-shadow: 0 0 0 1px rgba(37, 99, 235, 0.15);
+    }
+    .field-label {
+      font-size: 14px;
+      color: #374151;
+      margin-top: 8px;
+      margin-bottom: 4px;
+    }
+    .diary-tools {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: 6px;
+      gap: 8px;
+      flex-wrap: wrap;
+      font-size: 13px;
+    }
+    .diary-tools-left {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+    .diary-preview-box {
+      margin-top: 8px;
+      display: none;
+    }
+    .diary-preview-box.show {
+      display: block;
+    }
+    .diary-preview-box img {
+      max-width: 100%;
+      border-radius: 10px;
+      display: block;
+    }
+    .diary-scale {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-top: 4px;
+      font-size: 12px;
+      color: #6b7280;
+    }
+    .diary-scale input[type="range"] {
+      flex: 1;
+    }
+    .diary-list {
+      margin-top: 8px;
+      border-top: 0.5px solid #e5e7eb;
+      padding-top: 8px;
+      max-height: 260px;
+      overflow-y: auto;
+    }
+    .diary-empty {
+      font-size: 13px;
+      color: #9ca3af;
+    }
+    .diary-item {
+      padding: 6px 0;
+      border-bottom: 0.5px solid #f3f4f6;
+      font-size: 14px;
+    }
+    .diary-item:last-child {
+      border-bottom: none;
+    }
+    .diary-meta {
+      font-size: 11px;
+      color: #9ca3af;
+      margin-bottom: 3px;
+    }
+    .diary-text {
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+    .diary-img {
+      margin-top: 4px;
+      border-radius: 10px;
+      max-width: 100%;
+    }
+    .diary-limit-note {
+      font-size: 12px;
+      color: #6b7280;
+      margin-top: 4px;
+    }
+    /* 聊天視窗（簡化） */
+    .chat-panel {
+      position: fixed;
+      inset: 56px 0 70px 0;
+      background: #ffffff;
+      display: none;
+      flex-direction: column;
+      z-index: 20;
+      box-shadow: 0 0 12px rgba(15,23,42,0.18);
+    }
+    .chat-panel.show {
+      display: flex;
+    }
+    .chat-panel-header {
+      height: 44px;
+      border-bottom: 0.5px solid #e5e7eb;
+      display: flex;
+      align-items: center;
+      padding: 0 10px;
+      font-size: 15px;
+      gap: 8px;
+    }
+    .chat-back {
+      border: none;
+      background: transparent;
+      cursor: pointer;
+      font-size: 20px;
+    }
+    .chat-panel-body {
+      flex: 1;
+      min-height: 0;
+      display: flex;
+      flex-direction: column;
+    }
+    .chat-messages {
+      flex: 1;
+      overflow-y: auto;
+      padding: 8px 10px;
+      background: #f3f4f6;
+    }
+    .bubble-row {
+      display: flex;
+      margin-bottom: 6px;
+    }
+    .bubble-row.me {
+      justify-content: flex-end;
+    }
+    .bubble {
+      max-width: 76%;
+      padding: 8px 10px;
+      border-radius: 16px;
+      font-size: 14px;
+      background: #ffffff;
+      border: 1px solid #e5e7eb;
+    }
+    .bubble.me {
+      background: #4ade80;
+      border-color: #22c55e;
+      color: #064e3b;
+    }
+    .chat-input-area {
+      border-top: 0.5px solid #e5e7eb;
+      padding: 6px 8px;
+      background: #ffffff;
+    }
+    .chat-input-row {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+    }
+    .chat-input {
+      flex: 1;
+      border-radius: 999px;
+      border: 1px solid #d1d5db;
+      padding: 6px 10px;
+      font-size: 14px;
+      outline: none;
+    }
+    .chat-send-btn {
+      border-radius: 999px;
+      border: none;
+      padding: 6px 10px;
+      font-size: 14px;
+      background: #2563eb;
+      color: #ffffff;
+      cursor: pointer;
+    }
+    /* 底部導覽 */
+    .bottom-nav {
+      position: fixed;
+      inset-inline: 0;
+      bottom: 0;
+      height: 60px;
+      border-top: 0.5px solid #e5e7eb;
+      background: #ffffff;
+      display: flex;
+      z-index: 30;
+    }
+    .nav-item {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      color: #9ca3af;
+      cursor: pointer;
+      gap: 2px;
+    }
+    .nav-icon {
+      width: 26px;
+      height: 26px;
+      border-radius: 999px;
+      border: 1.5px solid #d1d5db;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      background: #f9fafb;
+    }
+    .nav-item.active {
+      color: #2563eb;
+    }
+    .nav-item.active .nav-icon {
+      border-color: #2563eb;
+      background: #eff6ff;
+      color: #2563eb;
+    }
+  </style>
+</head>
+<body>
+  <header class="top-bar">
+    心遇 XinYou - Demo
+  </header>
+  <main>
+    <!-- 人們 -->
+    <section id="page-people" class="page active">
+      <div class="card">
+        <div class="page-title">人們 · 巧遇</div>
+        <div class="people-grid" id="peopleGrid"></div>
+      </div>
+    </section>
+
+    <!-- 好友 -->
+    <section id="page-friends" class="page">
+      <div class="card">
+        <div class="page-title">好友 · 對話</div>
+        <div id="friendList"></div>
+      </div>
+    </section>
+
+    <!-- 排行榜 -->
+    <section id="page-rank" class="page">
+      <div class="card">
+        <div class="page-title">排行榜 · 贈禮王</div>
+        <div class="rank-top-row" id="rankTopRow"></div>
+        <div class="rank-list" id="rankList"></div>
+      </div>
+    </section>
+
+    <!-- 我的 -->
+    <section id="page-my" class="page">
+      <div class="card">
+        <div class="my-header">
+          <div class="my-avatar" id="myAvatar">我</div>
+          <div class="my-main">
+            <div class="my-name" id="myName">心遇使用者</div>
+            <div class="my-sub" id="mySub">台灣 · 心情：「平靜中」</div>
+            <div class="my-row">
+              <span class="vip-label">會員狀態：</span>
+              <span class="vip-badge" id="vipBadge">免費使用者</span>
+            </div>
+          </div>
+        </div>
+        <div class="my-row" style="margin-top: 6px;">
+          <span>切換 VIP 狀態（測試用）</span>
+          <button class="btn btn-sm" id="vipToggleBtn">切換 VIP</button>
+        </div>
+        <div class="diary-limit-note" id="diaryLimitNote">
+          免費使用者可新增 5 篇日記；VIP 使用者可新增 30 篇日記。
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="page-title">我的日記</div>
+        <label class="field-label" for="diaryText">今天發生了什麼事？</label>
+        <textarea id="diaryText" placeholder="寫點什麼給未來的自己看..."></textarea>
+        <div class="field-label">日記照片（可選）</div>
+        <div class="diary-tools">
+          <div class="diary-tools-left">
+            <button class="btn btn-sm" id="diaryImageBtn">選擇照片</button>
+            <input type="file" id="diaryImageInput" accept="image/*" style="display: none;" />
+          </div>
+          <button class="btn btn-primary btn-sm" id="diaryAddBtn">新增日記</button>
+        </div>
+        <div class="diary-preview-box" id="diaryPreviewBox">
+          <img id="diaryPreviewImg" alt="預覽圖片" />
+          <div class="diary-scale">
+            <span>縮放：</span>
+            <input type="range" id="diaryScaleRange" min="60" max="140" value="100" />
+            <span id="diaryScaleLabel">100%</span>
+          </div>
+        </div>
+        <div class="diary-list" id="diaryList"></div>
+      </div>
+    </section>
+  </main>
+
+  <!-- 聊天視窗 -->
+  <div class="chat-panel" id="chatPanel">
+    <div class="chat-panel-header">
+      <button class="chat-back" id="chatBackBtn">←</button>
+      <div>
+        <div id="chatTitle" style="font-weight:600;"></div>
+        <div id="chatSub" style="font-size:11px;color:#9ca3af;"></div>
+      </div>
+    </div>
+    <div class="chat-panel-body">
+      <div class="chat-messages" id="chatMessages"></div>
+      <div class="chat-input-area">
+        <div class="chat-input-row">
+          <input id="chatInput" class="chat-input" type="text" placeholder="傳個訊息..." />
+          <button class="chat-send-btn" id="chatSendBtn">送出</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 底部導覽 -->
+  <nav class="bottom-nav">
+    <div class="nav-item active" data-page="people">
+      <div class="nav-icon">人</div>
+      <div>人們</div>
+    </div>
+    <div class="nav-item" data-page="friends">
+      <div class="nav-icon">友</div>
+      <div>好友</div>
+    </div>
+    <div class="nav-item" data-page="rank">
+      <div class="nav-icon">榜</div>
+      <div>排行</div>
+    </div>
+    <div class="nav-item" data-page="my">
+      <div class="nav-icon">我</div>
+      <div>我的</div>
+    </div>
+  </nav>
+
+  <script>
+    /* 假資料：人們 */
+    const PEOPLE = [
+      { id: 1, name: "小夏", age: 29, desc: "喜歡海邊、露營和喝咖啡", emoji: "🏖️" },
+      { id: 2, name: "阿凜", age: 32, desc: "下班在家看劇的社恐工程師", emoji: "💻" },
+      { id: 3, name: "Mia", age: 26, desc: "城市裡找森林感的攝影師", emoji: "📸" },
+      { id: 4, name: "Leo", age: 30, desc: "正在學做菜的手殘主廚", emoji: "🍳" }
+    ];
+
+    const FRIENDS = [
+      { id: 101, name: "Nana", emoji: "🐱", last: "昨天那部電影真的好好笑", mood: "線上" },
+      { id: 102, name: "阿哲", emoji: "🎧", last: "之後有空一起去福岡走走", mood: "忙碌中" },
+      { id: 103, name: "林小路", emoji: "🎒", last: "我剛到台北車站～", mood: "剛剛上線" }
+    ];
+
+    const RANK = [
+      { id: 201, name: "禮物之王", emoji: "👑", score: 9520 },
+      { id: 202, name: "夜貓送花手", emoji: "🌙", score: 7880 },
+      { id: 203, name: "誠實小太陽", emoji: "☀️", score: 7310 },
+      { id: 204, name: "冒險家77", emoji: "🧭", score: 6120 },
+      { id: 205, name: "泡澡配歌手", emoji: "🛁", score: 5980 }
+    ];
+
+    /* —— 底部導覽 —— */
+    const pages = {
+      people: document.getElementById("page-people"),
+      friends: document.getElementById("page-friends"),
+      rank: document.getElementById("page-rank"),
+      my: document.getElementById("page-my")
+    };
+    const navItems = document.querySelectorAll(".bottom-nav .nav-item");
+    navItems.forEach(item => {
+      item.addEventListener("click", () => {
+        const page = item.getAttribute("data-page");
+        Object.values(pages).forEach(p => p.classList.remove("active"));
+        pages[page].classList.add("active");
+        navItems.forEach(n => n.classList.remove("active"));
+        item.classList.add("active");
+      });
+    });
+
+    /* —— 人們 —— */
+    function renderPeople() {
+      const grid = document.getElementById("peopleGrid");
+      grid.innerHTML = "";
+      PEOPLE.forEach(p => {
+        const card = document.createElement("div");
+        card.className = "people-card";
+        card.innerHTML = \`
+          <div class="people-photo"><div class="people-photo-inner">\${p.emoji}</div></div>
+          <div class="people-info">
+            <div class="people-name-row">
+              <span class="people-name">\${p.name}</span>
+              <span class="people-age">\${p.age} 歲</span>
+            </div>
+            <div class="people-desc">\${p.desc}</div>
+          </div>
+        \`;
+        grid.appendChild(card);
+      });
+    }
+
+    /* —— 好友 & 聊天 —— */
+    let currentChatFriend = null;
+    const chatPanel = document.getElementById("chatPanel");
+    const chatTitleEl = document.getElementById("chatTitle");
+    const chatSubEl = document.getElementById("chatSub");
+    const chatMessagesEl = document.getElementById("chatMessages");
+    const chatInputEl = document.getElementById("chatInput");
+    const chatSendBtn = document.getElementById("chatSendBtn");
+    const chatBackBtn = document.getElementById("chatBackBtn");
+
+    function renderFriends() {
+      const container = document.getElementById("friendList");
+      container.innerHTML = "";
+      FRIENDS.forEach(f => {
+        const row = document.createElement("div");
+        row.className = "friend-item";
+        row.innerHTML = \`
+          <div class="friend-avatar">\${f.emoji}</div>
+          <div class="friend-main">
+            <div class="friend-name-row">
+              <span class="friend-name">\${f.name}</span>
+              <span style="font-size:12px;color:#9ca3af;">\${f.mood}</span>
+            </div>
+            <div class="friend-last">\${f.last}</div>
+          </div>
+        \`;
+        row.addEventListener("click", () => openChat(f));
+        container.appendChild(row);
+      });
+    }
+
+    function openChat(friend) {
+      currentChatFriend = friend;
+      chatTitleEl.textContent = friend.name;
+      chatSubEl.textContent = "示意聊天室 · 尚未連接真正伺服器";
+      chatMessagesEl.innerHTML = "";
+      appendChatBubble(friend.name, friend.last, false);
+      chatPanel.classList.add("show");
+    }
+    function closeChat() {
+      chatPanel.classList.remove("show");
+      currentChatFriend = null;
+    }
+    function appendChatBubble(fromName, text, isMe) {
+      const row = document.createElement("div");
+      row.className = "bubble-row" + (isMe ? " me" : "");
+      const bubble = document.createElement("div");
+      bubble.className = "bubble" + (isMe ? " me" : "");
+      bubble.textContent = text;
+      row.appendChild(bubble);
+      chatMessagesEl.appendChild(row);
+      chatMessagesEl.scrollTop = chatMessagesEl.scrollHeight;
+    }
+
+    chatBackBtn.addEventListener("click", closeChat);
+    chatSendBtn.addEventListener("click", () => {
+      const text = chatInputEl.value.trim();
+      if (!text || !currentChatFriend) return;
+      appendChatBubble("我", text, true);
+      chatInputEl.value = "";
+    });
+    chatInputEl.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        chatSendBtn.click();
+      }
+    });
+
+    /* —— 排行榜 —— */
+    function renderRank() {
+      const topRow = document.getElementById("rankTopRow");
+      const listEl = document.getElementById("rankList");
+      topRow.innerHTML = "";
+      listEl.innerHTML = "";
+
+      // 前三名
+      const [first, second, third, ...rest] = RANK;
+      const top = [second, first, third]; // 2,1,3 排列成金字塔感覺
+      top.forEach((p, idx) => {
+        const div = document.createElement("div");
+        div.className = "rank-card";
+        const isKing = p.id === first.id;
+        const avatarClass = isKing ? "rank-avatar-big" : "rank-avatar-mid";
+        div.innerHTML = \`
+          <div class="\${avatarClass}">\${p.emoji}</div>
+          <div class="rank-name">\${p.name}</div>
+          <div class="rank-score">\${p.score} 分</div>
+        \`;
+        topRow.appendChild(div);
+      });
+
+      // 後面排名
+      RANK.forEach((p, idx) => {
+        const row = document.createElement("div");
+        row.className = "rank-list-item";
+        row.innerHTML = \`
+          <div class="rank-pos">\${idx + 1}</div>
+          <div class="rank-list-name">\${p.name}</div>
+          <div class="rank-list-score">\${p.score} 分</div>
+        \`;
+        listEl.appendChild(row);
+      });
+    }
+
+    /* —— VIP & 日記 —— */
+    const VIP_KEY = "hmVipLevel";
+    const DIARY_KEY = "hmMyDiaries";
+
+    function getVipLevel() {
+      const raw = localStorage.getItem(VIP_KEY);
+      const n = parseInt(raw, 10);
+      if (Number.isNaN(n)) return 0;
+      return n > 0 ? 1 : 0; // 目前只分 免費 / VIP
+    }
+    function setVipLevel(level) {
+      const v = level ? 1 : 0;
+      localStorage.setItem(VIP_KEY, String(v));
+    }
+    function getDiaryLimit() {
+      const v = getVipLevel();
+      return v === 1 ? 30 : 5;
+    }
+
+    function loadDiaries() {
+      const raw = localStorage.getItem(DIARY_KEY);
+      if (!raw) return [];
+      try {
+        const parsed = JSON.parse(raw);
+        if (Array.isArray(parsed)) return parsed;
+      } catch {}
+      return [];
+    }
+    function saveDiaries(list) {
+      localStorage.setItem(DIARY_KEY, JSON.stringify(list));
+    }
+
+    const vipBadgeEl = document.getElementById("vipBadge");
+    const vipToggleBtn = document.getElementById("vipToggleBtn");
+    const diaryLimitNoteEl = document.getElementById("diaryLimitNote");
+    const diaryTextEl = document.getElementById("diaryText");
+    const diaryImageBtn = document.getElementById("diaryImageBtn");
+    const diaryImageInput = document.getElementById("diaryImageInput");
+    const diaryAddBtn = document.getElementById("diaryAddBtn");
+    const diaryPreviewBox = document.getElementById("diaryPreviewBox");
+    const diaryPreviewImg = document.getElementById("diaryPreviewImg");
+    const diaryScaleRange = document.getElementById("diaryScaleRange");
+    const diaryScaleLabel = document.getElementById("diaryScaleLabel");
+    const diaryListEl = document.getElementById("diaryList");
+
+    let tempDiaryImgData = null;
+
+    function refreshVipUi() {
+      const v = getVipLevel();
+      if (v === 1) {
+        vipBadgeEl.textContent = "VIP 使用者";
+      } else {
+        vipBadgeEl.textContent = "免費使用者";
+      }
+      diaryLimitNoteEl.textContent =
+        "免費使用者可新增 5 篇日記；VIP 使用者可新增 30 篇日記。當前上限：" +
+        getDiaryLimit() +
+        " 篇。";
+    }
+
+    vipToggleBtn.addEventListener("click", () => {
+      const v = getVipLevel();
+      const next = v === 1 ? 0 : 1;
+      setVipLevel(next);
+      refreshVipUi();
+      renderDiaryList();
+    });
+
+    diaryImageBtn.addEventListener("click", () => {
+      diaryImageInput.click();
+    });
+    diaryImageInput.addEventListener("change", (e) => {
+      const file = e.target.files && e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        tempDiaryImgData = ev.target.result;
+        diaryPreviewImg.src = tempDiaryImgData;
+        diaryPreviewBox.classList.add("show");
+      };
+      reader.readAsDataURL(file);
+    });
+
+    diaryScaleRange.addEventListener("input", () => {
+      const val = parseInt(diaryScaleRange.value, 10);
+      diaryScaleLabel.textContent = val + "%";
+    });
+
+    diaryAddBtn.addEventListener("click", () => {
+      const text = diaryTextEl.value.trim();
+      const img = tempDiaryImgData;
+      if (!text && !img) {
+        alert("請至少輸入文字或選擇一張照片再新增日記。");
+        return;
+      }
+      const list = loadDiaries();
+      const limit = getDiaryLimit();
+      if (list.length >= limit) {
+        if (getVipLevel() === 0) {
+          alert("免費使用者最多只能新增 5 篇日記。
+若想寫到 30 篇，請升級成 VIP（示意功能）。");
+        } else {
+          alert("已達目前設定的日記上限：" + limit + " 篇。");
+        }
+        return;
+      }
+      const scale = parseInt(diaryScaleRange.value, 10) || 100;
+      const now = new Date();
+      const item = {
+        id: Date.now() + "_" + Math.random().toString(16).slice(2),
+        text,
+        img,
+        scale,
+        createdAt: now.toISOString()
+      };
+      list.push(item);
+      saveDiaries(list);
+      diaryTextEl.value = "";
+      tempDiaryImgData = null;
+      diaryImageInput.value = "";
+      diaryPreviewBox.classList.remove("show");
+      diaryScaleRange.value = 100;
+      diaryScaleLabel.textContent = "100%";
+      renderDiaryList();
+    });
+
+    function renderDiaryList() {
+      const list = loadDiaries();
+      diaryListEl.innerHTML = "";
+      if (!list.length) {
+        const div = document.createElement("div");
+        div.className = "diary-empty";
+        div.textContent = "目前還沒有日記，寫一篇給未來的自己吧。";
+        diaryListEl.appendChild(div);
+        return;
+      }
+      // 依時間由新到舊
+      const sorted = list.slice().sort((a, b) => {
+        return (b.createdAt || "").localeCompare(a.createdAt || "");
+      });
+      sorted.forEach((d) => {
+        const wrap = document.createElement("div");
+        wrap.className = "diary-item";
+        const dateText = d.createdAt
+          ? new Date(d.createdAt).toLocaleString("zh-TW", { hour12: false })
+          : "";
+        wrap.innerHTML = \`
+          <div class="diary-meta">\${dateText}</div>
+          <div class="diary-text"></div>
+        \`;
+        const textEl = wrap.querySelector(".diary-text");
+        textEl.textContent = d.text || "";
+        if (d.img) {
+          const img = document.createElement("img");
+          img.className = "diary-img";
+          img.src = d.img;
+          const scale = d.scale || 100;
+          img.style.transform = "scale(" + scale / 100 + ")";
+          wrap.appendChild(img);
+        }
+        diaryListEl.appendChild(wrap);
+      });
+    }
+
+    /* —— 初始化 —— */
+    function initMyHeader() {
+      const myNameEl = document.getElementById("myName");
+      const mySubEl = document.getElementById("mySub");
+      const name = "心遇測試帳號";
+      myNameEl.textContent = name;
+      mySubEl.textContent = "台灣 · 30 歲附近 · 心情：「平靜中」";
+      const avatar = document.getElementById("myAvatar");
+      avatar.textContent = name.slice(0, 1);
+    }
+
+    function init() {
+      renderPeople();
+      renderFriends();
+      renderRank();
+      initMyHeader();
+      refreshVipUi();
+      renderDiaryList();
+    }
+
+    document.addEventListener("DOMContentLoaded", init);
+  </script>
+</body>
+</html>
