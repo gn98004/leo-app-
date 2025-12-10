@@ -1,0 +1,718 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+  <title>心遇 XinYou - 我的資料與日記</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", "Microsoft JhengHei", sans-serif;
+      background: #f3f4f6;
+      color: #111827;
+      font-size: 16px;
+    }
+    .app-root {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    /* Top bar */
+    .top-bar {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      height: 56px;
+      padding: 0 16px;
+      background: #ffffff;
+      border-bottom: 0.5px solid #e5e7eb;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .top-bar-title {
+      font-size: 18px;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+    }
+
+    /* Main */
+    .main {
+      flex: 1;
+      padding: 16px;
+      padding-bottom: 72px; /* for bottom nav */
+      max-width: 720px;
+      margin: 0 auto;
+    }
+
+    /* Sections (tabs) */
+    .section {
+      display: none;
+    }
+    .section.active {
+      display: block;
+    }
+
+    /* Profile header */
+    .profile-card {
+      background: #ffffff;
+      border-radius: 16px;
+      padding: 16px;
+      box-shadow: 0 8px 20px rgba(15, 23, 42, 0.06);
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .avatar-wrapper {
+      position: relative;
+      width: 64px;
+      height: 64px;
+      border-radius: 999px;
+      overflow: hidden;
+      border: 2px solid #f97316;
+      flex-shrink: 0;
+      cursor: pointer;
+    }
+    .avatar-wrapper img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+    .avatar-hint {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(to top, rgba(0,0,0,0.45), transparent);
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+      padding-bottom: 4px;
+      font-size: 11px;
+      color: #f9fafb;
+      pointer-events: none;
+    }
+    .profile-main {
+      flex: 1;
+    }
+    .profile-name {
+      font-size: 17px;
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+    .profile-meta {
+      font-size: 13px;
+      color: #6b7280;
+      margin-bottom: 4px;
+    }
+    .badge-row {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+    .badge {
+      font-size: 11px;
+      padding: 2px 8px;
+      border-radius: 999px;
+      border: 1px solid #e5e7eb;
+      background: #f9fafb;
+      color: #4b5563;
+    }
+    .badge.vip {
+      border-color: #f97316;
+      background: #fff7ed;
+      color: #9a3412;
+      font-weight: 600;
+    }
+
+    /* Diary card */
+    .card {
+      background: #ffffff;
+      border-radius: 16px;
+      padding: 16px;
+      box-shadow: 0 8px 20px rgba(15, 23, 42, 0.06);
+      margin-bottom: 16px;
+    }
+    .card-title-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 6px;
+    }
+    .card-title {
+      font-size: 15px;
+      font-weight: 600;
+    }
+    .card-subtitle {
+      font-size: 12px;
+      color: #6b7280;
+    }
+    .diary-counter {
+      font-size: 12px;
+      color: #6b7280;
+      margin-bottom: 8px;
+    }
+    .diary-counter span {
+      font-weight: 600;
+      color: #111827;
+    }
+
+    /* Toggle */
+    .toggle-row {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 8px;
+      font-size: 12px;
+      margin-bottom: 4px;
+    }
+    .toggle {
+      position: relative;
+      width: 46px;
+      height: 24px;
+      border-radius: 999px;
+      background: #e5e7eb;
+      cursor: pointer;
+      transition: background 0.18s ease-out;
+    }
+    .toggle-knob {
+      position: absolute;
+      top: 2px;
+      left: 2px;
+      width: 20px;
+      height: 20px;
+      border-radius: 999px;
+      background: #ffffff;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.15);
+      transition: transform 0.18s ease-out;
+    }
+    .toggle.on {
+      background: #f97316;
+    }
+    .toggle.on .toggle-knob {
+      transform: translateX(22px);
+    }
+
+    /* Diary list */
+    .diary-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-top: 10px;
+      max-height: 340px;
+      overflow-y: auto;
+      padding-right: 4px;
+    }
+    .diary-item {
+      padding: 10px 12px;
+      border-radius: 12px;
+      background: #f9fafb;
+      border: 1px solid #e5e7eb;
+    }
+    .diary-item-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 4px;
+      gap: 6px;
+    }
+    .diary-date {
+      font-size: 11px;
+      color: #6b7280;
+    }
+    .diary-index {
+      font-size: 11px;
+      color: #9ca3af;
+    }
+    .diary-text {
+      font-size: 13px;
+      color: #111827;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    /* Diary editor */
+    .textarea {
+      width: 100%;
+      min-height: 76px;
+      max-height: 140px;
+      padding: 10px;
+      border-radius: 12px;
+      border: 1px solid #d1d5db;
+      resize: vertical;
+      font-family: inherit;
+      font-size: 14px;
+      outline: none;
+      transition: border-color 0.16s ease-out, box-shadow 0.16s ease-out;
+      background: #f9fafb;
+    }
+    .textarea:focus {
+      border-color: #f97316;
+      box-shadow: 0 0 0 2px rgba(249, 115, 22, 0.15);
+      background: #ffffff;
+    }
+    .textarea::placeholder {
+      color: #9ca3af;
+    }
+
+    .editor-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 8px;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .hint {
+      font-size: 11px;
+      color: #6b7280;
+    }
+    .btn {
+      border: none;
+      outline: none;
+      padding: 8px 14px;
+      border-radius: 999px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      transition: transform 0.12s ease-out, box-shadow 0.12s ease-out, background 0.12s ease-out;
+    }
+    .btn-primary {
+      background: linear-gradient(135deg, #f97316, #fb923c);
+      color: #ffffff;
+      box-shadow: 0 6px 18px rgba(249, 115, 22, 0.45);
+    }
+    .btn-primary:active {
+      transform: translateY(1px);
+      box-shadow: 0 3px 10px rgba(249, 115, 22, 0.35);
+    }
+    .btn-disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      box-shadow: none;
+    }
+
+    /* Bottom nav */
+    .bottom-nav {
+      position: sticky;
+      bottom: 0;
+      z-index: 20;
+      background: #ffffff;
+      border-top: 0.5px solid #e5e7eb;
+    }
+    .bottom-nav-inner {
+      max-width: 720px;
+      margin: 0 auto;
+      display: flex;
+      height: 56px;
+    }
+    .nav-item {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 2px;
+      font-size: 11px;
+      color: #9ca3af;
+      cursor: pointer;
+    }
+    .nav-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 999px;
+      background: transparent;
+      margin-bottom: 2px;
+    }
+    .nav-item.active {
+      color: #f97316;
+      font-weight: 600;
+    }
+    .nav-item.active .nav-dot {
+      background: #f97316;
+    }
+  </style>
+</head>
+<body>
+  <div class="app-root">
+    <header class="top-bar">
+      <div class="top-bar-title">心遇 · 我的資料</div>
+    </header>
+
+    <main class="main">
+      <!-- 巧遇 / 排行榜 只放占位 -->
+      <section id="section-discover" class="section">
+        <div class="card">
+          <div class="card-title">巧遇（占位頁）</div>
+          <p class="card-subtitle">這裡先保留給你原本的巧遇介面，之後可把舊程式碼貼回來。</p>
+        </div>
+      </section>
+
+      <section id="section-rank" class="section">
+        <div class="card">
+          <div class="card-title">排行榜（占位頁）</div>
+          <p class="card-subtitle">這裡先保留給你原本的排行榜介面，之後可把舊程式碼貼回來。</p>
+        </div>
+      </section>
+
+      <!-- 我的資料 + 日記 -->
+      <section id="section-profile" class="section active">
+        <!-- 對外資料總覽（可接之後「編輯基本資料」邏輯） -->
+        <div class="profile-card">
+          <div class="avatar-wrapper" id="avatarWrapper">
+            <img id="avatarImg" src="https://images.pexels.com/photos/415829/pexels-photo-415829.jpeg?auto=compress&cs=tinysrgb&w=160" alt="頭像" />
+            <div class="avatar-hint">點擊更換頭貼</div>
+          </div>
+          <div class="profile-main">
+            <div class="profile-name" id="profileName">暫無名稱</div>
+            <div class="profile-meta" id="profileMeta">
+              台灣 · 未設定地區 · 身高/體重未填
+            </div>
+            <div class="badge-row">
+              <div class="badge" id="planBadge">免費用戶</div>
+              <div class="badge">心遇 · 對外資料</div>
+            </div>
+          </div>
+          <input id="avatarInput" type="file" accept="image/*" style="display:none" />
+        </div>
+
+        <!-- 我的日記 -->
+        <div class="card">
+          <div class="card-title-row">
+            <div>
+              <div class="card-title">我的日記</div>
+              <div class="card-subtitle">免費用戶 5 篇 · VIP 用戶 30 篇</div>
+            </div>
+            <div class="toggle-row">
+              <span id="planLabel">目前：免費</span>
+              <div id="planToggle" class="toggle">
+                <div class="toggle-knob"></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="diary-counter" id="diaryCounter">
+            已使用 <span>0</span> / 5 篇
+          </div>
+
+          <textarea
+            id="diaryInput"
+            class="textarea"
+            maxlength="500"
+            placeholder="寫下今天的小心情、小日常…（最多 500 字）"
+          ></textarea>
+
+          <div class="editor-footer">
+            <div class="hint" id="diaryHint">還可以輸入 500 字</div>
+            <button id="addDiaryBtn" class="btn btn-primary">
+              新增日記
+            </button>
+          </div>
+
+          <div id="diaryList" class="diary-list"></div>
+        </div>
+      </section>
+    </main>
+
+    <!-- Bottom nav -->
+    <nav class="bottom-nav">
+      <div class="bottom-nav-inner">
+        <div class="nav-item" data-target="section-discover">
+          <div class="nav-dot"></div>
+          巧遇
+        </div>
+        <div class="nav-item" data-target="section-rank">
+          <div class="nav-dot"></div>
+          排行榜
+        </div>
+        <div class="nav-item active" data-target="section-profile">
+          <div class="nav-dot"></div>
+          我的資料
+        </div>
+      </div>
+    </nav>
+  </div>
+
+  <script>
+    // === 基本狀態 ===
+    const STORAGE_KEYS = {
+      plan: "xinyou_userPlan",
+      diaries: "xinyou_diaries",
+      profileName: "xinyou_profileName",
+      profileMeta: "xinyou_profileMeta",
+      avatar: "xinyou_avatarDataUrl",
+    };
+
+    const MAX_FREE = 5;
+    const MAX_VIP = 30;
+
+    const state = {
+      plan: "free",
+      diaries: [],
+    };
+
+    // === 工具函式 ===
+    function loadState() {
+      try {
+        const plan = localStorage.getItem(STORAGE_KEYS.plan);
+        if (plan === "vip" || plan === "free") {
+          state.plan = plan;
+        }
+        const diariesRaw = localStorage.getItem(STORAGE_KEYS.diaries);
+        if (diariesRaw) {
+          const arr = JSON.parse(diariesRaw);
+          if (Array.isArray(arr)) {
+            state.diaries = arr;
+          }
+        }
+      } catch (e) {
+        console.warn("載入狀態失敗：", e);
+      }
+    }
+
+    function saveDiaries() {
+      try {
+        localStorage.setItem(STORAGE_KEYS.diaries, JSON.stringify(state.diaries));
+      } catch (e) {
+        console.warn("儲存日記失敗：", e);
+      }
+    }
+
+    function getMaxDiaryCount() {
+      return state.plan === "vip" ? MAX_VIP : MAX_FREE;
+    }
+
+    function formatDateTime(ts) {
+      const d = new Date(ts);
+      const y = d.getFullYear();
+      const m = String(d.getMonth() + 1).padStart(2, "0");
+      const day = String(d.getDate()).padStart(2, "0");
+      const hh = String(d.getHours()).padStart(2, "0");
+      const mm = String(d.getMinutes()).padStart(2, "0");
+      return `${y}/${m}/${day} ${hh}:${mm}`;
+    }
+
+    // === 更新畫面 ===
+    function updatePlanUI() {
+      const planLabel = document.getElementById("planLabel");
+      const planToggle = document.getElementById("planToggle");
+      const planBadge = document.getElementById("planBadge");
+      const max = getMaxDiaryCount();
+
+      if (state.plan === "vip") {
+        planLabel.textContent = "目前：VIP";
+        planToggle.classList.add("on");
+        planBadge.textContent = "VIP 用戶";
+        planBadge.classList.add("vip");
+      } else {
+        planLabel.textContent = "目前：免費";
+        planToggle.classList.remove("on");
+        planBadge.textContent = "免費用戶";
+        planBadge.classList.remove("vip");
+      }
+
+      const counter = document.getElementById("diaryCounter");
+      counter.innerHTML = `已使用 <span>${state.diaries.length}</span> / ${max} 篇`;
+    }
+
+    function renderDiaryList() {
+      const listEl = document.getElementById("diaryList");
+      listEl.innerHTML = "";
+
+      if (!state.diaries.length) {
+        const empty = document.createElement("div");
+        empty.className = "hint";
+        empty.style.marginTop = "4px";
+        empty.textContent = "目前還沒有日記，寫一篇紀錄一下今天吧。";
+        listEl.appendChild(empty);
+        return;
+      }
+
+      state.diaries
+        .slice()
+        .sort((a, b) => b.createdAt - a.createdAt)
+        .forEach((item, index) => {
+          const wrapper = document.createElement("div");
+          wrapper.className = "diary-item";
+
+          const header = document.createElement("div");
+          header.className = "diary-item-header";
+
+          const dateEl = document.createElement("div");
+          dateEl.className = "diary-date";
+          dateEl.textContent = formatDateTime(item.createdAt);
+
+          const indexEl = document.createElement("div");
+          indexEl.className = "diary-index";
+          indexEl.textContent = `#${state.diaries.length - index}`;
+
+          header.appendChild(dateEl);
+          header.appendChild(indexEl);
+
+          const textEl = document.createElement("div");
+          textEl.className = "diary-text";
+          textEl.textContent = item.text;
+
+          wrapper.appendChild(header);
+          wrapper.appendChild(textEl);
+          listEl.appendChild(wrapper);
+        });
+
+      updatePlanUI();
+    }
+
+    function updateEditorHint() {
+      const input = document.getElementById("diaryInput");
+      const hint = document.getElementById("diaryHint");
+      const btn = document.getElementById("addDiaryBtn");
+      const max = getMaxDiaryCount();
+
+      const used = state.diaries.length;
+      const remainCount = Math.max(0, max - used);
+      const remainingChars = 500 - input.value.length;
+
+      if (used >= max) {
+        hint.textContent = `已達上限（${max} 篇），請刪除舊日記或升級方案。`;
+        btn.classList.add("btn-disabled");
+        btn.disabled = true;
+      } else {
+        hint.textContent = `還可以輸入 ${remainingChars} 字 · 剩餘 ${remainCount} 篇名額`;
+        btn.classList.remove("btn-disabled");
+        btn.disabled = false;
+      }
+    }
+
+    // === 事件處理 ===
+    function handleAddDiary() {
+      const input = document.getElementById("diaryInput");
+      const text = input.value.trim();
+      const max = getMaxDiaryCount();
+
+      if (!text) {
+        alert("先寫點什麼吧～");
+        return;
+      }
+
+      if (state.diaries.length >= max) {
+        alert(`已達本方案日記上限（${max} 篇）。`);
+        updateEditorHint();
+        return;
+      }
+
+      state.diaries.push({
+        id: Date.now() + "-" + Math.random().toString(16).slice(2),
+        text,
+        createdAt: Date.now(),
+      });
+
+      saveDiaries();
+      input.value = "";
+      updateEditorHint();
+      renderDiaryList();
+    }
+
+    function handlePlanToggle() {
+      state.plan = state.plan === "vip" ? "free" : "vip";
+      localStorage.setItem(STORAGE_KEYS.plan, state.plan);
+      updatePlanUI();
+      updateEditorHint();
+    }
+
+    function initAvatar() {
+      const avatarImg = document.getElementById("avatarImg");
+      const avatarInput = document.getElementById("avatarInput");
+      const avatarWrapper = document.getElementById("avatarWrapper");
+
+      // 載入本地儲存的頭貼
+      try {
+        const stored = localStorage.getItem(STORAGE_KEYS.avatar);
+        if (stored) {
+          avatarImg.src = stored;
+        }
+      } catch (e) {
+        console.warn("載入頭貼失敗：", e);
+      }
+
+      avatarWrapper.addEventListener("click", () => {
+        avatarInput.click();
+      });
+
+      avatarInput.addEventListener("change", (e) => {
+        const file = e.target.files && e.target.files[0];
+        if (!file) return;
+
+        if (!file.type.startsWith("image/")) {
+          alert("請選擇圖片檔案。");
+          return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = function (evt) {
+          const dataUrl = evt.target.result;
+          avatarImg.src = dataUrl;
+          try {
+            localStorage.setItem(STORAGE_KEYS.avatar, dataUrl);
+          } catch (err) {
+            console.warn("儲存頭貼失敗：", err);
+          }
+        };
+        reader.readAsDataURL(file);
+      });
+    }
+
+    function initTabs() {
+      const navItems = document.querySelectorAll(".nav-item");
+      const sections = document.querySelectorAll(".section");
+
+      navItems.forEach((item) => {
+        item.addEventListener("click", () => {
+          const target = item.getAttribute("data-target");
+          sections.forEach((sec) => {
+            sec.classList.toggle("active", sec.id === target);
+          });
+          navItems.forEach((nav) => nav.classList.remove("active"));
+          item.classList.add("active");
+        });
+      });
+    }
+
+    function initProfileTexts() {
+      // 這裡先讀取 localStorage，之後可以改成真正的「編輯基本資料」畫面同步
+      const name = localStorage.getItem(STORAGE_KEYS.profileName) || "暫無名稱";
+      const meta = localStorage.getItem(STORAGE_KEYS.profileMeta) || "台灣 · 未設定地區 · 身高/體重未填";
+      document.getElementById("profileName").textContent = name;
+      document.getElementById("profileMeta").textContent = meta;
+    }
+
+    function initDiaryModule() {
+      loadState();
+      updatePlanUI();
+      renderDiaryList();
+      updateEditorHint();
+
+      const planToggle = document.getElementById("planToggle");
+      const input = document.getElementById("diaryInput");
+      const addBtn = document.getElementById("addDiaryBtn");
+
+      planToggle.addEventListener("click", handlePlanToggle);
+      addBtn.addEventListener("click", handleAddDiary);
+      input.addEventListener("input", updateEditorHint);
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+      initTabs();
+      initProfileTexts();
+      initAvatar();
+      initDiaryModule();
+    });
+  </script>
+</body>
+</html>
