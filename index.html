@@ -1,0 +1,1272 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8" />
+  <title>心遇 XinYou - 前台整合版</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+  <style>
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", "Microsoft JhengHei", sans-serif;
+      background: #f3f4f6;
+      color: #111827;
+      font-size: 16px;
+    }
+    img {
+      max-width: 100%;
+      display: block;
+    }
+    button {
+      font-family: inherit;
+    }
+
+    /* 頂部列 */
+    .top-bar {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      height: 56px;
+      padding: 0 16px;
+      background: #ffffff;
+      border-bottom: 0.5px solid #e5e7eb;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .top-bar-inner {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      max-width: 540px;
+      margin: 0 auto;
+    }
+    .top-bar-title {
+      font-size: 18px;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+    }
+
+    /* 主內容容器 */
+    .app-shell {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    .app-main {
+      flex: 1;
+      max-width: 540px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 12px 12px 72px;
+    }
+
+    /* 底部導覽列 */
+    .tab-bar {
+      position: fixed;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      height: 60px;
+      background: #ffffff;
+      border-top: 0.5px solid #e5e7eb;
+      display: flex;
+      justify-content: center;
+      z-index: 30;
+    }
+    .tab-bar-inner {
+      width: 100%;
+      max-width: 540px;
+      display: flex;
+    }
+    .tab-item {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      color: #6b7280;
+      cursor: pointer;
+      user-select: none;
+    }
+    .tab-item span {
+      margin-top: 2px;
+    }
+    .tab-item.active {
+      color: #ec4899;
+      font-weight: 600;
+    }
+
+    /* 區塊通用卡片 */
+    .card {
+      background: #ffffff;
+      border-radius: 12px;
+      padding: 12px 14px;
+      box-shadow: 0 4px 12px rgba(15, 23, 42, 0.06);
+      margin-bottom: 12px;
+    }
+    .card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 8px;
+    }
+    .card-title {
+      font-size: 15px;
+      font-weight: 600;
+    }
+    .card-subtitle {
+      font-size: 12px;
+      color: #9ca3af;
+    }
+
+    /* 巧遇頁 (簡化版示意) */
+    .match-list {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+    }
+    .match-item {
+      background: #fff;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 4px 12px rgba(15, 23, 42, 0.06);
+      position: relative;
+    }
+    .match-avatar {
+      width: 100%;
+      aspect-ratio: 3 / 4;
+      object-fit: cover;
+    }
+    .match-info {
+      padding: 6px 8px 8px;
+      font-size: 13px;
+    }
+    .match-name {
+      font-weight: 600;
+      margin-bottom: 2px;
+    }
+    .match-meta {
+      font-size: 12px;
+      color: #6b7280;
+    }
+
+    /* 排行榜頁 (佔位) */
+    .rank-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .rank-item {
+      display: flex;
+      align-items: center;
+      padding: 8px 10px;
+      background: #fff;
+      border-radius: 10px;
+      box-shadow: 0 3px 10px rgba(15, 23, 42, 0.06);
+    }
+    .rank-no {
+      width: 26px;
+      font-weight: 700;
+      color: #f97316;
+    }
+    .rank-body {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .rank-avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 999px;
+      object-fit: cover;
+    }
+    .rank-name {
+      font-size: 14px;
+      font-weight: 600;
+    }
+    .rank-score {
+      font-size: 12px;
+      color: #6b7280;
+    }
+
+    /* 我的資料頁 */
+    .profile-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 10px;
+    }
+    .profile-avatar-wrapper {
+      position: relative;
+      width: 70px;
+      height: 70px;
+      border-radius: 999px;
+      overflow: hidden;
+      border: 2px solid #f9a8d4;
+      flex-shrink: 0;
+      cursor: pointer;
+    }
+    .profile-avatar {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .profile-avatar-label {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      text-align: center;
+      font-size: 10px;
+      background: linear-gradient(to top, rgba(0,0,0,0.55), transparent);
+      color: #fff;
+      padding: 4px 2px 2px;
+    }
+    .profile-main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .profile-name {
+      font-size: 16px;
+      font-weight: 600;
+    }
+    .profile-line {
+      font-size: 12px;
+      color: #4b5563;
+    }
+    .profile-tag {
+      display: inline-flex;
+      align-items: center;
+      padding: 2px 6px;
+      border-radius: 999px;
+      font-size: 11px;
+      background: #fee2e2;
+      color: #b91c1c;
+      margin-right: 4px;
+    }
+    .profile-tag.vip {
+      background: #fef3c7;
+      color: #b45309;
+    }
+
+    .btn {
+      border-radius: 999px;
+      border: none;
+      padding: 6px 12px;
+      font-size: 13px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      transition: transform 0.1s ease, box-shadow 0.1s ease, background 0.15s ease;
+      user-select: none;
+    }
+    .btn-primary {
+      background: linear-gradient(135deg, #ec4899, #f97316);
+      color: #fff;
+      box-shadow: 0 4px 10px rgba(236, 72, 153, 0.4);
+    }
+    .btn-primary:active {
+      transform: translateY(1px);
+      box-shadow: 0 2px 6px rgba(236, 72, 153, 0.4);
+    }
+    .btn-outline {
+      background: #fff;
+      color: #6b7280;
+      border: 1px solid #e5e7eb;
+    }
+    .btn-sm {
+      padding: 4px 10px;
+      font-size: 12px;
+    }
+    .btn-block {
+      width: 100%;
+      justify-content: center;
+    }
+
+    .section-title {
+      font-size: 14px;
+      font-weight: 600;
+      margin: 4px 0 6px;
+    }
+    .section-desc {
+      font-size: 12px;
+      color: #9ca3af;
+      margin-bottom: 8px;
+    }
+
+    .field-group {
+      margin-bottom: 8px;
+    }
+    .field-label {
+      font-size: 12px;
+      color: #6b7280;
+      margin-bottom: 4px;
+    }
+    .field-input,
+    .field-select,
+    .field-textarea {
+      width: 100%;
+      border-radius: 8px;
+      border: 1px solid #e5e7eb;
+      padding: 7px 9px;
+      font-size: 14px;
+      font-family: inherit;
+      outline: none;
+      background: #f9fafb;
+    }
+    .field-input:focus,
+    .field-select:focus,
+    .field-textarea:focus {
+      border-color: #ec4899;
+      background: #ffffff;
+      box-shadow: 0 0 0 1px rgba(236, 72, 153, 0.15);
+    }
+    .field-textarea {
+      resize: vertical;
+      min-height: 60px;
+    }
+    .field-note {
+      font-size: 11px;
+      color: #9ca3af;
+      margin-top: 2px;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 2px 6px;
+      border-radius: 999px;
+      font-size: 11px;
+      background: #e5e7eb;
+      color: #4b5563;
+    }
+
+    /* 日記區 */
+    .diary-layout {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .diary-editor {
+      border-radius: 10px;
+      background: #f9fafb;
+      padding: 8px 10px;
+      border: 1px dashed #e5e7eb;
+    }
+    .diary-limit {
+      font-size: 11px;
+      color: #6b7280;
+      margin-top: 4px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+    .diary-limit span {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .diary-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      max-height: 260px;
+      overflow-y: auto;
+      padding-right: 2px;
+    }
+    .diary-item {
+      border-radius: 10px;
+      background: #f9fafb;
+      padding: 8px 10px;
+      border: 1px solid #e5e7eb;
+      font-size: 13px;
+    }
+    .diary-meta {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 11px;
+      color: #9ca3af;
+      margin-bottom: 4px;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+    .diary-text {
+      white-space: pre-wrap;
+      word-break: break-word;
+      margin-bottom: 4px;
+    }
+    .diary-image-wrap {
+      margin-top: 4px;
+      border-radius: 8px;
+      overflow: hidden;
+      background: #000;
+    }
+    .diary-image-wrap img {
+      display: block;
+      margin: 0 auto;
+    }
+    .diary-image-note {
+      font-size: 10px;
+      color: #9ca3af;
+      margin-top: 2px;
+    }
+    .diary-empty {
+      font-size: 12px;
+      color: #9ca3af;
+      text-align: center;
+      padding: 6px 0;
+    }
+
+    /* 上傳圖片區 */
+    .diary-tools {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin: 6px 0 4px;
+    }
+    .chip-btn {
+      border-radius: 999px;
+      border: 1px solid #e5e7eb;
+      padding: 4px 8px;
+      font-size: 11px;
+      background: #fff;
+      color: #4b5563;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      cursor: pointer;
+    }
+    .chip-btn:active {
+      background: #f3f4f6;
+    }
+
+    .range-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 4px;
+    }
+    .range-row input[type="range"] {
+      flex: 1;
+    }
+    .range-label {
+      font-size: 11px;
+      color: #6b7280;
+      white-space: nowrap;
+    }
+
+    .diary-preview {
+      margin-top: 6px;
+      display: none;
+    }
+    .diary-preview img {
+      border-radius: 8px;
+      max-height: 160px;
+      object-fit: contain;
+      margin: 0 auto;
+    }
+
+    .text-danger {
+      color: #b91c1c;
+    }
+
+    .vip-toggle-row {
+      margin-top: 6px;
+      font-size: 11px;
+      color: #6b7280;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+    .vip-toggle-row select {
+      font-size: 11px;
+      padding: 3px 6px;
+      border-radius: 999px;
+      border: 1px solid #e5e7eb;
+      background: #fff;
+    }
+
+    /* 顯示 / 隱藏頁面 */
+    .page {
+      display: none;
+    }
+    .page.active {
+      display: block;
+    }
+  </style>
+</head>
+<body>
+<div class="app-shell">
+  <header class="top-bar">
+    <div class="top-bar-inner">
+      <div style="width: 24px;"></div>
+      <div class="top-bar-title">心遇 · XinYou</div>
+      <div style="font-size: 11px; color:#9ca3af;">Demo</div>
+    </div>
+  </header>
+
+  <main class="app-main">
+    <!-- 巧遇 -->
+    <section id="page-match" class="page active">
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <div class="card-title">巧遇</div>
+            <div class="card-subtitle">根據地區與偏好，推薦附近的靈魂</div>
+          </div>
+        </div>
+        <div class="match-list" id="matchList">
+          <!-- 範例資料 -->
+        </div>
+      </div>
+    </section>
+
+    <!-- 排行榜 -->
+    <section id="page-rank" class="page">
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <div class="card-title">本週魅力榜</div>
+            <div class="card-subtitle">依禮物與互動熱度排序</div>
+          </div>
+        </div>
+        <div class="rank-list" id="rankList">
+          <!-- 範例資料 -->
+        </div>
+      </div>
+    </section>
+
+    <!-- 我的 -->
+    <section id="page-me" class="page">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">我的資料</div>
+          <button class="btn btn-outline btn-sm" id="btnResetProfile">刪除帳號資料</button>
+        </div>
+
+        <!-- 頭像與基本對外資訊 -->
+        <div class="profile-header">
+          <div class="profile-avatar-wrapper" id="avatarWrapper">
+            <img id="avatarImg" class="profile-avatar"
+                 src="https://images.pexels.com/photos/415829/pexels-photo-415829.jpeg?auto=compress&cs=tinysrgb&w=600"
+                 alt="頭像" />
+            <div class="profile-avatar-label">點擊更換頭貼</div>
+            <input type="file" id="avatarFileInput" accept="image/*" style="display:none" />
+          </div>
+          <div class="profile-main">
+            <div class="profile-name" id="profileDisplayName">暱稱未設定</div>
+            <div class="profile-line" id="profileDisplayMeta1">台灣・居住地未設定</div>
+            <div class="profile-line" id="profileDisplayMeta2">身高 / 體重未設定</div>
+            <div>
+              <span class="profile-tag" id="profileStatusTag">一般用戶</span>
+              <span class="profile-tag vip" id="profileVipTag" style="display:none;">VIP</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 編輯基本資料 -->
+        <div class="section-title">基本資料</div>
+        <div class="section-desc">
+          此區為首次設定後即鎖定，只能透過「刪除帳號資料」重新建立。
+
+        </div>
+        <div id="baseProfileForm">
+          <div class="field-group">
+            <div class="field-label">暱稱</div>
+            <input id="baseName" class="field-input" placeholder="請輸入顯示暱稱" />
+          </div>
+          <div class="field-group">
+            <div class="field-label">居住城市（台灣）</div>
+            <select id="baseCity" class="field-select">
+              <option value="">請選擇城市</option>
+              <option>台北市</option>
+              <option>新北市</option>
+              <option>桃園市</option>
+              <option>台中市</option>
+              <option>台南市</option>
+              <option>高雄市</option>
+              <option>基隆市</option>
+              <option>新竹市</option>
+              <option>嘉義市</option>
+              <option>新竹縣</option>
+              <option>苗栗縣</option>
+              <option>彰化縣</option>
+              <option>南投縣</option>
+              <option>雲林縣</option>
+              <option>嘉義縣</option>
+              <option>屏東縣</option>
+              <option>宜蘭縣</option>
+              <option>花蓮縣</option>
+              <option>台東縣</option>
+              <option>澎湖縣</option>
+              <option>金門縣</option>
+              <option>連江縣</option>
+              <option>其他</option>
+            </select>
+          </div>
+          <div class="field-group">
+            <div class="field-label">身高（cm）</div>
+            <input id="baseHeight" type="number" class="field-input" placeholder="例如 172" />
+          </div>
+          <div class="field-group">
+            <div class="field-label">體重（kg）</div>
+            <input id="baseWeight" type="number" class="field-input" placeholder="例如 65" />
+          </div>
+          <div class="field-group">
+            <button id="btnSaveBaseProfile" class="btn btn-primary btn-block">儲存基本資料並鎖定</button>
+            <div class="field-note">
+              儲存後上述欄位將鎖定無法修改，僅能透過「刪除帳號資料」全部重設。
+            </div>
+          </div>
+        </div>
+
+        <div id="baseProfileLockedMsg" style="display:none;">
+          <div class="badge" style="margin-bottom:6px;">
+            基本資料已鎖定
+          </div>
+          <div class="field-note">
+            若需修改暱稱 / 身高 / 體重 / 城市，請使用上方「刪除帳號資料」重建帳號。
+          </div>
+        </div>
+
+        <!-- 社群帳號 -->
+        <div class="section-title" style="margin-top:10px;">社群帳號（可隨時修改）</div>
+        <div class="field-group">
+          <div class="field-label">Instagram / Threads</div>
+          <input id="socialIg" class="field-input" placeholder="@your_ig" />
+        </div>
+        <div class="field-group">
+          <div class="field-label">LINE ID</div>
+          <input id="socialLine" class="field-input" placeholder="請輸入 LINE ID" />
+        </div>
+        <div class="field-group">
+          <div class="field-label">其他聯絡方式</div>
+          <input id="socialOther" class="field-input" placeholder="如 Telegram, WeChat..." />
+        </div>
+        <div class="field-group">
+          <button id="btnSaveSocial" class="btn btn-outline btn-block">儲存社群資訊</button>
+        </div>
+
+        <div class="vip-toggle-row">
+          <span>目前身分：<span id="vipStatusText">一般用戶（免費上限 5 則日記）</span></span>
+          <span>
+            測試用 VIP 切換：
+            <select id="vipLevelSelect">
+              <option value="0">一般用戶</option>
+              <option value="1">VIP 1</option>
+              <option value="2">VIP 2</option>
+            </select>
+          </span>
+        </div>
+      </div>
+
+      <!-- 日記卡片 -->
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <div class="card-title">我的日記</div>
+            <div class="card-subtitle">記錄每天的小心情，可附一張照片</div>
+          </div>
+        </div>
+
+        <div class="diary-layout">
+          <!-- 編輯區 -->
+          <div class="diary-editor">
+            <div class="field-group">
+              <div class="field-label">日記內容</div>
+              <textarea id="myDiaryInput" class="field-textarea"
+                        placeholder="今天發生了什麼有趣的事？"></textarea>
+            </div>
+
+            <div class="diary-tools">
+              <button type="button" class="chip-btn" id="myDiaryImageUploadBtn">
+                從相簿選擇圖片
+              </button>
+              <button type="button" class="chip-btn" id="myDiaryImageCameraBtn">
+                拍照上傳
+              </button>
+              <input type="file" id="myDiaryImageUpload" accept="image/*"
+                     style="display:none" />
+              <input type="file" id="myDiaryImageCamera" accept="image/*" capture="environment"
+                     style="display:none" />
+            </div>
+
+            <div class="range-row">
+              <span class="range-label">照片顯示大小</span>
+              <input type="range" id="myDiaryImageSize" min="40" max="100" value="80" />
+              <span id="myDiaryImageSizeText" class="range-label">80%</span>
+            </div>
+
+            <div id="myDiaryPreview" class="diary-preview">
+              <div class="field-label">預覽圖片</div>
+              <img id="myDiaryPreviewImg" alt="預覽圖片" />
+            </div>
+
+            <div class="diary-limit">
+              <span>目前已使用：<span id="diaryUsedCount">0</span> /
+                <span id="diaryLimitCount">5</span> 則</span>
+              <span id="diaryLimitNote" class="text-danger"></span>
+            </div>
+
+            <button id="myDiaryAddBtn" class="btn btn-primary btn-block" type="button">
+              新增日記
+            </button>
+          </div>
+
+          <!-- 列表區 -->
+          <div>
+            <div class="section-title">已寫日記</div>
+            <div id="myDiaryList" class="diary-list">
+              <!-- 動態插入 -->
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- 底部導覽列 -->
+  <nav class="tab-bar">
+    <div class="tab-bar-inner">
+      <div class="tab-item active" data-target="page-match">
+        <div>🌹</div>
+        <span>巧遇</span>
+      </div>
+      <div class="tab-item" data-target="page-rank">
+        <div>👑</div>
+        <span>排行榜</span>
+      </div>
+      <div class="tab-item" data-target="page-me">
+        <div>🙋‍♂️</div>
+        <span>我的</span>
+      </div>
+    </div>
+  </nav>
+</div>
+
+<script>
+  /**********************
+   * LocalStorage 工具 *
+   **********************/
+  const LS_KEYS = {
+    profile: 'hmUserProfile',
+    diaries: 'hmMyDiaries',
+    avatar: 'hmAvatarDataUrl',
+    vip: 'hmVipLevel'
+  };
+
+  function hmLoadJSON(key, fallback) {
+    try {
+      const raw = localStorage.getItem(key);
+      if (!raw) return fallback;
+      return JSON.parse(raw);
+    } catch (e) {
+      console.error('解析 localStorage 失敗', key, e);
+      return fallback;
+    }
+  }
+
+  function hmSaveJSON(key, value) {
+    try {
+      localStorage.setItem(key, JSON.stringify(value));
+    } catch (e) {
+      console.error('寫入 localStorage 失敗', key, e);
+    }
+  }
+
+  /**********************
+   * VIP 與日記上限     *
+   **********************/
+  function hmGetVipLevel() {
+    const v = hmLoadJSON(LS_KEYS.vip, 0);
+    return typeof v === 'number' ? v : 0;
+  }
+
+  function hmSetVipLevel(level) {
+    hmSaveJSON(LS_KEYS.vip, level);
+  }
+
+  function hmGetDiaryLimit() {
+    const vip = hmGetVipLevel();
+    if (!vip || vip === 0) return 5;   // 一般用戶
+    return 30;                         // VIP 任一等級
+  }
+
+  function hmLoadDiaries() {
+    return hmLoadJSON(LS_KEYS.diaries, []);
+  }
+
+  function hmSaveDiaries(list) {
+    hmSaveJSON(LS_KEYS.diaries, list || []);
+  }
+
+  /**********************
+   * 頁籤切換           *
+   **********************/
+  function initTabs() {
+    const tabs = document.querySelectorAll('.tab-item');
+    const pages = document.querySelectorAll('.page');
+
+    tabs.forEach(tab => {
+      tab.addEventListener('click', () => {
+        const targetId = tab.getAttribute('data-target');
+        tabs.forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+        pages.forEach(p => {
+          if (p.id === targetId) p.classList.add('active');
+          else p.classList.remove('active');
+        });
+      });
+    });
+  }
+
+  /**********************
+   * 巧遇 / 排行榜假資料 *
+   **********************/
+  function initMatchDemo() {
+    const list = document.getElementById('matchList');
+    const demo = [
+      {
+        name: 'Ariel',
+        age: 28,
+        city: '台中',
+        img: 'https://images.pexels.com/photos/415829/pexels-photo-415829.jpeg?auto=compress&cs=tinysrgb&w=600'
+      },
+      {
+        name: 'Jason',
+        age: 32,
+        city: '高雄',
+        img: 'https://images.pexels.com/photos/614810/pexels-photo-614810.jpeg?auto=compress&cs=tinysrgb&w=600'
+      },
+      {
+        name: 'Mia',
+        age: 24,
+        city: '台北',
+        img: 'https://images.pexels.com/photos/733872/pexels-photo-733872.jpeg?auto=compress&cs=tinysrgb&w=600'
+      },
+      {
+        name: 'Leo',
+        age: 30,
+        city: '花蓮',
+        img: 'https://images.pexels.com/photos/91227/pexels-photo-91227.jpeg?auto=compress&cs=tinysrgb&w=600'
+      }
+    ];
+    list.innerHTML = demo.map(m => `
+      <div class="match-item">
+        <img class="match-avatar" src="${m.img}" alt="${m.name}" />
+        <div class="match-info">
+          <div class="match-name">${m.name}</div>
+          <div class="match-meta">${m.age} 歲・${m.city}</div>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  function initRankDemo() {
+    const list = document.getElementById('rankList');
+    const demo = [
+      {
+        rank: 1,
+        name: '小鹿',
+        score: '禮物 12,320',
+        img: 'https://images.pexels.com/photos/733872/pexels-photo-733872.jpeg?auto=compress&cs=tinysrgb&w=600'
+      },
+      {
+        rank: 2,
+        name: '西瓜',
+        score: '禮物 9,880',
+        img: 'https://images.pexels.com/photos/91227/pexels-photo-91227.jpeg?auto=compress&cs=tinysrgb&w=600'
+      },
+      {
+        rank: 3,
+        name: '老王',
+        score: '禮物 7,210',
+        img: 'https://images.pexels.com/photos/614810/pexels-photo-614810.jpeg?auto=compress&cs=tinysrgb&w=600'
+      }
+    ];
+    list.innerHTML = demo.map(r => `
+      <div class="rank-item">
+        <div class="rank-no">${r.rank}</div>
+        <div class="rank-body">
+          <img class="rank-avatar" src="${r.img}" alt="${r.name}" />
+          <div>
+            <div class="rank-name">${r.name}</div>
+            <div class="rank-score">${r.score}</div>
+          </div>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  /**********************
+   * 我的資料：基本資料 *
+   **********************/
+  function hmLoadProfile() {
+    return hmLoadJSON(LS_KEYS.profile, {
+      name: '',
+      city: '',
+      height: '',
+      weight: '',
+      ig: '',
+      line: '',
+      other: '',
+      lockedBase: false
+    });
+  }
+
+  function hmSaveProfile(profile) {
+    hmSaveJSON(LS_KEYS.profile, profile);
+  }
+
+  function refreshProfileDisplay() {
+    const p = hmLoadProfile();
+    const vip = hmGetVipLevel();
+
+    const displayName = document.getElementById('profileDisplayName');
+    const meta1 = document.getElementById('profileDisplayMeta1');
+    const meta2 = document.getElementById('profileDisplayMeta2');
+    const statusTag = document.getElementById('profileStatusTag');
+    const vipTag = document.getElementById('profileVipTag');
+    const vipStatusText = document.getElementById('vipStatusText');
+
+    // 名稱
+    displayName.textContent = p.name || '暱稱未設定';
+
+    // 城市
+    const city = p.city || '居住地未設定';
+    meta1.textContent = '台灣・' + city;
+
+    // 身高體重
+    if (p.height && p.weight) {
+      meta2.textContent = `${p.height} cm / ${p.weight} kg`;
+    } else {
+      meta2.textContent = '身高 / 體重未設定';
+    }
+
+    // VIP 狀態
+    if (!vip || vip === 0) {
+      statusTag.textContent = '一般用戶';
+      vipTag.style.display = 'none';
+      vipStatusText.textContent = '一般用戶（免費上限 5 則日記）';
+    } else {
+      statusTag.textContent = 'VIP 用戶';
+      vipTag.style.display = 'inline-flex';
+      vipStatusText.textContent = 'VIP 用戶（可寫 30 則日記）';
+    }
+
+    // 表單內容回填（社群與未鎖定時的基本資料）
+    document.getElementById('socialIg').value = p.ig || '';
+    document.getElementById('socialLine').value = p.line || '';
+    document.getElementById('socialOther').value = p.other || '';
+
+    if (!p.lockedBase) {
+      document.getElementById('baseName').value = p.name || '';
+      document.getElementById('baseCity').value = p.city || '';
+      document.getElementById('baseHeight').value = p.height || '';
+      document.getElementById('baseWeight').value = p.weight || '';
+
+      document.getElementById('baseProfileForm').style.display = 'block';
+      document.getElementById('baseProfileLockedMsg').style.display = 'none';
+    } else {
+      document.getElementById('baseProfileForm').style.display = 'none';
+      document.getElementById('baseProfileLockedMsg').style.display = 'block';
+    }
+  }
+
+  function initProfile() {
+    const profile = hmLoadProfile();
+    const vipLevel = hmGetVipLevel();
+
+    // VIP 測試下拉
+    const vipSelect = document.getElementById('vipLevelSelect');
+    vipSelect.value = String(vipLevel || 0);
+    vipSelect.addEventListener('change', () => {
+      const v = parseInt(vipSelect.value, 10) || 0;
+      hmSetVipLevel(v);
+      refreshProfileDisplay();
+      refreshDiaryLimitUI();
+    });
+
+    // 儲存基本資料並鎖定
+    const btnSaveBase = document.getElementById('btnSaveBaseProfile');
+    btnSaveBase.addEventListener('click', () => {
+      const name = document.getElementById('baseName').value.trim();
+      const city = document.getElementById('baseCity').value;
+      const height = document.getElementById('baseHeight').value.trim();
+      const weight = document.getElementById('baseWeight').value.trim();
+
+      if (!name || !city || !height || !weight) {
+        alert('請完整填寫暱稱 / 城市 / 身高 / 體重後再儲存。');
+        return;
+      }
+
+      const p = hmLoadProfile();
+      p.name = name;
+      p.city = city;
+      p.height = height;
+      p.weight = weight;
+      p.lockedBase = true;
+      hmSaveProfile(p);
+      refreshProfileDisplay();
+      alert('基本資料已儲存並鎖定。');
+    });
+
+    // 儲存社群資訊
+    const btnSaveSocial = document.getElementById('btnSaveSocial');
+    btnSaveSocial.addEventListener('click', () => {
+      const p = hmLoadProfile();
+      p.ig = document.getElementById('socialIg').value.trim();
+      p.line = document.getElementById('socialLine').value.trim();
+      p.other = document.getElementById('socialOther').value.trim();
+      hmSaveProfile(p);
+      alert('社群資訊已儲存。');
+    });
+
+    // 刪除帳號資料
+    const btnReset = document.getElementById('btnResetProfile');
+    btnReset.addEventListener('click', () => {
+      if (!confirm('確定要刪除帳號資料？\n將清除基本資料、社群資訊、日記與頭貼。')) return;
+      localStorage.removeItem(LS_KEYS.profile);
+      localStorage.removeItem(LS_KEYS.diaries);
+      localStorage.removeItem(LS_KEYS.avatar);
+      // VIP 不清除，視為裝置身分；若要一起清空可加上下一行
+      // localStorage.removeItem(LS_KEYS.vip);
+      location.reload();
+    });
+
+    refreshProfileDisplay();
+  }
+
+  /**********************
+   * 頭貼上傳           *
+   **********************/
+  function initAvatarUpload() {
+    const wrapper = document.getElementById('avatarWrapper');
+    const fileInput = document.getElementById('avatarFileInput');
+    const img = document.getElementById('avatarImg');
+
+    // 載入已有頭貼
+    const stored = localStorage.getItem(LS_KEYS.avatar);
+    if (stored) {
+      img.src = stored;
+    }
+
+    wrapper.addEventListener('click', () => {
+      fileInput.click();
+    });
+
+    fileInput.addEventListener('change', (e) => {
+      const file = e.target.files && e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = function(ev) {
+        const dataUrl = ev.target.result;
+        img.src = dataUrl;
+        try {
+          localStorage.setItem(LS_KEYS.avatar, dataUrl);
+        } catch (err) {
+          console.error('儲存頭貼失敗', err);
+        }
+      };
+      reader.readAsDataURL(file);
+    });
+  }
+
+  /**********************
+   * 日記：新增 & 顯示  *
+   **********************/
+  let diaryTempImageDataUrl = null;
+
+  function readFileAsDataURL(file, cb) {
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      cb(e.target.result);
+    };
+    reader.readAsDataURL(file);
+  }
+
+  function refreshDiaryLimitUI() {
+    const diaries = hmLoadDiaries();
+    const used = diaries.length;
+    const limit = hmGetDiaryLimit();
+    const usedEl = document.getElementById('diaryUsedCount');
+    const limitEl = document.getElementById('diaryLimitCount');
+    const noteEl = document.getElementById('diaryLimitNote');
+
+    usedEl.textContent = used;
+    limitEl.textContent = limit;
+
+    if (used >= limit) {
+      noteEl.textContent = '已達本帳號目前可使用的日記上限。';
+    } else {
+      noteEl.textContent = '';
+    }
+  }
+
+  function renderMyDiaries() {
+    const listEl = document.getElementById('myDiaryList');
+    const diaries = hmLoadDiaries();
+
+    refreshDiaryLimitUI();
+
+    if (!diaries || diaries.length === 0) {
+      listEl.innerHTML = '<div class="diary-empty">目前還沒有任何日記，寫一篇試試看吧。</div>';
+      return;
+    }
+
+    // 依建立時間由新到舊排序
+    const sorted = diaries.slice().sort((a, b) => {
+      return (b.createdAt || 0) > (a.createdAt || 0) ? 1 : -1;
+    });
+
+    listEl.innerHTML = sorted.map((d, index) => {
+      const t = d.createdAt ? new Date(d.createdAt) : null;
+      const dateStr = t
+        ? t.toLocaleDateString('zh-TW', { month: '2-digit', day: '2-digit' }) +
+          ' ' +
+          t.toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit' })
+        : '時間未知';
+      const size = d.imageSize || 80;
+      const hasImage = !!d.image;
+      const idxLabel = sorted.length - index; // 反向編號
+      return `
+        <div class="diary-item">
+          <div class="diary-meta">
+            <span>#${idxLabel}・${dateStr}</span>
+            <span>${hasImage ? '含圖片' : ''}</span>
+          </div>
+          <div class="diary-text">${(d.text || '').replace(/</g, '&lt;').replace(/>/g, '&gt;')}</div>
+          ${hasImage ? `
+            <div class="diary-image-wrap">
+              <img src="${d.image}" alt="日記圖片" style="width:${size}%;"/>
+            </div>
+            <div class="diary-image-note">圖片顯示大小：${size}%</div>
+          ` : ''}
+        </div>
+      `;
+    }).join('');
+  }
+
+  function hmAddDiary() {
+    const inputEl = document.getElementById('myDiaryInput');
+    const text = inputEl.value.trim();
+    const sizeEl = document.getElementById('myDiaryImageSize');
+    const size = parseInt(sizeEl.value, 10) || 80;
+
+    const list = hmLoadDiaries();
+    const limit = hmGetDiaryLimit();
+
+    // 內容限制：文字 & 圖片至少一個
+    if (!text && !diaryTempImageDataUrl) {
+      alert('請先輸入文字或選擇一張圖片後再新增。');
+      return;
+    }
+
+    if (list.length >= limit) {
+      alert('已達目前身分可使用的日記上限（最多 ' + limit + ' 則）。');
+      return;
+    }
+
+    const newDiary = {
+      id: Date.now(),
+      text: text,
+      image: diaryTempImageDataUrl || null,
+      imageSize: size,
+      createdAt: new Date().toISOString()
+    };
+
+    list.push(newDiary);
+    hmSaveDiaries(list);
+
+    // 清空輸入與暫存圖片
+    inputEl.value = '';
+    diaryTempImageDataUrl = null;
+    const previewWrap = document.getElementById('myDiaryPreview');
+    const previewImg = document.getElementById('myDiaryPreviewImg');
+    previewImg.src = '';
+    previewWrap.style.display = 'none';
+
+    renderMyDiaries();
+  }
+
+  function initDiaryUI() {
+    const addBtn = document.getElementById('myDiaryAddBtn');
+    const uploadBtn = document.getElementById('myDiaryImageUploadBtn');
+    const cameraBtn = document.getElementById('myDiaryImageCameraBtn');
+    const uploadInput = document.getElementById('myDiaryImageUpload');
+    const cameraInput = document.getElementById('myDiaryImageCamera');
+    const range = document.getElementById('myDiaryImageSize');
+    const rangeText = document.getElementById('myDiaryImageSizeText');
+    const previewWrap = document.getElementById('myDiaryPreview');
+    const previewImg = document.getElementById('myDiaryPreviewImg');
+
+    range.addEventListener('input', () => {
+      rangeText.textContent = range.value + '%';
+    });
+
+    uploadBtn.addEventListener('click', () => {
+      uploadInput.click();
+    });
+
+    cameraBtn.addEventListener('click', () => {
+      cameraInput.click();
+    });
+
+    function handleImageFile(file) {
+      if (!file) return;
+      readFileAsDataURL(file, (dataUrl) => {
+        diaryTempImageDataUrl = dataUrl;
+        previewImg.src = dataUrl;
+        previewWrap.style.display = 'block';
+      });
+    }
+
+    uploadInput.addEventListener('change', (e) => {
+      const file = e.target.files && e.target.files[0];
+      handleImageFile(file);
+      uploadInput.value = '';
+    });
+
+    cameraInput.addEventListener('change', (e) => {
+      const file = e.target.files && e.target.files[0];
+      handleImageFile(file);
+      cameraInput.value = '';
+    });
+
+    addBtn.addEventListener('click', hmAddDiary);
+
+    // 首次載入時顯示既有日記
+    renderMyDiaries();
+  }
+
+  /**********************
+   * 初始化             *
+   **********************/
+  document.addEventListener('DOMContentLoaded', () => {
+    initTabs();
+    initMatchDemo();
+    initRankDemo();
+    initProfile();
+    initAvatarUpload();
+    initDiaryUI();
+  });
+</script>
+</body>
+</html>
