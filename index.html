@@ -4707,6 +4707,80 @@ document.addEventListener("change", function (e) {
    
 <!-- Supabase Test Panel (safe loader) -->
 <script src="./supabase-panel-loader.js"></script>
+<!-- Supabase SDK -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<div style="position:fixed;right:12px;bottom:12px;background:#111;color:#fff;padding:12px;border-radius:10px;z-index:99999;max-width:320px;font-size:14px;">
+  <div style="font-weight:700;margin-bottom:8px;">Supabase 測試面板（之後可刪）</div>
+  <input id="sb_email" placeholder="Email" style="width:100%;margin:4px 0;padding:6px;">
+  <input id="sb_password" placeholder="Password" type="password" style="width:100%;margin:4px 0;padding:6px;">
+  <button onclick="sbSignUp()" style="margin-top:6px;width:49%;">註冊</button>
+  <button onclick="sbSignIn()" style="margin-top:6px;width:49%;">登入</button>
+  <button onclick="sbSignOut()" style="margin-top:6px;width:100%;">登出</button>
+  <pre id="sb_log" style="white-space:pre-wrap;margin-top:8px;max-height:120px;overflow:auto;background:#000;padding:8px;border-radius:8px;"></pre>
+</div>
+
+<script>
+  // 1) 貼上你的 Project URL 與 anon key（不要貼 service_role）
+  const SUPABASE_URL = "在這裡貼 Project URL";
+  const SUPABASE_ANON_KEY = "在這裡貼 anon public key";
+  const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+  const log = (msg) => {
+    const el = document.getElementById('sb_log');
+    el.textContent = (typeof msg === 'string') ? msg : JSON.stringify(msg, null, 2);
+  };
+
+  async function sbSignUp() {
+    const email = document.getElementById('sb_email').value.trim();
+    const password = document.getElementById('sb_password').value;
+    const { data, error } = await supabase.auth.signUp({ email, password });
+    if (error) return log(error);
+    log({ ok: true, signUp: data });
+
+    // 註冊成功後如果能取得 user，就先建立 profiles（有些設定會需要驗證信才有 user）
+    const user = data?.user;
+    if (user?.id) {
+      await supabase.from('profiles').upsert({
+        id: user.id,
+        name: email.split('@')[0],
+        region: '其他'
+      });
+      log("註冊成功 + profiles 已 upsert");
+    } else {
+      log("註冊成功，但可能需要驗證 Email 後才會有 user（看你的 Auth 設定）");
+    }
+  }
+
+  async function sbSignIn() {
+    const email = document.getElementById('sb_email').value.trim();
+    const password = document.getElementById('sb_password').value;
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+    if (error) return log(error);
+
+    // 登入後保證會有 user，順便補 profiles
+    const user = data.user;
+    const { error: upsertErr } = await supabase.from('profiles').upsert({
+      id: user.id,
+      name: email.split('@')[0],
+      region: '其他'
+    });
+    if (upsertErr) return log(upsertErr);
+
+    log("登入成功 + profiles 已 upsert");
+  }
+
+  async function sbSignOut() {
+    const { error } = await supabase.auth.signOut();
+    if (error) return log(error);
+    log("已登出");
+  }
+
+  // 監聽狀態（可選）
+  supabase.auth.onAuthStateChange((event, session) => {
+    // log({ event, session });
+  });
+</script>
 
 
 </body>
