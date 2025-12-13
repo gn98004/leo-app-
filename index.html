@@ -4707,6 +4707,94 @@ document.addEventListener("change", function (e) {
    
 <!-- Supabase Test Panel (safe loader) -->
 <script src="./supabase-panel-loader.js"></script>
+<!-- Supabase SDK (UMD) -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.3/dist/umd/supabase.js"></script>
+
+<div style="position:fixed;right:12px;bottom:12px;background:#111;color:#fff;padding:12px;border-radius:10px;z-index:99999;max-width:320px;font-size:14px;">
+  <div style="font-weight:700;margin-bottom:8px;">Supabase 測試面板（之後可刪）</div>
+
+  <input id="sb_email" placeholder="Email (完整信箱)" style="width:100%;margin:4px 0;padding:6px;">
+  <input id="sb_password" placeholder="Password" type="password" style="width:100%;margin:4px 0;padding:6px;">
+
+  <div style="display:flex;gap:8px;margin-top:6px;">
+    <button onclick="sbSignUp()" style="flex:1;">註冊</button>
+    <button onclick="sbSignIn()" style="flex:1;">登入</button>
+  </div>
+  <button onclick="sbSignOut()" style="margin-top:6px;width:100%;">登出</button>
+
+  <pre id="sb_log" style="white-space:pre-wrap;margin-top:8px;max-height:140px;overflow:auto;background:#000;padding:8px;border-radius:8px;"></pre>
+</div>
+
+<script>
+  function log(msg) {
+    const el = document.getElementById('sb_log');
+    if (!el) return;
+    el.textContent = (typeof msg === 'string') ? msg : JSON.stringify(msg, null, 2);
+  }
+
+  // 先檢查 SDK 是否真的載入
+  if (!window.supabase || !window.supabase.createClient) {
+    log("Supabase SDK 載入失敗：請確認 script src 是否為 dist/umd/supabase.js");
+  } else {
+    log("Supabase SDK 已載入，等待你按註冊/登入…");
+  }
+
+  // 1) 務必填入你的真實 URL / anon key
+  const SUPABASE_URL = "在這裡貼 Project URL";
+  const SUPABASE_ANON_KEY = "在這裡貼 anon public key";
+
+  let supabaseClient = null;
+  try {
+    supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  } catch (e) {
+    log("createClient 失敗：請確認 URL/key 是否已填入。\n" + e);
+  }
+
+  // 2) 掛到 window，onclick 一定找得到
+  window.sbSignUp = async function () {
+    try {
+      if (!supabaseClient) return log("尚未建立 supabase client（URL/key 未填或 SDK 未載入）");
+      log("註冊中…");
+      const email = document.getElementById('sb_email').value.trim();
+      const password = document.getElementById('sb_password').value;
+
+      const { data, error } = await supabaseClient.auth.signUp({ email, password });
+      if (error) return log(error);
+
+      log({ ok: true, signUp: data });
+    } catch (e) {
+      log("註冊流程出錯：\n" + e);
+    }
+  };
+
+  window.sbSignIn = async function () {
+    try {
+      if (!supabaseClient) return log("尚未建立 supabase client（URL/key 未填或 SDK 未載入）");
+      log("登入中…");
+      const email = document.getElementById('sb_email').value.trim();
+      const password = document.getElementById('sb_password').value;
+
+      const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
+      if (error) return log(error);
+
+      log({ ok: true, signIn: data });
+    } catch (e) {
+      log("登入流程出錯：\n" + e);
+    }
+  };
+
+  window.sbSignOut = async function () {
+    try {
+      if (!supabaseClient) return log("尚未建立 supabase client（URL/key 未填或 SDK 未載入）");
+      log("登出中…");
+      const { error } = await supabaseClient.auth.signOut();
+      if (error) return log(error);
+      log("已登出");
+    } catch (e) {
+      log("登出流程出錯：\n" + e);
+    }
+  };
+</script>
 
 
 </body>
