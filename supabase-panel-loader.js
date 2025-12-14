@@ -14,14 +14,61 @@
 
   function $(id) { return document.getElementById(id); }
 
+  function formatSbMsg(msg) {
+    try {
+      if (msg == null) return '';
+      if (typeof msg === 'string') return msg;
+      if (msg instanceof Error) return msg.message || String(msg);
+
+      var name = msg.name || '';
+      var message = msg.message || msg.msg || '';
+      var status = msg.status || msg.statusCode;
+
+      if (name === 'AuthApiError') {
+        var m = (message || '').toLowerCase();
+        if (m.indexOf('email not confirmed') >= 0) {
+          return '尚未完成信箱驗證（Email not confirmed）。
+
+做法：
+1) 到 Gmail 找 Supabase 的驗證信，點「Confirm」完成驗證。
+2) 或到 Supabase 後台關閉「Confirm email」（僅限測試用）。';
+        }
+        if (m.indexOf('user already registered') >= 0) {
+          return '這個 Email 已經註冊過了。
+
+做法：
+- 請直接按「登入」。
+- 若忘記密碼，需要加「忘記密碼 / 重設密碼」流程（我可再幫你加）。';
+        }
+        if (m.indexOf('invalid login credentials') >= 0) {
+          return '帳號或密碼不正確（Invalid login credentials）。
+
+確認：
+- Email/密碼是否打錯
+- 你登入的是同一個 Supabase Project';
+        }
+      }
+
+      if (status === 429 || (message || '').toLowerCase().indexOf('rate limit') >= 0) {
+        return '操作太頻繁（Rate limit）。請稍後 30 秒再試一次。';
+      }
+
+      if (message) return message + (status ? ('
+(status: ' + status + ')') : '');
+      return JSON.stringify(msg, null, 2);
+    } catch (e) {
+      return String(msg);
+    }
+  }
+
   function log(msg) {
     try {
       var el = $('sb_log');
       if (!el) return;
-      if (typeof msg === 'string') el.textContent = msg;
-      else el.textContent = JSON.stringify(msg, null, 2);
+      el.textContent = formatSbMsg(msg);
     } catch (e) { /* ignore */ }
   }
+
 
   function ensureStyle() {
     if (document.getElementById('sb_style')) return;
@@ -76,6 +123,14 @@
       + '    <button id="sb_signin" type="button">登入</button>'
       + '  </div>'
       + '  <div class="row">'
+      + '    <button id="sb_forgot" type="button">忘記密碼</button>'
+      + '    <button id="sb_setpw" type="button">設定新密碼</button>'
+      + '  </div>'
+      + '  <div id="sb_reset_box" style="display:none; margin-top:8px;">'
+      + '    <input id="sb_new_password" placeholder="新密碼（至少 6 碼）" type="password" autocomplete="new-password" />'
+      + '    <input id="sb_new_password2" placeholder="再輸入一次新密碼" type="password" autocomplete="new-password" />'
+      + '  </div>'
+      + '  <div class="row">'
       + '    <button id="sb_signout" type="button">登出</button>'
       + '    <button id="sb_whoami" type="button">我現在是誰</button>'
       + '  </div>'
@@ -123,6 +178,8 @@
 
     $('sb_signup').addEventListener('click', function () { signUp(); });
     $('sb_signin').addEventListener('click', function () { signIn(); });
+    $('sb_forgot').addEventListener('click', function () { forgotPassword(); });
+    $('sb_setpw').addEventListener('click', function () { setNewPassword(); });
     $('sb_signout').addEventListener('click', function () { signOut(); });
     $('sb_whoami').addEventListener('click', function () { whoAmI(); });
 
@@ -130,7 +187,7 @@
   }
 
   function setButtonsEnabled(enabled) {
-    var ids = ['sb_signup','sb_signin','sb_signout','sb_whoami'];
+    var ids = ['sb_signup','sb_signin','sb_forgot','sb_setpw','sb_signout','sb_whoami'];
     ids.forEach(function (id) {
       var el = $(id);
       if (el) el.disabled = !enabled;
@@ -183,7 +240,8 @@
       log('SDK 已載入，建立 supabase client…');
       try {
         client = window.supabase.createClient(url, key, {
-          auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: false }
+          // 為了支援「忘記密碼／重設密碼」流程，需要讓 SDK 可以從網址 hash 讀取 recovery token。
+          auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true }
         });
         setButtonsEnabled(true);
         log('supabase client 已建立。現在可以按「註冊/登入」。');
@@ -214,7 +272,7 @@
       if (res.error) return log(res.error);
       // If email confirmation is required, session may be null
       if (res.data && res.data.session == null) {
-        log('註冊成功，但需要到信箱點確認連結後才能登入（或你可先在 Supabase 關閉 Email Confirm）。');
+        log('註冊成功。\n\n如果你開啟了「Confirm email」，請到信箱點驗證信後再登入。\n（測試用也可在 Supabase 後台把 Confirm email 關掉）');
       } else {
         log({ ok: true, signUp: res.data });
       }
@@ -232,6 +290,73 @@
     }).catch(function (e) { log('登入流程出錯：\n' + e); });
   }
 
+  // 忘記密碼：寄出重設密碼信（Email 會包含連結）
+  function forgotPassword() {
+    if (!client) {
+      log('尚未建立 supabase client（先按「建立 Client」）。');
+      return;
+    }
+    var email = ($('sb_email').value || '').trim();
+    if (!email) {
+      log('請先在 Email 欄位輸入「完整信箱」，再按「忘記密碼」。');
+      return;
+    }
+
+    var redirectTo = location.origin + location.pathname;
+    log('已送出重設密碼請求：請到信箱收信並點連結。');
+
+    // v2 SDK：resetPasswordForEmail
+    client.auth.resetPasswordForEmail(email, { redirectTo: redirectTo })
+      .then(function (res) {
+        if (res && res.error) {
+          log('寄送失敗：' + (res.error.message || JSON.stringify(res.error)));
+        } else {
+          log('重設密碼信已寄出。開啟 Email 內的連結後，回到這個頁面再按「設定新密碼」。');
+        }
+      })
+      .catch(function (e) {
+        log('寄送失敗：' + e);
+      });
+  }
+
+  // 重設密碼：點 Email 的連結回到此頁後，設定新密碼
+  function setNewPassword() {
+    if (!client) {
+      log('尚未建立 supabase client（先按「建立 Client」）。');
+      return;
+    }
+
+    // Supabase recovery 連結通常會帶 #access_token=...&type=recovery
+    var hash = location.hash || '';
+    if (hash.indexOf('type=recovery') === -1) {
+      log('尚未進入重設流程：請先按「忘記密碼」寄信，並點信件連結回到此頁。');
+      return;
+    }
+
+    var newPw = prompt('輸入新密碼（建議 8 碼以上）');
+    if (!newPw) return;
+    var newPw2 = prompt('再次輸入新密碼');
+    if (newPw !== newPw2) {
+      log('兩次密碼不一致，請重試。');
+      return;
+    }
+
+    log('更新新密碼中...');
+    client.auth.updateUser({ password: newPw })
+      .then(function (res) {
+        if (res && res.error) {
+          log('更新失敗：' + (res.error.message || JSON.stringify(res.error)));
+        } else {
+          log('新密碼設定完成。你現在可以用新密碼登入。');
+          // 清掉 URL hash（避免每次重整都卡在 recovery）
+          try { history.replaceState(null, document.title, location.pathname + location.search); } catch (_) {}
+        }
+      })
+      .catch(function (e) {
+        log('更新失敗：' + e);
+      });
+  }
+
   function signOut() {
     if (!client) return log('尚未建立 supabase client（先按「建立 Client」）。');
     log('登出中…');
@@ -245,7 +370,11 @@
     if (!client) return log('尚未建立 supabase client（先按「建立 Client」）。');
     Promise.all([client.auth.getUser(), client.auth.getSession()]).then(function (arr) {
       var userRes = arr[0], sessRes = arr[1];
-      log({ user: userRes.data, userError: userRes.error, session: sessRes.data, sessionError: sessRes.error });
+      var u = (userRes.data && userRes.data.user) ? userRes.data.user : null;
+      if (userRes.error) return log(userRes.error);
+      if (!u) return log('目前未登入');
+      log('目前登入：' + (u.email || '(no email)') + '\nuser_id: ' + (u.id || '') + '\n最後登入：' + (u.last_sign_in_at || ''));
+      
     }).catch(function (e) { log('讀取狀態出錯：\n' + e); });
   }
 
