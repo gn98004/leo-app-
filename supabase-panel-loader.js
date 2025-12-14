@@ -33,8 +33,8 @@
     wrap.id = "sbPanel";
     wrap.innerHTML = `
       <h3>Supabase 測試面板（之後可刪）</h3>
-      <input id="sbUrl" placeholder="Project URL（https://xxxx.supabase.co）" />
-      <input id="sbKey" placeholder="anon public key（很長一串）" />
+      <input id="sbUrl" placeholder="Project URL（https://eqtvoxcavjgronfmalfw.supabase.co）" />
+      <input id="sbKey" placeholder="anon public key（sb_secret_HVulaudxS373-55rYe5tvQ_3lMXo_M4）" />
       <div class="row">
         <button id="sbSave" class="ghost" style="flex:1;">儲存 URL/Key</button>
         <button id="sbInit" class="primary" style="flex:1;">建立 Client</button>
