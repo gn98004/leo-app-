@@ -82,14 +82,28 @@
     document.body.appendChild(badge);
   }
 
-  function setBadge(loggedIn, email) {
-    ensureBadge();
-    var dot = $('sb_badge_dot');
-    var txt = $('sb_badge_txt');
-    if (!dot || !txt) return;
-    dot.className = 'dot' + (loggedIn ? ' on' : '');
-    txt.textContent = loggedIn ? ('已登入：' + (email || '')) : '尚未登入';
-  }
+ function setBadge(loggedIn, email) {
+  ensureBadge();
+  var badge = $('sb_badge');
+  var dot = $('sb_badge_dot');
+  var txt = $('sb_badge_txt');
+  if (!badge || !dot || !txt) return;
+
+  // 先顯示（移除隱藏）
+  badge.classList.remove('sb_hide');
+
+  dot.className = 'dot' + (loggedIn ? ' on' : '');
+  txt.textContent = loggedIn ? ('已登入：' + (email || '')) : '尚未登入';
+
+  // 清掉上一次計時
+  if (badgeTimer) clearTimeout(badgeTimer);
+
+  // 3 秒後自動隱藏（你要 5 秒就把 3000 改 5000）
+  badgeTimer = setTimeout(function () {
+    badge.classList.add('sb_hide');
+  }, 3000);
+}
+
 
   function ensurePanel() {
     if (document.getElementById('sb_panel')) return;
@@ -367,7 +381,9 @@
     ensurePanel();
 
     // default badge
-    setBadge(false, '');
+    // 預設不要彈未登入提示
+// setBadge(false, '');
+
 
     // auto init if url/key exist
     if ((localStorage.getItem(LS_URL) || '').trim() && (localStorage.getItem(LS_KEY) || '').trim()) {
