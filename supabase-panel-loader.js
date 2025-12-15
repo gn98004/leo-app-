@@ -1,228 +1,313 @@
-(()=>{
-  const LS_URL='sb_project_url';
-  const LS_KEY='sb_anon_key';
-  const LS_MIN='sb_panel_min';
+/* Supabase Test Panel Loader - non-invasive
+ * - Does NOT overwrite body.innerHTML
+ * - Adds a small "SB" button (bottom-right) to open/close panel
+ * - Loads Supabase UMD SDK only once
+ */
+(() => {
+  const LS_URL = "sb_project_url";
+  const LS_KEY = "sb_anon_key";
 
-  const ensureSupabaseSDK=()=>new Promise((resolve,reject)=>{
-    if (window.supabase && typeof window.supabase.createClient==='function') return resolve();
-    const existing=[...document.scripts].find(s=>/supabase(\.min)?\.js/.test(s.src));
-    if (existing){
-      existing.addEventListener('load',()=>resolve());
-      existing.addEventListener('error',()=>reject(new Error('Supabase SDK 載入失敗')));
-      // if already loaded but window not set yet, poll briefly
-      let t=0; const iv=setInterval(()=>{t+=100; if(window.supabase&&window.supabase.createClient){clearInterval(iv);resolve();} if(t>5000){clearInterval(iv);reject(new Error('Supabase SDK 載入逾時'));}},100);
-      return;
-    }
-    const s=document.createElement('script');
-    s.src='https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js';
-    s.async=true;
-    s.onload=()=>resolve();
-    s.onerror=()=>reject(new Error('Supabase SDK 載入失敗'));
-    document.head.appendChild(s);
-  });
-
-  const el=(tag,attrs={},children=[])=>{
-    const n=document.createElement(tag);
-    for(const [k,v] of Object.entries(attrs)){
-      if(k==='class') n.className=v;
-      else if(k==='style') n.setAttribute('style',v);
-      else if(k.startsWith('on') && typeof v==='function') n.addEventListener(k.slice(2),v);
-      else n.setAttribute(k,v);
-    }
-    for(const c of children){
-      if(c==null) continue;
-      n.appendChild(typeof c==='string'?document.createTextNode(c):c);
-    }
-    return n;
+  const state = {
+    sdkReady: false,
+    client: null,
+    sdkLoading: false,
   };
 
-  const safeJson=(obj)=>{
-    try{return JSON.stringify(obj,null,2);}catch{return String(obj);}
-  };
+  function el(id){ return document.getElementById(id); }
+  function setStatus(msg){ const box = el("sb_status"); if(box) box.textContent = msg || ""; }
+  function safeJson(x){
+    try { return typeof x === "string" ? x : JSON.stringify(x, null, 2); }
+    catch { return String(x); }
+  }
 
-  const mount=async()=>{
-    // Avoid double-mount
-    if(document.getElementById('sb_test_panel_root')) return;
-
-    const root=el('div',{id:'sb_test_panel_root',style:'position:fixed;right:12px;bottom:12px;z-index:99999;font-family:-apple-system,BlinkMacSystemFont,Segoe UI,Microsoft JhengHei,sans-serif;'});
-
-    const css=el('style',{},[`
-      #sb_test_panel_root .sb-card{width:min(420px,calc(100vw - 24px));background:rgba(17,24,39,.92);color:#fff;border:1px solid rgba(255,255,255,.12);border-radius:18px;box-shadow:0 12px 40px rgba(0,0,0,.35);overflow:hidden;}
-      #sb_test_panel_root .sb-h{display:flex;align-items:center;justify-content:space-between;padding:12px 12px 10px 14px;background:rgba(0,0,0,.18);}
-      #sb_test_panel_root .sb-title{font-weight:800;letter-spacing:.3px;}
-      #sb_test_panel_root .sb-actions{display:flex;gap:8px;}
-      #sb_test_panel_root button{appearance:none;border:0;cursor:pointer;border-radius:12px;padding:10px 12px;font-weight:700;}
-      #sb_test_panel_root .sb-btn{background:rgba(255,255,255,.12);color:#fff;}
-      #sb_test_panel_root .sb-btn2{background:#e5e7eb;color:#111827;}
-      #sb_test_panel_root .sb-body{padding:12px 14px 14px;}
-      #sb_test_panel_root .sb-row{display:flex;gap:10px;}
-      #sb_test_panel_root .sb-row > *{flex:1;}
-      #sb_test_panel_root input{width:100%;box-sizing:border-box;border-radius:12px;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.08);color:#fff;padding:12px 12px;outline:none;}
-      #sb_test_panel_root input::placeholder{color:rgba(255,255,255,.55);}
-      #sb_test_panel_root .sb-help{opacity:.85;font-size:13px;line-height:1.35;margin:8px 0 10px;}
-      #sb_test_panel_root .sb-log{margin-top:10px;background:rgba(0,0,0,.35);border:1px solid rgba(255,255,255,.10);border-radius:14px;padding:10px;font-size:12px;max-height:170px;overflow:auto;white-space:pre-wrap;}
-      #sb_test_panel_root .sb-mini{width:120px;background:rgba(17,24,39,.92);color:#fff;border:1px solid rgba(255,255,255,.12);border-radius:999px;padding:10px 12px;display:flex;align-items:center;justify-content:space-between;gap:10px;}
-      #sb_test_panel_root .sb-mini button{padding:8px 10px;border-radius:999px;}
-    `]);
-
-    const state={ client:null };
-
-    const logBox=el('div',{class:'sb-log',id:'sb_log'},['尚未連線。']);
-    const log=(msg)=>{ logBox.textContent = (typeof msg==='string')?msg:safeJson(msg); };
-
-    const urlInput=el('input',{id:'sb_url',placeholder:'Project URL（https://xxxx.supabase.co）',autocomplete:'off'});
-    const keyInput=el('input',{id:'sb_key',placeholder:'anon public key（很長那串）',autocomplete:'off'});
-    urlInput.value=localStorage.getItem(LS_URL)||'';
-    keyInput.value=localStorage.getItem(LS_KEY)||'';
-
-    const emailInput=el('input',{id:'sb_email',placeholder:'Email（完整信箱）',autocomplete:'email'});
-    const passInput=el('input',{id:'sb_password',placeholder:'Password',type:'password',autocomplete:'current-password'});
-
-    const saveBtn=el('button',{class:'sb-btn2',onclick:()=>{
-      const u=urlInput.value.trim();
-      const k=keyInput.value.trim();
-      localStorage.setItem(LS_URL,u);
-      localStorage.setItem(LS_KEY,k);
-      log('已儲存 URL / Key。下一步請按「建立 Client」。');
-    }},['儲存 URL/Key']);
-
-    const createBtn=el('button',{class:'sb-btn2',onclick:async()=>{
-      const u=localStorage.getItem(LS_URL)||urlInput.value.trim();
-      const k=localStorage.getItem(LS_KEY)||keyInput.value.trim();
-      if(!u || !k){
-        log('尚未設定 Project URL / anon key。\n\n做法：到 Supabase 後台 → Project Settings → API → 複製 Project URL 和 anon public key。');
+  function ensureSdk() {
+    return new Promise((resolve, reject) => {
+      if (window.supabase && typeof window.supabase.createClient === "function") {
+        state.sdkReady = true;
+        return resolve();
+      }
+      if (state.sdkLoading) {
+        const t = setInterval(() => {
+          if (window.supabase && typeof window.supabase.createClient === "function") {
+            clearInterval(t);
+            state.sdkReady = true;
+            resolve();
+          }
+        }, 50);
+        setTimeout(() => { clearInterval(t); reject(new Error("Supabase SDK load timeout")); }, 15000);
         return;
       }
-      try{
-        await ensureSupabaseSDK();
-        state.client = window.supabase.createClient(u,k);
-        log('Client 建立成功。你現在可以：註冊 / 登入 / 忘記密碼。');
-      }catch(e){
-        log('建立 Client 失敗：\n'+(e?.message||String(e)));
+      state.sdkLoading = true;
+      const s = document.createElement("script");
+      s.src = "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js";
+      s.async = true;
+      s.onload = () => { state.sdkReady = true; state.sdkLoading = false; resolve(); };
+      s.onerror = () => { state.sdkLoading = false; reject(new Error("Supabase SDK 載入失敗（網路或 CDN 阻擋）")); };
+      document.head.appendChild(s);
+    });
+  }
+
+  function buildClient() {
+    const url = (el("sb_url").value || "").trim();
+    const key = (el("sb_key").value || "").trim();
+
+    if (!url || !key) throw new Error("請先貼上 Project URL 與 anon public key。");
+    if (!/^https:\/\/.+\.supabase\.co\/?$/.test(url)) {
+      throw new Error("Project URL 格式看起來不對（應類似 https://xxxx.supabase.co）。");
+    }
+
+    localStorage.setItem(LS_URL, url);
+    localStorage.setItem(LS_KEY, key);
+
+    state.client = window.supabase.createClient(url.replace(/\/$/, ""), key);
+    setStatus("已建立 Supabase client，可註冊 / 登入 / 忘記密碼。\n\n下一步：輸入 Email/Password 後按『登入』或『註冊』。");
+    return state.client;
+  }
+
+  async function onCreateClient() {
+    try {
+      setStatus("正在載入 Supabase SDK…");
+      await ensureSdk();
+      buildClient();
+    } catch (e) {
+      setStatus("建立 client 失敗：\n" + (e?.message || e));
+    }
+  }
+
+  function requireClient() {
+    if (!state.client) throw new Error("尚未建立 Supabase client。請先按『建立 Client』。");
+    return state.client;
+  }
+
+  async function signUp() {
+    try {
+      const client = requireClient();
+      const email = (el("sb_email").value || "").trim();
+      const password = (el("sb_password").value || "").trim();
+      if (!email || !password) throw new Error("請輸入 Email 與密碼。");
+      setStatus("註冊中…");
+      const { data, error } = await client.auth.signUp({ email, password });
+      if (error) throw error;
+
+      const confirmed = !!(data?.user?.email_confirmed_at);
+      setStatus(confirmed
+        ? "註冊成功，Email 已確認。你可以直接登入。"
+        : "註冊成功。若 Supabase 開啟『Confirm email』，請到信箱點確認信後再登入。\n（你剛剛看到的 Email not confirmed 就是這個原因）");
+    } catch (e) {
+      setStatus("註冊失敗：\n" + (e?.message || safeJson(e)));
+    }
+  }
+
+  async function signIn() {
+    try {
+      const client = requireClient();
+      const email = (el("sb_email").value || "").trim();
+      const password = (el("sb_password").value || "").trim();
+      if (!email || !password) throw new Error("請輸入 Email 與密碼。");
+      setStatus("登入中…");
+      const { data, error } = await client.auth.signInWithPassword({ email, password });
+      if (error) throw error;
+
+      setStatus("登入成功。\n使用者：" + (data.user?.email || "") + "\nUID：" + (data.user?.id || ""));
+      window.dispatchEvent(new CustomEvent("sb:login", { detail: data }));
+    } catch (e) {
+      setStatus("登入失敗：\n" + (e?.message || safeJson(e)));
+    }
+  }
+
+  async function signOut() {
+    try {
+      const client = requireClient();
+      setStatus("登出中…");
+      const { error } = await client.auth.signOut();
+      if (error) throw error;
+      setStatus("已登出。\n（若要換帳號，直接輸入新的 Email/Password 再登入即可）");
+      window.dispatchEvent(new CustomEvent("sb:logout"));
+    } catch (e) {
+      setStatus("登出失敗：\n" + (e?.message || safeJson(e)));
+    }
+  }
+
+  async function whoAmI() {
+    try {
+      const client = requireClient();
+      const { data, error } = await client.auth.getUser();
+      if (error) throw error;
+      setStatus("目前登入使用者：\n" + safeJson({ email: data.user?.email, id: data.user?.id }));
+    } catch (e) {
+      setStatus("查詢失敗：\n" + (e?.message || safeJson(e)));
+    }
+  }
+
+  async function resetPassword() {
+    try {
+      const client = requireClient();
+      const email = (el("sb_email").value || "").trim();
+      if (!email) throw new Error("請先輸入 Email。");
+      setStatus("正在寄送重設密碼信…");
+      const redirectTo = location.href.split("#")[0];
+      const { error } = await client.auth.resetPasswordForEmail(email, { redirectTo });
+      if (error) throw error;
+      setStatus("已寄出重設密碼信。\n步驟：到信箱點連結 → 會回到此頁 → 輸入新密碼 → 按『更新密碼』。");
+    } catch (e) {
+      setStatus("寄信失敗：\n" + (e?.message || safeJson(e)));
+    }
+  }
+
+  async function handleRecoveryFromUrl() {
+    try {
+      if (!location.hash) return;
+      const hash = new URLSearchParams(location.hash.replace(/^#/, ""));
+      const type = hash.get("type");
+      if (type !== "recovery") return;
+
+      await ensureSdk();
+      const savedUrl = localStorage.getItem(LS_URL) || "";
+      const savedKey = localStorage.getItem(LS_KEY) || "";
+      if (savedUrl && savedKey && !state.client) {
+        state.client = window.supabase.createClient(savedUrl.replace(/\/$/, ""), savedKey);
       }
-    }},['建立 Client']);
 
-    const requireClient=()=>{
-      if(!state.client){
-        log('尚未建立 Client。請先按「建立 Client」。');
-        return false;
-      }
-      return true;
-    };
+      setStatus("偵測到重設密碼流程：\n請輸入『新密碼』並按『更新密碼』。");
+      const area = el("sb_recovery_area");
+      if (area) area.style.display = "block";
+      openPanel(true);
+    } catch (e) {
+      setStatus("重設密碼流程初始化失敗：\n" + (e?.message || safeJson(e)));
+    }
+  }
 
-    const signUpBtn=el('button',{class:'sb-btn2',onclick:async()=>{
-      if(!requireClient()) return;
-      const email=emailInput.value.trim();
-      const password=passInput.value;
-      if(!email || !password){log('請先輸入 Email 與 Password。');return;}
-      const {data,error}=await state.client.auth.signUp({email,password});
-      if(error){log({ok:false,action:'signUp',error});return;}
-      // If email confirmation is on, user may be null and session null
-      log({ok:true,action:'signUp',data,tip:'若後台開啟 Confirm email，請到信箱點確認連結後再登入。'});
-    }},['註冊']);
+  async function updatePassword() {
+    try {
+      const client = requireClient();
+      const newPassword = (el("sb_new_password").value || "").trim();
+      if (!newPassword) throw new Error("請輸入新密碼。");
+      setStatus("更新密碼中…");
+      const { error } = await client.auth.updateUser({ password: newPassword });
+      if (error) throw error;
+      setStatus("密碼已更新。\n你可以用新密碼重新登入。\n（系統會自動清掉網址上的 #recovery 參數）");
+      history.replaceState(null, "", location.href.split("#")[0]);
+      const area = el("sb_recovery_area");
+      if (area) area.style.display = "none";
+    } catch (e) {
+      setStatus("更新失敗：\n" + (e?.message || safeJson(e)));
+    }
+  }
 
-    const signInBtn=el('button',{class:'sb-btn2',onclick:async()=>{
-      if(!requireClient()) return;
-      const email=emailInput.value.trim();
-      const password=passInput.value;
-      if(!email || !password){log('請先輸入 Email 與 Password。');return;}
-      const {data,error}=await state.client.auth.signInWithPassword({email,password});
-      if(error){log({ok:false,action:'signIn',error});return;}
-      log({ok:true,action:'signIn',user:data.user,session:!!data.session});
-      // Hook point for your app
-      window.hmAuthUser = data.user;
-      window.dispatchEvent(new CustomEvent('hm:auth', {detail:{user:data.user}}));
-    }},['登入']);
+  function openPanel(forceOpen=false) {
+    const panel = el("sb_panel");
+    const mask = el("sb_mask");
+    if (!panel || !mask) return;
+    const nowOpen = forceOpen ? true : (panel.getAttribute("data-open") !== "1");
+    panel.setAttribute("data-open", nowOpen ? "1" : "0");
+    mask.style.display = nowOpen ? "block" : "none";
+    panel.style.display = nowOpen ? "block" : "none";
+  }
 
-    const signOutBtn=el('button',{class:'sb-btn2',onclick:async()=>{
-      if(!requireClient()) return;
-      const {error}=await state.client.auth.signOut();
-      if(error){log({ok:false,action:'signOut',error});return;}
-      log('已登出。');
-      window.hmAuthUser = null;
-      window.dispatchEvent(new CustomEvent('hm:auth', {detail:{user:null}}));
-    }},['登出']);
+  function injectUI() {
+    if (el("sb_panel")) return;
 
-    const whoBtn=el('button',{class:'sb-btn2',onclick:async()=>{
-      if(!requireClient()) return;
-      const {data,error}=await state.client.auth.getUser();
-      if(error){log({ok:false,action:'getUser',error});return;}
-      log({ok:true,action:'getUser',user:data.user});
-    }},['我現在是誰']);
+    const savedUrl = localStorage.getItem(LS_URL) || "";
+    const savedKey = localStorage.getItem(LS_KEY) || "";
 
-    const resetBtn=el('button',{class:'sb-btn2',onclick:async()=>{
-      if(!requireClient()) return;
-      const email=emailInput.value.trim();
-      if(!email){log('請先輸入 Email（你要收重設信的信箱）。');return;}
-      // Use current origin as redirect; user should have a reset handler page in real app
-      const redirectTo=location.origin + location.pathname;
-      const {data,error}=await state.client.auth.resetPasswordForEmail(email,{redirectTo});
-      if(error){log({ok:false,action:'resetPasswordForEmail',error});return;}
-      log({ok:true,action:'resetPasswordForEmail',data,tip:'已寄出重設密碼信。到信箱點連結後，回到本頁會帶 token（後續可再做重設 UI）。'});
-    }},['忘記密碼']);
+    const html = `
+<style>
+  #sb_fab{position:fixed;right:12px;bottom:12px;z-index:99999;width:44px;height:44px;border-radius:12px;border:0;background:#111827;color:#fff;font-weight:700;box-shadow:0 8px 20px rgba(0,0,0,.25);cursor:pointer;}
+  #sb_mask{position:fixed;inset:0;z-index:99998;background:rgba(0,0,0,.35);display:none;}
+  #sb_panel{position:fixed;right:12px;bottom:64px;z-index:99999;width:min(420px,calc(100vw - 24px));max-height:min(80vh,680px);overflow:auto;background:#0b0f19;color:#e5e7eb;border:1px solid rgba(255,255,255,.12);border-radius:16px;box-shadow:0 12px 30px rgba(0,0,0,.35);display:none;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Microsoft JhengHei",sans-serif;}
+  #sb_panel *{box-sizing:border-box;}
+  .sb_hd{display:flex;align-items:center;justify-content:space-between;padding:12px 12px 8px;border-bottom:1px solid rgba(255,255,255,.08)}
+  .sb_title{font-weight:800}
+  .sb_btn{border:1px solid rgba(255,255,255,.16);background:#111827;color:#e5e7eb;border-radius:10px;padding:8px 10px;cursor:pointer}
+  .sb_body{padding:12px}
+  .sb_label{font-size:12px;opacity:.85;margin:10px 0 6px}
+  .sb_in{width:100%;padding:10px 12px;border-radius:12px;border:1px solid rgba(255,255,255,.12);background:#0f172a;color:#e5e7eb;outline:none}
+  .sb_row{display:flex;gap:10px;margin-top:10px}
+  .sb_row .sb_btn{flex:1}
+  #sb_status{white-space:pre-wrap;font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace;background:#020617;border:1px solid rgba(255,255,255,.10);border-radius:12px;padding:10px;margin-top:12px;font-size:12px;min-height:56px}
+  #sb_recovery_area{display:none;margin-top:12px;padding-top:10px;border-top:1px dashed rgba(255,255,255,.16)}
+</style>
 
-    // Panel UI
-    const close=()=>{root.remove();};
+<div id="sb_mask"></div>
+<button id="sb_fab" type="button" title="Supabase 面板">SB</button>
 
-    const setMin=(v)=>{localStorage.setItem(LS_MIN,v?'1':'0'); render();};
+<div id="sb_panel" data-open="0" role="dialog" aria-modal="true">
+  <div class="sb_hd">
+    <div class="sb_title">Supabase 測試面板</div>
+    <div style="display:flex;gap:8px;">
+      <button class="sb_btn" id="sb_close" type="button">關閉</button>
+    </div>
+  </div>
+  <div class="sb_body">
+    <div style="font-size:12px;opacity:.85;line-height:1.5">
+      1) 貼上 <b>Project URL</b> 與 <b>anon public key</b> → 2) 按『建立 Client』 → 3) 註冊/登入/忘記密碼。<br/>
+      提示：不要用 <b>sb_secret</b> 開頭的 key。
+    </div>
 
-    const fullCard=()=>{
-      return el('div',{class:'sb-card',role:'dialog','aria-label':'Supabase 測試面板'},[
-        el('div',{class:'sb-h'},[
-          el('div',{class:'sb-title'},['Supabase 測試面板（測試用）']),
-          el('div',{class:'sb-actions'},[
-            el('button',{class:'sb-btn',onclick:()=>setMin(true)},['縮小']),
-            el('button',{class:'sb-btn',onclick:close},['關閉'])
-          ])
-        ]),
-        el('div',{class:'sb-body'},[
-          el('div',{class:'sb-help'},[
-            'Step 1：貼上 Project URL 與 anon public key → 按「儲存」→ 按「建立 Client」。\n',
-            '提示：不要用 sb_secret_ 開頭那種 Secret Key。'
-          ]),
-          urlInput,
-          el('div',{style:'height:10px'}),
-          keyInput,
-          el('div',{style:'height:10px'}),
-          el('div',{class:'sb-row'},[saveBtn,createBtn]),
-          el('div',{style:'height:14px'}),
-          emailInput,
-          el('div',{style:'height:10px'}),
-          passInput,
-          el('div',{style:'height:10px'}),
-          el('div',{class:'sb-row'},[signUpBtn,signInBtn]),
-          el('div',{style:'height:10px'}),
-          el('div',{class:'sb-row'},[signOutBtn,whoBtn]),
-          el('div',{style:'height:10px'}),
-          resetBtn,
-          logBox
-        ])
-      ]);
-    };
+    <div class="sb_label">Project URL</div>
+    <input id="sb_url" class="sb_in" placeholder="https://xxxx.supabase.co" value="${savedUrl.replace(/"/g,'&quot;')}"/>
 
-    const mini=()=>{
-      return el('div',{class:'sb-mini'},[
-        el('div',{style:'font-weight:800'},['Supabase']),
-        el('button',{class:'sb-btn',onclick:()=>setMin(false)},['展開'])
-      ]);
-    };
+    <div class="sb_label">anon public key</div>
+    <textarea id="sb_key" class="sb_in" rows="3" placeholder="eyJhbGci...">${savedKey.replace(/</g,'&lt;')}</textarea>
 
-    const render=()=>{
-      root.innerHTML='';
-      root.appendChild(css);
-      const isMin=localStorage.getItem(LS_MIN)==='1';
-      root.appendChild(isMin?mini():fullCard());
-    };
+    <div class="sb_row">
+      <button class="sb_btn" id="sb_create" type="button">建立 Client</button>
+    </div>
 
-    render();
-    document.body.appendChild(root);
+    <div class="sb_label">Email</div>
+    <input id="sb_email" class="sb_in" placeholder="Email" autocomplete="email"/>
 
-    // Best-effort: load SDK early but do not fail the app
-    ensureSupabaseSDK().then(()=>{
-      // no auto-create; user presses create
-    }).catch(()=>{});
-  };
+    <div class="sb_label">Password</div>
+    <input id="sb_password" class="sb_in" placeholder="Password" type="password" autocomplete="current-password"/>
 
-  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',mount);
-  else mount();
+    <div class="sb_row">
+      <button class="sb_btn" id="sb_signup" type="button">註冊</button>
+      <button class="sb_btn" id="sb_signin" type="button">登入</button>
+    </div>
+
+    <div class="sb_row">
+      <button class="sb_btn" id="sb_reset" type="button">忘記密碼</button>
+      <button class="sb_btn" id="sb_who" type="button">我現在是誰</button>
+    </div>
+
+    <div class="sb_row">
+      <button class="sb_btn" id="sb_signout" type="button">登出</button>
+    </div>
+
+    <div id="sb_recovery_area">
+      <div class="sb_label">新密碼</div>
+      <input id="sb_new_password" class="sb_in" type="password" placeholder="New password" autocomplete="new-password"/>
+      <div class="sb_row">
+        <button class="sb_btn" id="sb_update_pw" type="button">更新密碼</button>
+      </div>
+    </div>
+
+    <div id="sb_status"></div>
+  </div>
+</div>
+`;
+
+    // IMPORTANT: do not touch existing DOM via innerHTML
+    document.body.insertAdjacentHTML("beforeend", html);
+
+    el("sb_fab").addEventListener("click", () => openPanel(false));
+    el("sb_close").addEventListener("click", () => openPanel(false));
+    el("sb_mask").addEventListener("click", () => openPanel(false));
+
+    el("sb_create").addEventListener("click", onCreateClient);
+    el("sb_signup").addEventListener("click", signUp);
+    el("sb_signin").addEventListener("click", signIn);
+    el("sb_signout").addEventListener("click", signOut);
+    el("sb_who").addEventListener("click", whoAmI);
+    el("sb_reset").addEventListener("click", resetPassword);
+    el("sb_update_pw").addEventListener("click", updatePassword);
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", injectUI, { once: true });
+  } else {
+    injectUI();
+  }
+
+  handleRecoveryFromUrl();
 })();
