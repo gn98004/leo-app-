@@ -1,7 +1,8 @@
-/* Supabase Test Panel Loader (Safe, No hard-coded keys)
+/* Supabase Test Panel Loader (Improved UX)
    - Stores URL/Key in localStorage (SB_URL, SB_ANON_KEY)
    - Dynamically loads Supabase UMD SDK if missing
-   - Provides Signup / Signin / Signout / WhoAmI
+   - Signup / Signin / Signout / WhoAmI
+   - After login: auto-minimize panel + show login badge
 */
 (function () {
   'use strict';
@@ -14,10 +15,21 @@
 
   function $(id) { return document.getElementById(id); }
 
-  function log(msg) {
+  function safeText(v) {
+    if (v == null) return '';
+    return String(v);
+  }
+
+  function log(msg, details) {
     try {
       var el = $('sb_log');
       if (!el) return;
+
+      if (details !== undefined) {
+        el.textContent = safeText(msg) + '\n\n' + JSON.stringify(details, null, 2);
+        return;
+      }
+
       if (typeof msg === 'string') el.textContent = msg;
       else el.textContent = JSON.stringify(msg, null, 2);
     } catch (e) { /* ignore */ }
@@ -42,9 +54,37 @@
       '#sb_panel .row > *{flex:1;}',
       '#sb_panel .mini{position:fixed;right:12px;bottom:12px;z-index:999999;display:none;background:#0b0b0b;color:#fff;border-radius:999px;padding:10px 12px;font-weight:800;box-shadow:0 12px 35px rgba(0,0,0,.35);}',
       '#sb_panel pre{margin:0;padding:10px;border-radius:10px;background:rgba(255,255,255,.06);max-height:180px;overflow:auto;font-size:12px;white-space:pre-wrap;word-break:break-word;}',
-      '#sb_hint{font-size:12px;opacity:.9;line-height:1.35;}'
+      '#sb_hint{font-size:12px;opacity:.9;line-height:1.35;}',
+
+      /* Login badge (top-right) */
+      '#sb_badge{position:fixed;right:12px;top:12px;z-index:999998;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Microsoft JhengHei",sans-serif;}',
+      '#sb_badge .pill{display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:999px;background:rgba(0,0,0,.65);backdrop-filter:blur(6px);color:#fff;box-shadow:0 10px 25px rgba(0,0,0,.25);max-width:92vw;}',
+      '#sb_badge .dot{width:10px;height:10px;border-radius:50%;background:#9ca3af;}',
+      '#sb_badge .dot.on{background:#22c55e;}',
+      '#sb_badge .txt{font-size:12px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:72vw;}'
     ].join('\n');
     document.head.appendChild(style);
+  }
+
+  function ensureBadge() {
+    if (document.getElementById('sb_badge')) return;
+    var badge = document.createElement('div');
+    badge.id = 'sb_badge';
+    badge.innerHTML = ''
+      + '<div class="pill">'
+      + '  <div id="sb_badge_dot" class="dot"></div>'
+      + '  <div id="sb_badge_txt" class="txt">尚未登入</div>'
+      + '</div>';
+    document.body.appendChild(badge);
+  }
+
+  function setBadge(loggedIn, email) {
+    ensureBadge();
+    var dot = $('sb_badge_dot');
+    var txt = $('sb_badge_txt');
+    if (!dot || !txt) return;
+    dot.className = 'dot' + (loggedIn ? ' on' : '');
+    txt.textContent = loggedIn ? ('已登入：' + (email || '')) : '尚未登入';
   }
 
   function ensurePanel() {
@@ -140,9 +180,7 @@
   function loadSdk() {
     return new Promise(function (resolve, reject) {
       if (window.supabase && window.supabase.createClient) return resolve();
-      // avoid duplicate script
       if (document.getElementById('sb_sdk')) {
-        // wait a bit
         var t0 = Date.now();
         var timer = setInterval(function () {
           if (window.supabase && window.supabase.createClient) { clearInterval(timer); resolve(); }
@@ -187,14 +225,20 @@
         });
         setButtonsEnabled(true);
         log('supabase client 已建立。現在可以按「註冊/登入」。');
+
+        // Immediately refresh status
+        refreshAuthStatus();
+
       } catch (e) {
         client = null;
         setButtonsEnabled(false);
+        setBadge(false, '');
         log('createClient 失敗：\n' + (e && e.message ? e.message : String(e)));
       }
     }).catch(function (e) {
       client = null;
       setButtonsEnabled(false);
+      setBadge(false, '');
       log(String(e && e.message ? e.message : e));
     });
   }
@@ -205,56 +249,124 @@
     return { email: email, password: password };
   }
 
+  function minimizePanel() {
+    var panel = $('sb_panel');
+    var mini = $('sb_mini');
+    if (!panel || !mini) return;
+    panel.style.display = 'none';
+    mini.style.display = 'block';
+  }
+
+  function refreshAuthStatus() {
+    if (!client) return;
+    client.auth.getSession().then(function (res) {
+      if (res.error) {
+        setBadge(false, '');
+        return;
+      }
+      var session = res.data && res.data.session;
+      if (session && session.user) {
+        setBadge(true, session.user.email || '');
+      } else {
+        setBadge(false, '');
+      }
+    }).catch(function () {
+      setBadge(false, '');
+    });
+  }
+
   function signUp() {
     if (!client) return log('尚未建立 supabase client（先按「建立 Client」）。');
     var v = getEmailPw();
     if (!v.email || !v.password) return log('請輸入 Email 與 Password。');
+
     log('註冊中…');
     client.auth.signUp({ email: v.email, password: v.password }).then(function (res) {
-      if (res.error) return log(res.error);
+      if (res.error) {
+        // Common message
+        if (res.error.message === 'User already registered') {
+          return log('此 Email 已註冊過。請直接按「登入」。', res.error);
+        }
+        return log('註冊失敗：' + res.error.message, res.error);
+      }
+
       // If email confirmation is required, session may be null
       if (res.data && res.data.session == null) {
-        log('註冊成功，但需要到信箱點確認連結後才能登入（或你可先在 Supabase 關閉 Email Confirm）。');
+        setBadge(false, '');
+        log('註冊成功，但此專案需要 Email 驗證：請到信箱點確認連結後再登入。（或到 Supabase 關閉 Confirm email）');
       } else {
-        log({ ok: true, signUp: res.data });
+        // Auto logged in after sign up
+        var email = res.data && res.data.user && res.data.user.email ? res.data.user.email : v.email;
+        setBadge(true, email);
+        log('註冊成功，已登入：' + email);
+        minimizePanel();
       }
-    }).catch(function (e) { log('註冊流程出錯：\n' + e); });
+    }).catch(function (e) {
+      log('註冊流程出錯：\n' + e);
+    });
   }
 
   function signIn() {
     if (!client) return log('尚未建立 supabase client（先按「建立 Client」）。');
     var v = getEmailPw();
     if (!v.email || !v.password) return log('請輸入 Email 與 Password。');
+
     log('登入中…');
     client.auth.signInWithPassword({ email: v.email, password: v.password }).then(function (res) {
-      if (res.error) return log(res.error);
-      log({ ok: true, signIn: res.data });
-    }).catch(function (e) { log('登入流程出錯：\n' + e); });
+      if (res.error) {
+        if (res.error.message === 'Email not confirmed') {
+          return log('此帳號尚未完成 Email 驗證：請先去信箱點確認連結，或到 Supabase 關閉 Confirm email。', res.error);
+        }
+        if (res.error.message === 'Invalid login credentials') {
+          return log('登入失敗：Email 或密碼不正確。', res.error);
+        }
+        return log('登入失敗：' + res.error.message, res.error);
+      }
+
+      var email = res.data && res.data.user && res.data.user.email ? res.data.user.email : v.email;
+      setBadge(true, email);
+      log('登入成功：' + email);
+      minimizePanel();
+    }).catch(function (e) {
+      log('登入流程出錯：\n' + e);
+    });
   }
 
   function signOut() {
     if (!client) return log('尚未建立 supabase client（先按「建立 Client」）。');
     log('登出中…');
     client.auth.signOut().then(function (res) {
-      if (res.error) return log(res.error);
+      if (res.error) return log('登出失敗：' + res.error.message, res.error);
+      setBadge(false, '');
       log('已登出');
-    }).catch(function (e) { log('登出流程出錯：\n' + e); });
+    }).catch(function (e) {
+      log('登出流程出錯：\n' + e);
+    });
   }
 
   function whoAmI() {
     if (!client) return log('尚未建立 supabase client（先按「建立 Client」）。');
     Promise.all([client.auth.getUser(), client.auth.getSession()]).then(function (arr) {
       var userRes = arr[0], sessRes = arr[1];
-      log({ user: userRes.data, userError: userRes.error, session: sessRes.data, sessionError: sessRes.error });
-    }).catch(function (e) { log('讀取狀態出錯：\n' + e); });
+      var u = userRes && userRes.data && userRes.data.user;
+      if (u && u.email) setBadge(true, u.email);
+      else setBadge(false, '');
+      log('WhoAmI（僅供除錯查看）', { user: userRes.data, userError: userRes.error, session: sessRes.data, sessionError: sessRes.error });
+    }).catch(function (e) {
+      log('讀取狀態出錯：\n' + e);
+    });
   }
 
   function boot() {
     ensureStyle();
+    ensureBadge();
     ensurePanel();
+
+    // default badge
+    setBadge(false, '');
+
     // auto init if url/key exist
     if ((localStorage.getItem(LS_URL) || '').trim() && (localStorage.getItem(LS_KEY) || '').trim()) {
-      // don't auto-init immediately; wait for DOM painted
       setTimeout(function () { initClient(); }, 50);
     }
   }
