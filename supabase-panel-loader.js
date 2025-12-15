@@ -12,6 +12,8 @@
   var SDK_URL = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.3/dist/umd/supabase.js';
 
   var client = null;
+  var badgeTimer = null;
+
 
   function $(id) { return document.getElementById(id); }
 
@@ -57,11 +59,13 @@
       '#sb_hint{font-size:12px;opacity:.9;line-height:1.35;}',
 
       /* Login badge (top-right) */
-      '#sb_badge{position:fixed;right:12px;top:12px;z-index:999998;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Microsoft JhengHei",sans-serif;}',
+      '#sb_badge{position:fixed;right:12px;top:12px;z-index:999998;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Microsoft JhengHei",sans-serif;transition:opacity .25s ease;opacity:1;}',
       '#sb_badge .pill{display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:999px;background:rgba(0,0,0,.65);backdrop-filter:blur(6px);color:#fff;box-shadow:0 10px 25px rgba(0,0,0,.25);max-width:92vw;}',
       '#sb_badge .dot{width:10px;height:10px;border-radius:50%;background:#9ca3af;}',
       '#sb_badge .dot.on{background:#22c55e;}',
       '#sb_badge .txt{font-size:12px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:72vw;}'
+      '#sb_badge.sb_hide{opacity:0;pointer-events:none;}',
+
     ].join('\n');
     document.head.appendChild(style);
   }
