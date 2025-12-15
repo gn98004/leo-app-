@@ -12,8 +12,6 @@
   var SDK_URL = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.3/dist/umd/supabase.js';
 
   var client = null;
-  var badgeTimer = null;
-
 
   function $(id) { return document.getElementById(id); }
 
@@ -59,13 +57,11 @@
       '#sb_hint{font-size:12px;opacity:.9;line-height:1.35;}',
 
       /* Login badge (top-right) */
-      '#sb_badge{position:fixed;right:12px;top:12px;z-index:999998;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Microsoft JhengHei",sans-serif;transition:opacity .25s ease;opacity:1;}',
+      '#sb_badge{position:fixed;right:12px;top:12px;z-index:999998;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Microsoft JhengHei",sans-serif;}',
       '#sb_badge .pill{display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:999px;background:rgba(0,0,0,.65);backdrop-filter:blur(6px);color:#fff;box-shadow:0 10px 25px rgba(0,0,0,.25);max-width:92vw;}',
       '#sb_badge .dot{width:10px;height:10px;border-radius:50%;background:#9ca3af;}',
       '#sb_badge .dot.on{background:#22c55e;}',
       '#sb_badge .txt{font-size:12px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:72vw;}'
-      '#sb_badge.sb_hide{opacity:0;pointer-events:none;}',
-
     ].join('\n');
     document.head.appendChild(style);
   }
@@ -82,28 +78,14 @@
     document.body.appendChild(badge);
   }
 
- function setBadge(loggedIn, email) {
-  ensureBadge();
-  var badge = $('sb_badge');
-  var dot = $('sb_badge_dot');
-  var txt = $('sb_badge_txt');
-  if (!badge || !dot || !txt) return;
-
-  // 先顯示（移除隱藏）
-  badge.classList.remove('sb_hide');
-
-  dot.className = 'dot' + (loggedIn ? ' on' : '');
-  txt.textContent = loggedIn ? ('已登入：' + (email || '')) : '尚未登入';
-
-  // 清掉上一次計時
-  if (badgeTimer) clearTimeout(badgeTimer);
-
-  // 3 秒後自動隱藏（你要 5 秒就把 3000 改 5000）
-  badgeTimer = setTimeout(function () {
-    badge.classList.add('sb_hide');
-  }, 3000);
-}
-
+  function setBadge(loggedIn, email) {
+    ensureBadge();
+    var dot = $('sb_badge_dot');
+    var txt = $('sb_badge_txt');
+    if (!dot || !txt) return;
+    dot.className = 'dot' + (loggedIn ? ' on' : '');
+    txt.textContent = loggedIn ? ('已登入：' + (email || '')) : '尚未登入';
+  }
 
   function ensurePanel() {
     if (document.getElementById('sb_panel')) return;
@@ -381,9 +363,7 @@
     ensurePanel();
 
     // default badge
-    // 預設不要彈未登入提示
-// setBadge(false, '');
-
+    setBadge(false, '');
 
     // auto init if url/key exist
     if ((localStorage.getItem(LS_URL) || '').trim() && (localStorage.getItem(LS_KEY) || '').trim()) {
