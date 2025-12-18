@@ -4760,6 +4760,141 @@ document.addEventListener("change", function (e) {
 })();
 </script>
 
+<script>
+/**
+ * Auto-hide & remove the "已登入" badge completely (including minimized green dot).
+ * Safe-guards: never remove <body>, <html>, or #app, and only targets small fixed toast-like nodes.
+ */
+(function () {
+  "use strict";
+
+  var HIDE_MS = 3000;
+
+  function isDangerContainer(el) {
+    if (!el) return true;
+    if (el === document.body || el === document.documentElement) return true;
+    if (el.id === "app") return true;
+    return false;
+  }
+
+  function looksLikeLoginBadge(el) {
+    if (!el || el.nodeType !== 1) return false;
+
+    // Must contain "已登入" at least once (your UI text)
+    var txt = (el.textContent || "").replace(/\s+/g, " ").trim();
+    if (txt.indexOf("已登入") === -1) return false;
+
+    // Must look like a small toast/badge (avoid removing large sections)
+    var r = el.getBoundingClientRect ? el.getBoundingClientRect() : null;
+    if (!r) return false;
+
+    // Typical badge size constraints (tolerant)
+    var w = r.width, h = r.height;
+    if (w <= 0 || h <= 0) return false;
+    if (w > 520 || h > 140) return false; // too big -> likely not a badge
+
+    // Usually near top-right; allow some tolerance
+    var nearTop = r.top >= -10 && r.top <= 140;
+    var nearRight = (window.innerWidth - r.right) >= -10 && (window.innerWidth - r.right) <= 140;
+    if (!nearTop && !nearRight) {
+      // Some layouts may place it slightly lower; still accept if clearly badge-like
+      // but don't be overly aggressive.
+      return false;
+    }
+
+    return true;
+  }
+
+  function findWrapper(el) {
+    // Prefer removing the smallest safe wrapper: climb until it looks like the badge container,
+    // but stop before body/html/#app.
+    var cur = el;
+    var lastGood = el;
+
+    while (cur && cur.nodeType === 1 && !isDangerContainer(cur)) {
+      lastGood = cur;
+      // If parent is much larger, stop at current.
+      var p = cur.parentElement;
+      if (!p || isDangerContainer(p)) break;
+
+      try {
+        var r = cur.getBoundingClientRect();
+        var pr = p.getBoundingClientRect();
+        if (pr.width > r.width * 2.2 || pr.height > r.height * 2.2) break;
+      } catch (e) { break; }
+
+      cur = p;
+    }
+    return lastGood;
+  }
+
+  function scheduleRemove(wrapper) {
+    if (!wrapper || wrapper.dataset.__hmAutoHideScheduled === "1") return;
+    if (isDangerContainer(wrapper)) return;
+
+    wrapper.dataset.__hmAutoHideScheduled = "1";
+
+    setTimeout(function () {
+      try {
+        if (isDangerContainer(wrapper)) return;
+        wrapper.style.display = "none";
+        wrapper.remove && wrapper.remove();
+      } catch (e) {
+        // fallback: hide only
+        try { wrapper.style.display = "none"; } catch (_) {}
+      }
+    }, HIDE_MS);
+  }
+
+  function scanOnce() {
+    // Find any nodes that contain "已登入" and look like a badge
+    var all = document.querySelectorAll("body *");
+    for (var i = 0; i < all.length; i++) {
+      var el = all[i];
+      if (looksLikeLoginBadge(el)) {
+        var wrapper = findWrapper(el);
+        scheduleRemove(wrapper);
+      }
+    }
+  }
+
+  // Watch future DOM changes (badge may be created after login)
+  var mo = new MutationObserver(function (muts) {
+    for (var i = 0; i < muts.length; i++) {
+      var m = muts[i];
+      if (!m.addedNodes) continue;
+      for (var j = 0; j < m.addedNodes.length; j++) {
+        var n = m.addedNodes[j];
+        if (!n || n.nodeType !== 1) continue;
+
+        // Direct node
+        if (looksLikeLoginBadge(n)) {
+          scheduleRemove(findWrapper(n));
+          continue;
+        }
+        // Any descendants that match
+        var cand = n.querySelectorAll ? n.querySelectorAll("*") : [];
+        for (var k = 0; k < cand.length; k++) {
+          if (looksLikeLoginBadge(cand[k])) {
+            scheduleRemove(findWrapper(cand[k]));
+          }
+        }
+      }
+    }
+  });
+
+  function boot() {
+    scanOnce();
+    mo.observe(document.body, { childList: true, subtree: true });
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", boot);
+  } else {
+    boot();
+  }
+})();
+</script>
 
 </body>
 </html>
