@@ -3844,6 +3844,11 @@
   }
 
   async function hmSyncProfileToSupabase(profile) {
+     // ====== FIX: 相容舊呼叫名稱（存檔流程用） ======
+async function hmUpsertProfileToSupabase(profile) {
+  return hmSyncProfileToSupabase(profile);
+}
+
     try {
       var cli = await hmGetSupabaseClient();
       if (!cli) {
