@@ -3910,6 +3910,10 @@
       return "";
     }
   }
+  // 相容別名：外面存檔流程呼叫的是 hmUpsertProfileToSupabase
+  async function hmUpsertProfileToSupabase(profile) {
+    return hmSyncProfileToSupabase(profile);
+  }
 
   function hmBuildSocialUrl(platform, value) {
     if (!value) return null;
