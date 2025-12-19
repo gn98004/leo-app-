@@ -4660,6 +4660,21 @@ function hmInitProfileCard() {
         }
 
         hmSaveProfileData(profileData);
+               // sync to Supabase profiles
+      try {
+        var syncRes = await hmUpsertProfileToSupabase({
+          name: profileData.name,
+          region: profileData.region,
+          height: profileData.height,
+          weight: profileData.weight,
+          avatar_url: profileData.avatarUrl || profileData.avatar_url || null
+        });
+        if (!syncRes.ok) console.warn("[profiles sync] failed:", syncRes);
+        else console.log("[profiles sync] ok:", syncRes.row);
+      } catch (err) {
+        console.warn("[profiles sync] exception:", err);
+      }
+
         if (profileModal) profileModal.style.display = "none";
 
         hmInitProfileCard();
