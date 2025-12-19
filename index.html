@@ -4515,6 +4515,72 @@ function hmInitProfileCard() {
       hmInitProfileCard();
       hmInitMyProfileHeader();
     }
+  // ---------------- Supabase (use SB_URL/SB_ANON_KEY in localStorage) ----------------
+  var HM_SB_URL_KEY = "SB_URL";
+  var HM_SB_ANON_KEY = "SB_ANON_KEY";
+  var HM_SB_SDK_URL = "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.3/dist/umd/supabase.js";
+
+  function hmLoadSupabaseSdk() {
+    return new Promise(function (resolve, reject) {
+      if (window.supabase && window.supabase.createClient) return resolve();
+      if (document.getElementById("hm_sb_sdk")) {
+        var t0 = Date.now();
+        var timer = setInterval(function () {
+          if (window.supabase && window.supabase.createClient) { clearInterval(timer); resolve(); }
+          if (Date.now() - t0 > 15000) { clearInterval(timer); reject(new Error("Supabase SDK load timeout")); }
+        }, 200);
+        return;
+      }
+      var s = document.createElement("script");
+      s.id = "hm_sb_sdk";
+      s.src = HM_SB_SDK_URL;
+      s.async = true;
+      s.onload = function () {
+        if (window.supabase && window.supabase.createClient) resolve();
+        else reject(new Error("Supabase SDK loaded but createClient missing"));
+      };
+      s.onerror = function () { reject(new Error("Supabase SDK failed to load")); };
+      document.head.appendChild(s);
+    });
+  }
+
+  async function hmEnsureSupabaseClient() {
+    if (window.hmSbClient) return window.hmSbClient;
+
+    var url = (localStorage.getItem(HM_SB_URL_KEY) || "").trim();
+    var key = (localStorage.getItem(HM_SB_ANON_KEY) || "").trim();
+    if (!url || !key) return null;
+
+    await hmLoadSupabaseSdk();
+
+    window.hmSbClient = window.supabase.createClient(url, key, {
+      auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: false }
+    });
+    return window.hmSbClient;
+  }
+
+  async function hmUpsertProfileToSupabase(profileData) {
+    var sb = await hmEnsureSupabaseClient();
+    if (!sb) return { ok: false, reason: "no-supabase-client" };
+
+    var userRes = await sb.auth.getUser();
+    var user = userRes && userRes.data ? userRes.data.user : null;
+    if (!user) return { ok: false, reason: "not-logged-in" };
+
+    var payload = {
+      id: user.id,
+      name: (profileData && profileData.name != null) ? String(profileData.name) : null,
+      region: (profileData && profileData.region != null) ? String(profileData.region) : null,
+      height: (profileData && profileData.height != null && profileData.height !== "") ? Number(profileData.height) : null,
+      weight: (profileData && profileData.weight != null && profileData.weight !== "") ? Number(profileData.weight) : null,
+      avatar_url: (profileData && profileData.avatar_url != null) ? String(profileData.avatar_url) : null
+    };
+
+    var up = await sb.from("profiles").upsert(payload, { onConflict: "id" }).select("*").single();
+    if (up.error) return { ok: false, error: up.error };
+
+    return { ok: true, row: up.data };
+  }
 
     const btnGoogle = document.getElementById("hm-login-google");
     const btnFacebook = document.getElementById("hm-login-facebook");
@@ -4531,7 +4597,7 @@ function hmInitProfileCard() {
     }
 
     if (form) {
-      form.addEventListener("submit", function (e) {
+      form.addEventListener("submit", async function (e) {
         e.preventDefault();
 
         const alreadyCompleted = hmHasCompletedProfile();
