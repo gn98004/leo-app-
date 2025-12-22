@@ -2054,8 +2054,7 @@
 </div>
 <div class="hm-form-group">
 <label for="hm-region">居住區域（可稍後再填）</label>
-<select id="hm-region" name="region" aria-label="居住縣市"><option value="">請選擇縣市</option><option value="台北市">台北市</option><option value="新北市">新北市</option><option value="桃園市">桃園市</option><option value="台中市">台中市</option><option value="台南市">台南市</option><option value="高雄市">高雄市</option><option value="基隆市">基隆市</option><option value="新竹市">新竹市</option><option value="新竹縣">新竹縣</option><option value="苗栗縣">苗栗縣</option><option value="彰化縣">彰化縣</option><option value="南投縣">南投縣</option><option value="雲林縣">雲林縣</option><option value="嘉義市">嘉義市</option><option value="嘉義縣">嘉義縣</option><option value="屏東縣">屏東縣</option><option value="宜蘭縣">宜蘭縣</option><option value="花蓮縣">花蓮縣</option><option value="台東縣">台東縣</option><option value="澎湖縣">澎湖縣</option><option value="金門縣">金門縣</option><option value="連江縣">連江縣</option><option value="__other__">其他</option></select>
-<input id="hm-region-other" name="region_other" placeholder="請輸入其他地區（例：瑞穗鄉 / 海外城市）" type="text" style="display:none;margin-top:8px;"/>
+<input id="hm-region" name="region" placeholder="例如：台北市 信義區 / 花蓮縣 瑞穗鄉" type="text"/>
 </div>
 <div class="hm-form-group">
 <label>社群帳號串聯（可選填，增加信任感）</label>
@@ -2098,7 +2097,6 @@
 </form>
 </div>
 </div>
-<script src="./api.js"></script>
 <script>
   // ==== 假資料：人們 ====
   const people = [
@@ -3886,7 +3884,7 @@
       if (Number.isNaN(heightVal)) heightVal = null;
       if (Number.isNaN(weightVal)) weightVal = null;
 
-            var payload = {
+      var payload = {
         id: uid,
         region: profile.region || null,
         height: heightVal,
@@ -3894,16 +3892,18 @@
         avatar_url: profile.avatar_url || null
       };
 
-      // 統一走 API 層（index.html 不直接操作資料表）
-      if (!window.API || !API.upsertProfile) {
-        throw new Error("API.upsertProfile 未載入（請確認已引用 api.js）");
-      }
-      var saved = await API.upsertProfile(cli, payload);
+      // upsert：同一個 uid 永遠寫回同一筆 profiles.id
+      var upsertRes = await cli
+        .from("profiles")
+        .upsert(payload, { onConflict: "id" })
+        .select("id,region,height,weight,avatar_url,created_at")
+        .single();
+
+      if (upsertRes && upsertRes.error) throw upsertRes.error;
 
       // 方便除錯：把結果寫到測試面板 log
-      hmSbLog({ ok: true, profiles_upsert: saved });
-      return { ok: true, data: saved };
-
+      hmSbLog({ ok: true, profiles_upsert: upsertRes.data });
+      return { ok: true, data: upsertRes.data };
     } catch (e) {
       console.warn("同步 profiles 到 Supabase 失敗：", e);
       hmSbLog({ ok: false, error: (e && e.message) ? e.message : String(e) });
@@ -3961,7 +3961,6 @@
     const heightInput = document.getElementById("hm-height");
     const weightInput = document.getElementById("hm-weight");
     const regionInput = document.getElementById("hm-region");
-    const regionOtherInput = document.getElementById("hm-region-other");
     const threadsInput = document.getElementById("hm-threads");
     const xInput = document.getElementById("hm-x");
     const igInput = document.getElementById("hm-instagram");
@@ -3988,21 +3987,7 @@
     nameInput.value = profile.name || "";
     heightInput.value = profile.height || "";
     weightInput.value = profile.weight || "";
-    // 居住區域（縣市選單 + 其他）
-    (function(){
-      const v = (profile.region || "").trim();
-      const tw = new Set(["台北市","新北市","桃園市","台中市","台南市","高雄市","基隆市","新竹市","新竹縣","苗栗縣","彰化縣","南投縣","雲林縣","嘉義市","嘉義縣","屏東縣","宜蘭縣","花蓮縣","台東縣","澎湖縣","金門縣","連江縣"]);
-      if (v && tw.has(v)) {
-        regionInput.value = v;
-        if (regionOtherInput) { regionOtherInput.style.display = "none"; regionOtherInput.value = ""; }
-      } else if (v) {
-        regionInput.value = "__other__";
-        if (regionOtherInput) { regionOtherInput.style.display = "block"; regionOtherInput.value = v; }
-      } else {
-        regionInput.value = "";
-        if (regionOtherInput) { regionOtherInput.style.display = "none"; regionOtherInput.value = ""; }
-      }
-    })();
+    regionInput.value = profile.region || "";
 
     // 社群欄位
     threadsInput.value = socials.threads || "";
@@ -4017,22 +4002,7 @@
     nameInput.readOnly = lockBasic;
     heightInput.readOnly = lockBasic;
     weightInput.readOnly = lockBasic;
-    regionInput.disabled = lockBasic;
-    if (regionOtherInput) regionOtherInput.disabled = lockBasic;
-
-    // 縣市選單切換：選「其他」才顯示輸入框
-    if (regionInput && regionOtherInput) {
-      regionInput.onchange = function () {
-        if (regionInput.value === "__other__") {
-          regionOtherInput.style.display = "block";
-        } else {
-          regionOtherInput.style.display = "none";
-          regionOtherInput.value = "";
-        }
-      };
-      // 初始化顯示
-      if (regionInput.value === "__other__") regionOtherInput.style.display = "block";
-    }
+    regionInput.readOnly = lockBasic;
 
     if (agreeInput) {
       if (lockBasic) {
@@ -4720,10 +4690,7 @@ function hmInitProfileCard() {
         const name = document.getElementById("hm-name").value.trim();
         const height = document.getElementById("hm-height").value.trim();
         const weight = document.getElementById("hm-weight").value.trim();
-                const regionSel = document.getElementById("hm-region");
-        const regionOther = document.getElementById("hm-region-other");
-        let region = (regionSel ? regionSel.value : "").trim();
-        if (region === "__other__") region = (regionOther ? regionOther.value : "").trim();
+        const region = document.getElementById("hm-region").value.trim();
         const threads = document.getElementById("hm-threads").value.trim();
         const x = document.getElementById("hm-x").value.trim();
         const instagram = document.getElementById("hm-instagram").value.trim();
@@ -4798,34 +4765,6 @@ function hmInitProfileCard() {
         console.log(alreadyCompleted ? "HeartMeet 社群資料已更新：" : "HeartMeet 基本資料已完成：", profileData);
       });
     }
-
-    // ===== Supabase → 本機資料回填（頁面載入/刷新自動同步） =====
-    // 目的：登入後自動從 public.profiles 抓回 region/height/weight/avatar_url，並回填 UI。
-    (async function hmHydrateProfileFromSupabase(){
-      try {
-        var cli = await hmGetSupabaseClient();
-        if (!cli) return;
-        if (!window.API || !API.getMyProfile) return;
-        var res = await API.getMyProfile(cli);
-        if (!res || !res.user || !res.profile) return;
-        var sbProfile = res.profile;
-        var local = {};
-        try { local = JSON.parse(localStorage.getItem("hmProfileData") || "{}"); } catch(e) { local = {}; }
-        // Supabase 目前只同步這幾個欄位（避免覆蓋本機 name/socials 等）
-        if (sbProfile.region != null) local.region = sbProfile.region;
-        if (sbProfile.height != null) local.height = String(sbProfile.height);
-        if (sbProfile.weight != null) local.weight = String(sbProfile.weight);
-        if (sbProfile.avatar_url != null) local.avatar_url = sbProfile.avatar_url;
-        // 寫回本機並刷新畫面
-        hmSaveProfileData(local);
-        hmInitProfileCard();
-        hmInitMyProfileHeader();
-        console.log("已從 Supabase profiles 讀取並回填：", sbProfile);
-        hmSbLog({ ok: true, profiles_fetch: sbProfile });
-      } catch(err) {
-        console.warn("從 Supabase 讀取 profiles 失敗：", err);
-      }
-    })();
 
     hmInitProfileCard();
     hmInitMyProfileHeader();
@@ -4919,7 +4858,7 @@ document.addEventListener("change", function (e) {
 </script>
    
 <!-- Supabase Test Panel (safe loader) -->
-<script src="./supabase-panel-loader.js"></script>
+<!--<script src="./supabase-panel-loader.js">-->
 
 </body>
 </html>
