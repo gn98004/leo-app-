@@ -152,15 +152,70 @@
       var user = s && s.data && s.data.session && s.data.session.user;
       if (!user || !user.id) return { ok: false, skipped: true, reason: "尚未登入（無 session）" };
 
-      // 只 upsert 你目前用到的欄位，避免把 undefined 亂寫進去
-      var payload = Object.assign({}, profile || {});
-      payload.id = user.id;
-      payload.updated_at = new Date().toISOString();
+      // --- 欄位標準化（避免 UI key 與 DB 欄位不一致）---
+      // profiles 表目前使用：id, name, region, height, weight, avatar_url, status, updated_at
+      var src = profile || {};
 
-      // 避免把內部用的 key 或奇怪資料塞進去
-      delete payload.__proto__;
+      // name：允許多種 key，最後都寫入 DB 的 name
+      var name =
+        (src.name != null && String(src.name).trim() !== "" ? String(src.name).trim() : null) ||
+        (src.display_name != null && String(src.display_name).trim() !== "" ? String(src.display_name).trim() : null) ||
+        (src.displayName != null && String(src.displayName).trim() !== "" ? String(src.displayName).trim() : null);
 
-      var res = await cli.from("profiles").upsert(payload, { onConflict: "id" }).select().single();
+      // 允許字串數字；空字串視為 null
+      function toIntOrNull(v) {
+        if (v == null) return null;
+        var t = String(v).trim();
+        if (!t) return null;
+        var n = Number(t);
+        return Number.isFinite(n) ? Math.trunc(n) : null;
+      }
+
+      var payload = {
+        id: user.id,
+        name: name,
+        region: src.region != null ? String(src.region).trim() : null,
+        height: toIntOrNull(src.height),
+        weight: toIntOrNull(src.weight),
+        avatar_url: src.avatar_url || src.avatarUrl || null,
+        status: src.status || null,
+        updated_at: new Date().toISOString()
+      };
+
+      // socials：
+      // 你目前的 public.profiles 可能「還沒有 socials 欄位」。
+      // 為了兼容：若傳入 socials，我們會先嘗試寫入；若回報欄位不存在，會自動重試（移除 socials）。
+      var tryWithSocials = null;
+      if (src.socials && typeof src.socials === "object") {
+        tryWithSocials = src.socials;
+      }
+
+      // 清掉 undefined，避免 PostgREST 誤判型別
+      Object.keys(payload).forEach(function (k) {
+        if (payload[k] === undefined) delete payload[k];
+      });
+
+      async function doUpsert(p) {
+        return await cli.from("profiles").upsert(p, { onConflict: "id" }).select().single();
+      }
+
+      var firstPayload = payload;
+      if (tryWithSocials) {
+        // clone to avoid mutating base payload
+        firstPayload = Object.assign({}, payload, { socials: tryWithSocials });
+      }
+
+      var res = await doUpsert(firstPayload);
+      if (res.error && tryWithSocials) {
+        var msg = String(res.error.message || res.error.details || res.error.hint || res.error);
+        // 常見訊息："Could not find the 'socials' column of 'profiles' in the schema cache" 或 "column \"socials\" does not exist"
+        var looksLikeMissingColumn = msg.includes("socials") && (msg.includes("schema") || msg.includes("cache") || msg.includes("does not exist") || msg.includes("Could not find"));
+        if (looksLikeMissingColumn) {
+          // 退回只寫 profiles 既有欄位（確保 name/region/height/weight 能寫入）
+          res = await doUpsert(payload);
+        }
+      }
+
       if (res.error) return { ok: false, error: res.error };
       return { ok: true, data: res.data };
     },
