@@ -83,8 +83,8 @@
     if (_supabaseClient) return _supabaseClient;
 
     // 補上預設值（若 localStorage 尚未存過）
-    if (!_getStorage(SB_URL_KEY, "")) _setStorage(SB_URL_KEY, DEFAULT_SB_URL);
-    if (!_getStorage(SB_ANON_KEY, "")) _setStorage(SB_ANON_KEY, DEFAULT_SB_ANON_KEY);
+    if (!_getStorage(SB_URL_KEY, "" ) && DEFAULT_SB_URL) _setStorage(SB_URL_KEY, DEFAULT_SB_URL);
+    if (!_getStorage(SB_ANON_KEY, "" ) && DEFAULT_SB_ANON_KEY) _setStorage(SB_ANON_KEY, DEFAULT_SB_ANON_KEY);
 
     var url = _getStorage(SB_URL_KEY, DEFAULT_SB_URL);
     var key = _getStorage(SB_ANON_KEY, DEFAULT_SB_ANON_KEY);
@@ -267,7 +267,36 @@
     return { ok: true, status: resp.status, data: data };
   };
 
-  // Export
+  
+// -----------------------------
+// Config (SB_URL / SB_ANON_KEY)
+// -----------------------------
+HM_API.config = {
+  get: function () {
+    return {
+      url: _getStorage(SB_URL_KEY, DEFAULT_SB_URL || ""),
+      anonKey: _getStorage(SB_ANON_KEY, DEFAULT_SB_ANON_KEY || ""),
+      hasUrl: !!_getStorage(SB_URL_KEY, DEFAULT_SB_URL || ""),
+      hasAnonKey: !!_getStorage(SB_ANON_KEY, DEFAULT_SB_ANON_KEY || "")
+    };
+  },
+  set: function (cfg) {
+    cfg = cfg || {};
+    if (typeof cfg.url === "string") _setStorage(SB_URL_KEY, cfg.url.trim());
+    if (typeof cfg.anonKey === "string") _setStorage(SB_ANON_KEY, cfg.anonKey.trim());
+    // 重新初始化 client
+    _supabaseClient = null;
+    return this.get();
+  },
+  clear: function () {
+    _setStorage(SB_URL_KEY, null);
+    _setStorage(SB_ANON_KEY, null);
+    _supabaseClient = null;
+    return this.get();
+  }
+};
+
+// Export
   global.HM_API = HM_API;
 
 })(window);
