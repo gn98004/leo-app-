@@ -1,5 +1,9 @@
 // api.js
-// 專案約定：頁面只做 UI；所有 Supabase 存取都走這裡
+// HeartMeet 前端資料存取層：所有 Supabase CRUD 都集中在這裡
+// 用法：API.getMyProfile(supabaseClient) / API.upsertProfile(supabaseClient, payload)
+//
+// 注意：supabaseClient 由外部建立（例如 index.html 透過 localStorage 的 SB_URL / SB_ANON_KEY 建立）
+
 window.API = (function () {
   function assertSupabase(supabase) {
     if (!supabase) throw new Error("supabase client not found");
@@ -42,7 +46,6 @@ window.API = (function () {
     return data || null;
   }
 
-  // 便利：登入後直接抓取 profile（常用）
   async function getMyProfile(supabase) {
     const user = await getUser(supabase);
     if (!user) return { user: null, profile: null };
