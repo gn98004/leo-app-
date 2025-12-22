@@ -1,62 +1,218 @@
-// api.js
-// HeartMeet 前端資料存取層：所有 Supabase CRUD 都集中在這裡
-// 用法：API.getMyProfile(supabaseClient) / API.upsertProfile(supabaseClient, payload)
-//
-// 注意：supabaseClient 由外部建立（例如 index.html 透過 localStorage 的 SB_URL / SB_ANON_KEY 建立）
+/* api.js - HeartMeet Frontend API Layer
+   目的：
+   1) 集中管理 Supabase 連線 / Auth / profiles CRUD
+   2) 後續你要串自建後端 API（Cloud Run / VPS / Edge Functions）時，只改這裡即可
+   使用：
+   - index.html 先載入本檔： <script src="./api.js"></script>
+   - 透過 window.HM_API 呼叫
+*/
 
-window.API = (function () {
-  function assertSupabase(supabase) {
-    if (!supabase) throw new Error("supabase client not found");
-    if (!supabase.auth) throw new Error("supabase.auth not found");
-    if (!supabase.from) throw new Error("supabase.from not found");
+(function (global) {
+  "use strict";
+
+  var HM_API = {};
+  var SB_URL_KEY = "SB_URL";
+  var SB_ANON_KEY = "SB_ANON_KEY";
+
+  // 你目前專案的預設 URL（可被 localStorage 覆蓋）
+  var DEFAULT_SB_URL = "https://eqtvoxcavjgronfmalfw.supabase.co";
+  // 建議你之後把 anon key 也填進來（或繼續用測試面板寫入 localStorage）
+  var DEFAULT_SB_ANON_KEY = "";
+
+  // UMD SDK（與你原本版本一致）
+  var SUPABASE_SDK_URL = "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.3/dist/umd/supabase.js";
+
+  var _supabaseClient = null;
+  var _sdkLoading = null;
+
+  function _getStorage(key, fallback) {
+    try {
+      var v = localStorage.getItem(key);
+      return (v && String(v).trim()) ? String(v).trim() : fallback;
+    } catch (e) {
+      return fallback;
+    }
   }
 
-  async function getUser(supabase) {
-    assertSupabase(supabase);
-    const { data, error } = await supabase.auth.getUser();
-    if (error) throw error;
-    return data?.user || null;
+  function _setStorage(key, value) {
+    try {
+      if (value === null || value === undefined) localStorage.removeItem(key);
+      else localStorage.setItem(key, String(value));
+    } catch (e) {}
   }
 
-  async function getProfile(supabase, userId) {
-    assertSupabase(supabase);
-    if (!userId) throw new Error("getProfile: userId is required");
+  function _ensureSupabaseSdk() {
+    if (global.supabase && global.supabase.createClient) return Promise.resolve(true);
+    if (_sdkLoading) return _sdkLoading;
 
-    const { data, error } = await supabase
-      .from("profiles")
-      .select("*")
-      .eq("id", userId)
-      .maybeSingle();
+    _sdkLoading = new Promise(function (resolve, reject) {
+      var exist = document.getElementById("hm_supabase_sdk");
+      if (exist) {
+        var t0 = Date.now();
+        var timer = setInterval(function () {
+          if (global.supabase && global.supabase.createClient) {
+            clearInterval(timer);
+            resolve(true);
+          }
+          if (Date.now() - t0 > 15000) {
+            clearInterval(timer);
+            reject(new Error("Supabase SDK 載入逾時"));
+          }
+        }, 200);
+        return;
+      }
 
-    if (error) throw error;
-    return data || null;
+      var s = document.createElement("script");
+      s.id = "hm_supabase_sdk";
+      s.src = SUPABASE_SDK_URL;
+      s.async = true;
+      s.onload = function () {
+        if (global.supabase && global.supabase.createClient) resolve(true);
+        else reject(new Error("Supabase SDK 載入失敗（createClient 不存在）"));
+      };
+      s.onerror = function () {
+        reject(new Error("Supabase SDK 載入失敗（network error）"));
+      };
+      document.head.appendChild(s);
+    });
+
+    return _sdkLoading;
   }
 
-  async function upsertProfile(supabase, payload) {
-    assertSupabase(supabase);
-    if (!payload?.id) throw new Error("upsertProfile: payload.id is required");
+  async function getSupabaseClient() {
+    if (_supabaseClient) return _supabaseClient;
 
-    const { data, error } = await supabase
-      .from("profiles")
-      .upsert(payload, { onConflict: "id" })
-      .select("*")
-      .maybeSingle();
+    // 補上預設值（若 localStorage 尚未存過）
+    if (!_getStorage(SB_URL_KEY, "")) _setStorage(SB_URL_KEY, DEFAULT_SB_URL);
+    if (!_getStorage(SB_ANON_KEY, "")) _setStorage(SB_ANON_KEY, DEFAULT_SB_ANON_KEY);
 
-    if (error) throw error;
-    return data || null;
+    var url = _getStorage(SB_URL_KEY, DEFAULT_SB_URL);
+    var key = _getStorage(SB_ANON_KEY, DEFAULT_SB_ANON_KEY);
+
+    if (!url || !key) return null;
+
+    await _ensureSupabaseSdk();
+    _supabaseClient = global.supabase.createClient(url, key, {
+      auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: false }
+    });
+    return _supabaseClient;
   }
 
-  async function getMyProfile(supabase) {
-    const user = await getUser(supabase);
-    if (!user) return { user: null, profile: null };
-    const profile = await getProfile(supabase, user.id);
-    return { user, profile };
-  }
+  // -----------------------------
+  // Auth
+  // -----------------------------
+  HM_API.auth = {
+    async getSession() {
+      var cli = await getSupabaseClient();
+      if (!cli) return { ok: false, skipped: true, reason: "缺少 SB_URL / SB_ANON_KEY" };
+      var res = await cli.auth.getSession();
+      return { ok: true, data: res.data, error: res.error || null };
+    },
 
-  return {
-    getUser,
-    getProfile,
-    upsertProfile,
-    getMyProfile,
+    async signUp(email, password) {
+      var cli = await getSupabaseClient();
+      if (!cli) return { ok: false, skipped: true, reason: "缺少 SB_URL / SB_ANON_KEY" };
+      var res = await cli.auth.signUp({ email: email, password: password });
+      return { ok: !res.error, data: res.data || null, error: res.error || null };
+    },
+
+    async signInWithPassword(email, password) {
+      var cli = await getSupabaseClient();
+      if (!cli) return { ok: false, skipped: true, reason: "缺少 SB_URL / SB_ANON_KEY" };
+      var res = await cli.auth.signInWithPassword({ email: email, password: password });
+      return { ok: !res.error, data: res.data || null, error: res.error || null };
+    },
+
+    async signOut() {
+      var cli = await getSupabaseClient();
+      if (!cli) return { ok: false, skipped: true, reason: "缺少 SB_URL / SB_ANON_KEY" };
+      var res = await cli.auth.signOut();
+      return { ok: !res.error, error: res.error || null };
+    },
+
+    async onAuthStateChange(handler) {
+      var cli = await getSupabaseClient();
+      if (!cli) return { ok: false, skipped: true, reason: "缺少 SB_URL / SB_ANON_KEY" };
+      var sub = cli.auth.onAuthStateChange(function (event, session) {
+        try { handler(event, session); } catch (e) {}
+      });
+      return { ok: true, data: sub };
+    }
   };
-})();
+
+  // -----------------------------
+  // Profiles (public.profiles)
+  // -----------------------------
+  HM_API.profiles = {
+    async upsert(profile) {
+      var cli = await getSupabaseClient();
+      if (!cli) return { ok: false, skipped: true, reason: "缺少 SB_URL / SB_ANON_KEY" };
+
+      var s = await cli.auth.getSession();
+      var user = s && s.data && s.data.session && s.data.session.user;
+      if (!user || !user.id) return { ok: false, skipped: true, reason: "尚未登入（無 session）" };
+
+      // 只 upsert 你目前用到的欄位，避免把 undefined 亂寫進去
+      var payload = Object.assign({}, profile || {});
+      payload.id = user.id;
+      payload.updated_at = new Date().toISOString();
+
+      // 避免把內部用的 key 或奇怪資料塞進去
+      delete payload.__proto__;
+
+      var res = await cli.from("profiles").upsert(payload, { onConflict: "id" }).select().single();
+      if (res.error) return { ok: false, error: res.error };
+      return { ok: true, data: res.data };
+    },
+
+    async fetchMine() {
+      var cli = await getSupabaseClient();
+      if (!cli) return { ok: false, skipped: true, reason: "缺少 SB_URL / SB_ANON_KEY" };
+
+      var s = await cli.auth.getSession();
+      var user = s && s.data && s.data.session && s.data.session.user;
+      if (!user || !user.id) return { ok: false, skipped: true, reason: "尚未登入（無 session）" };
+
+      var res = await cli.from("profiles").select("*").eq("id", user.id).maybeSingle();
+      if (res.error) return { ok: false, error: res.error };
+      return { ok: true, data: res.data || null };
+    }
+  };
+
+  // -----------------------------
+  // Generic REST helper (for your future server API)
+  // -----------------------------
+  var _baseUrl = ""; // 例如：https://api.heartmeet.tw
+  HM_API.setBaseUrl = function (baseUrl) { _baseUrl = String(baseUrl || "").replace(/\/+$/, ""); };
+
+  HM_API.request = async function (path, options) {
+    options = options || {};
+    var url = path;
+    if (_baseUrl && !/^https?:\/\//i.test(path)) url = _baseUrl + (path.startsWith("/") ? path : ("/" + path));
+
+    var headers = options.headers || {};
+    if (!headers["Content-Type"] && options.body && !(options.body instanceof FormData)) {
+      headers["Content-Type"] = "application/json";
+    }
+
+    var fetchOpts = {
+      method: options.method || "GET",
+      headers: headers,
+      body: options.body ? (headers["Content-Type"] === "application/json" && typeof options.body !== "string"
+        ? JSON.stringify(options.body)
+        : options.body) : undefined
+    };
+
+    var resp = await fetch(url, fetchOpts);
+    var text = await resp.text();
+    var data = null;
+    try { data = text ? JSON.parse(text) : null; } catch (e) { data = text; }
+
+    if (!resp.ok) return { ok: false, status: resp.status, data: data };
+    return { ok: true, status: resp.status, data: data };
+  };
+
+  // Export
+  global.HM_API = HM_API;
+
+})(window);
