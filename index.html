@@ -2097,7 +2097,6 @@
 </form>
 </div>
 </div>
-<script src="./api.js"></script>
 <script>
   // ==== 假資料：人們 ====
   const people = [
@@ -3766,46 +3765,155 @@
   }
 
   // ==============================
-  // Supabase client & profiles API（已抽離到根目錄 api.js）
+  // Supabase sync (public.profiles)
   // ==============================
-  // 目的：讓 index.html 保持乾淨，之後你要串自建 API 或擴充資料表，只需要改 api.js
-  // 相容：保留舊函式名稱 hmUpsertProfileToSupabase 供既有程式碼呼叫
+  // 目標：在「編輯基本資料」存檔時，同步寫入 Supabase 的 public.profiles。
+  // 方式：upsert（以登入者 auth.uid() 對應同一筆 profiles.id）
+  // 注意：不在程式硬寫 Key，改讀取 localStorage：SB_URL / SB_ANON_KEY（由測試面板寫入）
 
-  window.hmUpsertProfileToSupabase = async function (profile) {
-    try {
-      if (!window.HM_API || !window.HM_API.profiles) {
-        return { skipped: true, reason: "HM_API 尚未載入（api.js 未載入或載入失敗）" };
-      }
-      return await window.HM_API.profiles.upsert(profile);
-    } catch (e) {
-      return { ok: false, error: e };
+  var HM_SB_URL_KEY = "SB_URL";
+  var HM_SB_ANON_KEY = "SB_ANON_KEY";
+  var HM_SB_SDK_URL = "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.3/dist/umd/supabase.js";
+
+  // ====== A) 寫死 Supabase 專案連線資訊（必要時仍可用 localStorage 覆蓋） ======
+  // 1) Project URL：已寫死為你目前專案
+  // 2) anon public key：若你不想再用測試面板貼 key，請把下面字串換成你的 anon key。
+  //    （Supabase Dashboard → Project Settings → API → anon public key）
+  var HM_SB_DEFAULT_URL = "https://eqtvoxcavjgronfmalfw.supabase.co";
+  // TODO: 請把這裡換成你的 anon public key（很長一串 JWT）
+  var HM_SB_DEFAULT_ANON_KEY = "";
+
+  // 若瀏覽器尚未存過 SB_URL/SB_ANON_KEY，先用寫死的預設值補上（之後仍可被覆蓋）。
+  try {
+    if (!localStorage.getItem(HM_SB_URL_KEY) && HM_SB_DEFAULT_URL) {
+      localStorage.setItem(HM_SB_URL_KEY, HM_SB_DEFAULT_URL);
     }
-  };
+    if (!localStorage.getItem(HM_SB_ANON_KEY) && HM_SB_DEFAULT_ANON_KEY) {
+      localStorage.setItem(HM_SB_ANON_KEY, HM_SB_DEFAULT_ANON_KEY);
+    }
+  } catch (e) { /* ignore */ }
+  var hmSupabaseClient = null;
+  var hmSupabaseSdkLoading = null;
 
-  async function hmHydrateProfileFromSupabase() {
+  function hmSbLog(msg) {
     try {
-      if (!window.HM_API || !window.HM_API.profiles) return;
+      var el = document.getElementById("sb_log");
+      if (!el) return;
+      if (typeof msg === "string") el.textContent = msg;
+      else el.textContent = JSON.stringify(msg, null, 2);
+    } catch (e) { /* ignore */ }
+  }
 
-      const res = await window.HM_API.profiles.fetchMine();
-      if (res && res.ok && res.data) {
-        let local = {};
-        try {
-          const raw = localStorage.getItem("hmProfileData");
-          if (raw) local = JSON.parse(raw) || {};
-        } catch (e) {}
+  function hmEnsureSupabaseSdk() {
+    if (window.supabase && window.supabase.createClient) return Promise.resolve();
+    if (hmSupabaseSdkLoading) return hmSupabaseSdkLoading;
 
-        // Supabase 為主，本地為輔（避免覆蓋已經在 Supabase 的最新值）
-        const merged = Object.assign({}, local, res.data);
-
-        hmSaveProfileData(merged);
-        hmInitProfileCard();
-        hmInitMyProfileHeader();
+    hmSupabaseSdkLoading = new Promise(function (resolve, reject) {
+      var existing = document.getElementById("hm_supabase_sdk");
+      if (existing) {
+        // wait until ready
+        var t0 = Date.now();
+        var timer = setInterval(function () {
+          if (window.supabase && window.supabase.createClient) {
+            clearInterval(timer);
+            resolve();
+          }
+          if (Date.now() - t0 > 15000) {
+            clearInterval(timer);
+            reject(new Error("Supabase SDK 載入逾時"));
+          }
+        }, 200);
+        return;
       }
-    } catch (err) {
-      console.warn("Supabase profiles 讀取失敗（不影響本地 Demo）：", err);
+
+      var s = document.createElement("script");
+      s.id = "hm_supabase_sdk";
+      s.src = HM_SB_SDK_URL;
+      s.async = true;
+      s.onload = function () {
+        if (window.supabase && window.supabase.createClient) resolve();
+        else reject(new Error("Supabase SDK 載入後仍未找到 createClient"));
+      };
+      s.onerror = function () { reject(new Error("Supabase SDK 載入失敗")); };
+      document.head.appendChild(s);
+    });
+
+    return hmSupabaseSdkLoading;
+  }
+
+  function hmGetSupabaseClient() {
+    var url = "";
+    var key = "";
+    try {
+      url = (localStorage.getItem(HM_SB_URL_KEY) || HM_SB_DEFAULT_URL || "").trim();
+      key = (localStorage.getItem(HM_SB_ANON_KEY) || HM_SB_DEFAULT_ANON_KEY || "").trim();
+    } catch (e) { /* ignore */ }
+
+    if (!url || !key) return Promise.resolve(null);
+    if (hmSupabaseClient) return Promise.resolve(hmSupabaseClient);
+
+    return hmEnsureSupabaseSdk().then(function () {
+      hmSupabaseClient = window.supabase.createClient(url, key, {
+        auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: false }
+      });
+      return hmSupabaseClient;
+    });
+  }
+
+  async function hmSyncProfileToSupabase(profile) {
+    try {
+      var cli = await hmGetSupabaseClient();
+      if (!cli) {
+        // 沒設定 URL/Key 就不做同步（避免影響 demo 使用）
+        return { ok: false, skipped: true, reason: "no_sb_url_key" };
+      }
+
+      // 取得登入者
+      var userRes = await cli.auth.getUser();
+      if (userRes && userRes.error) throw userRes.error;
+      var user = userRes && userRes.data ? userRes.data.user : null;
+      if (!user) {
+        return { ok: false, skipped: true, reason: "not_signed_in" };
+      }
+
+      var uid = user.id;
+
+      // 轉型（避免 int 欄位塞到字串）
+      var heightVal = profile.height === "" || profile.height == null ? null : Number(profile.height);
+      var weightVal = profile.weight === "" || profile.weight == null ? null : Number(profile.weight);
+      if (Number.isNaN(heightVal)) heightVal = null;
+      if (Number.isNaN(weightVal)) weightVal = null;
+
+      var payload = {
+        id: uid,
+        region: profile.region || null,
+        height: heightVal,
+        weight: weightVal,
+        avatar_url: profile.avatar_url || null
+      };
+
+      // upsert：同一個 uid 永遠寫回同一筆 profiles.id
+      var upsertRes = await cli
+        .from("profiles")
+        .upsert(payload, { onConflict: "id" })
+        .select("id,region,height,weight,avatar_url,created_at")
+        .single();
+
+      if (upsertRes && upsertRes.error) throw upsertRes.error;
+
+      // 方便除錯：把結果寫到測試面板 log
+      hmSbLog({ ok: true, profiles_upsert: upsertRes.data });
+      return { ok: true, data: upsertRes.data };
+    } catch (e) {
+      console.warn("同步 profiles 到 Supabase 失敗：", e);
+      hmSbLog({ ok: false, error: (e && e.message) ? e.message : String(e) });
+      return { ok: false, error: e };
     }
   }
 
+  // 保持相容：某些舊版程式碼呼叫 hmUpsertProfileToSupabase
+  // 這裡直接 alias 到 hmSyncProfileToSupabase，避免 ReferenceError
+  window.hmUpsertProfileToSupabase = hmSyncProfileToSupabase;
 
   function hmSetAuthProvider(provider) {
     try {
@@ -4427,9 +4535,6 @@ function hmInitProfileCard() {
     hmInitAvatar();
     hmBindAvatarUploader();
 
-    // 讀取 Supabase profiles → 回填 UI（若已登入且資料存在）
-    hmHydrateProfileFromSupabase();
-
     // 初始化聊天模組
     initChatModule();
 
@@ -4752,208 +4857,10 @@ document.addEventListener("change", function (e) {
 });
 </script>
    
-<!-- HM Backend Config Panel (SB_URL / SB_ANON_KEY + Auth) -->
-<style>
-  #hm-backend-fab{position:fixed;right:14px;bottom:14px;z-index:9999;width:54px;height:54px;border-radius:16px;border:0;background:#111827;color:#fff;box-shadow:0 8px 24px rgba(0,0,0,.18);cursor:pointer;font-size:20px}
-  #hm-backend-modal{position:fixed;inset:0;z-index:10000;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.35);padding:16px}
-  #hm-backend-card{width:min(760px,96vw);background:#fff;border-radius:18px;box-shadow:0 18px 50px rgba(0,0,0,.25);overflow:hidden}
-  #hm-backend-head{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;background:#f9fafb;border-bottom:1px solid #e5e7eb}
-  #hm-backend-head b{font-size:16px}
-  #hm-backend-close{border:0;background:transparent;font-size:22px;cursor:pointer;line-height:1}
-  #hm-backend-body{padding:16px}
-  .hm-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
-  .hm-col{border:1px solid #e5e7eb;border-radius:14px;padding:12px}
-  .hm-col h4{margin:0 0 10px 0;font-size:14px;color:#111827}
-  .hm-row{display:flex;gap:10px;flex-wrap:wrap}
-  .hm-field{display:flex;flex-direction:column;gap:6px;margin-bottom:10px}
-  .hm-field label{font-size:12px;color:#374151}
-  .hm-field input, .hm-field textarea{width:100%;padding:10px 10px;border:1px solid #d1d5db;border-radius:10px;font-size:14px;outline:none}
-  .hm-field textarea{min-height:76px;resize:vertical;font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace}
-  .hm-btn{padding:10px 12px;border-radius:12px;border:1px solid #d1d5db;background:#fff;cursor:pointer}
-  .hm-btn.primary{background:#111827;color:#fff;border-color:#111827}
-  .hm-btn.danger{background:#fee2e2;border-color:#fecaca;color:#991b1b}
-  .hm-status{margin-top:10px;padding:10px;border-radius:12px;background:#f3f4f6;color:#111827;font-size:13px;white-space:pre-wrap}
-  @media (max-width:700px){.hm-grid{grid-template-columns:1fr}}
-</style>
-
-<button id="hm-backend-fab" title="後端設定">⚙</button>
-
-<div id="hm-backend-modal" role="dialog" aria-modal="true">
-  <div id="hm-backend-card">
-    <div id="hm-backend-head">
-      <b>後端設定（Supabase）</b>
-      <button id="hm-backend-close" aria-label="Close">×</button>
-    </div>
-    <div id="hm-backend-body">
-      <div class="hm-grid">
-        <div class="hm-col">
-          <h4>1) 連線設定</h4>
-          <div class="hm-field">
-            <label>SB_URL（Project URL）</label>
-            <input id="hm-sb-url" placeholder="https://xxxxx.supabase.co" />
-          </div>
-          <div class="hm-field">
-            <label>SB_ANON_KEY（anon public key）</label>
-            <textarea id="hm-sb-key" placeholder="eyJ..."></textarea>
-          </div>
-          <div class="hm-row">
-            <button class="hm-btn primary" id="hm-sb-save">儲存設定並重新整理</button>
-            <button class="hm-btn danger" id="hm-sb-clear">清除設定</button>
-            <button class="hm-btn" id="hm-sb-refresh">刷新狀態</button>
-          </div>
-          <div class="hm-status" id="hm-sb-status">狀態讀取中…</div>
-        </div>
-
-        <div class="hm-col">
-          <h4>2) 登入（Email/Password）</h4>
-          <div class="hm-field">
-            <label>Email</label>
-            <input id="hm-auth-email" type="email" placeholder="you@example.com" autocomplete="email" />
-          </div>
-          <div class="hm-field">
-            <label>Password</label>
-            <input id="hm-auth-pass" type="password" placeholder="••••••••" autocomplete="current-password" />
-          </div>
-          <div class="hm-row">
-            <button class="hm-btn primary" id="hm-auth-signin">登入</button>
-            <button class="hm-btn" id="hm-auth-signup">註冊</button>
-            <button class="hm-btn" id="hm-auth-whoami">WhoAmI</button>
-            <button class="hm-btn danger" id="hm-auth-signout">登出</button>
-          </div>
-          <div class="hm-status" id="hm-auth-status">狀態讀取中…</div>
-        </div>
-      </div>
-
-      <div style="margin-top:12px;font-size:12px;color:#6b7280;line-height:1.5">
-        提醒：一般瀏覽器與無痕模式的 localStorage / session 完全分開。若你切換模式，需在該模式重新設定與登入一次。
-      </div>
-    </div>
-  </div>
-</div>
-
-<script>
-(function(){
-  function qs(id){return document.getElementById(id);}
-  var modal = qs('hm-backend-modal');
-  var fab = qs('hm-backend-fab');
-  var closeBtn = qs('hm-backend-close');
-
-  function open(){ modal.style.display='flex'; }
-  function close(){ modal.style.display='none'; }
-
-  fab && fab.addEventListener('click', open);
-  closeBtn && closeBtn.addEventListener('click', close);
-  modal && modal.addEventListener('click', function(e){ if(e.target===modal) close(); });
-
-  async function refreshStatus(){
-    var sbStatus = qs('hm-sb-status');
-    var authStatus = qs('hm-auth-status');
-    try{
-      if(!window.HM_API || !window.HM_API.config){
-        sbStatus.textContent = 'HM_API 尚未就緒（api.js 未載入）。';
-        authStatus.textContent = 'HM_API 尚未就緒。';
-        return;
-      }
-      var cfg = window.HM_API.config.get();
-      qs('hm-sb-url').value = cfg.url || '';
-      qs('hm-sb-key').value = cfg.anonKey || '';
-      sbStatus.textContent =
-        'SB_URL: ' + (cfg.url ? '已設定' : '未設定') + '\n' +
-        'SB_ANON_KEY: ' + (cfg.anonKey ? ('已設定（長度 ' + cfg.anonKey.length + '）') : '未設定');
-
-      // session
-      var s = await window.HM_API.auth.getSession();
-      if(!s || !s.ok){
-        authStatus.textContent = 'Session 讀取失敗：' + (s && s.error ? s.error : 'unknown');
-      }else if(!s.data || !s.data.session){
-        authStatus.textContent = '尚未登入（無 session）';
-      }else{
-        var u = s.data.session.user;
-        authStatus.textContent = '已登入\n' + 'user.id: ' + u.id + '\n' + (u.email ? ('email: ' + u.email) : '');
-      }
-    }catch(err){
-      sbStatus.textContent = '讀取狀態失敗：' + (err && err.message ? err.message : String(err));
-      authStatus.textContent = '讀取狀態失敗：' + (err && err.message ? err.message : String(err));
-    }
-  }
-
-  qs('hm-sb-refresh') && qs('hm-sb-refresh').addEventListener('click', refreshStatus);
-
-  qs('hm-sb-save') && qs('hm-sb-save').addEventListener('click', function(){
-    var url = (qs('hm-sb-url').value || '').trim();
-    var key = (qs('hm-sb-key').value || '').trim();
-    if(!url || !key){
-      alert('請填入 SB_URL 與 SB_ANON_KEY（兩者都需要）。');
-      return;
-    }
-    window.HM_API.config.set({url:url, anonKey:key});
-    location.reload();
-  });
-
-  qs('hm-sb-clear') && qs('hm-sb-clear').addEventListener('click', function(){
-    if(!confirm('確定要清除 SB_URL / SB_ANON_KEY？（此動作會讓 Supabase 同步停止）')) return;
-    window.HM_API.config.clear();
-    location.reload();
-  });
-
-  async function authAction(fn){
-    try{
-      var res = await fn();
-      await refreshStatus();
-      if(res && res.ok===false){
-        alert('操作失敗：' + (res.error || 'unknown'));
-      }
-    }catch(err){
-      await refreshStatus();
-      alert('操作失敗：' + (err && err.message ? err.message : String(err)));
-    }
-  }
-
-  qs('hm-auth-signin') && qs('hm-auth-signin').addEventListener('click', function(){
-    var email = (qs('hm-auth-email').value || '').trim();
-    var pass  = (qs('hm-auth-pass').value || '').trim();
-    if(!email || !pass){ alert('請輸入 email 與密碼'); return; }
-    authAction(function(){ return window.HM_API.auth.signInWithPassword(email, pass); });
-  });
-
-  qs('hm-auth-signup') && qs('hm-auth-signup').addEventListener('click', function(){
-    var email = (qs('hm-auth-email').value || '').trim();
-    var pass  = (qs('hm-auth-pass').value || '').trim();
-    if(!email || !pass){ alert('請輸入 email 與密碼'); return; }
-    authAction(function(){ return window.HM_API.auth.signUp(email, pass); });
-  });
-
-  qs('hm-auth-signout') && qs('hm-auth-signout').addEventListener('click', function(){
-    authAction(function(){ return window.HM_API.auth.signOut(); });
-  });
-
-  qs('hm-auth-whoami') && qs('hm-auth-whoami').addEventListener('click', function(){
-    authAction(async function(){
-      var s = await window.HM_API.auth.getSession();
-      return s;
-    });
-  });
-
-  // 自動提示：若沒設定 key，開啟設定面板
-  window.addEventListener('load', function(){
-    setTimeout(async function(){
-      await refreshStatus();
-      try{
-        var cfg = window.HM_API && window.HM_API.config ? window.HM_API.config.get() : {hasUrl:false, hasAnonKey:false};
-        if(!cfg.url || !cfg.anonKey){
-          open();
-        }
-      }catch(e){
-        open();
-      }
-    }, 200);
-  });
-})();
-</script>
-
-
 <!-- Supabase Test Panel (safe loader) -->
 <!--<script src="./supabase-panel-loader.js">-->
+
+</script>
 
 </body>
 </html>
