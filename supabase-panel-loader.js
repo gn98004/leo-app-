@@ -221,7 +221,13 @@
       log('SDK 已載入，建立 supabase client…');
       try {
         client = window.supabase.createClient(url, key, {
-          auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: false }
+          auth: {
+  persistSession: true,
+  autoRefreshToken: true,
+  detectSessionInUrl: true,
+  storageKey: "sb-eqtvoxcavjgronfmalfw-auth-token"
+}
+
         });
         setButtonsEnabled(true);
         log('supabase client 已建立。現在可以按「註冊/登入」。');
