@@ -3891,9 +3891,13 @@
       var weightVal = profile.weight === "" || profile.weight == null ? null : Number(profile.weight);
       if (Number.isNaN(heightVal)) heightVal = null;
       if (Number.isNaN(weightVal)) weightVal = null;
-
+       
+var nameVal = (profile && profile.name != null) ? String(profile.name).trim() : "";
+if (!nameVal) nameVal = null;
+       
       var payload = {
         id: uid,
+        name: nameVal,                 
         region: profile.region || null,
         height: heightVal,
         weight: weightVal,
@@ -3904,7 +3908,7 @@
       var upsertRes = await cli
         .from("profiles")
         .upsert(payload, { onConflict: "id" })
-        .select("id,region,height,weight,avatar_url,created_at")
+        .select("id,name,region,height,weight,avatar_url,created_at")
         .single();
 
       if (upsertRes && upsertRes.error) throw upsertRes.error;
