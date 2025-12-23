@@ -4746,11 +4746,17 @@ function hmInitProfileCard() {
             createdAt: existingProfile.createdAt || new Date().toISOString()
           };
         } else {
-          // 之後只更新社群帳號，其餘基本資料沿用舊值
-          profileData = Object.assign({}, existingProfile, {
-            socials: { threads, x, instagram, facebook, other }
-          });
-        }
+  // 已完成基本資料後：仍允許把 name/height/weight/region 同步寫回 Supabase
+  // （避免 Supabase 那筆 name 仍為 NULL 時永遠補不上）
+  profileData = Object.assign({}, existingProfile, {
+    name,
+    height,
+    weight,
+    region,
+    socials: { threads, x, instagram, facebook, other }
+  });
+}
+
 
         hmSaveProfileData(profileData);
 
