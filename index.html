@@ -1,0 +1,5700 @@
+<!DOCTYPE html>
+
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8"/>
+<title>心遇 XinYou - Demo V3</title>
+<meta content="width=device-width, initial-scale=1, maximum-scale=1" name="viewport"/>
+<style>
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", "Microsoft JhengHei", sans-serif;
+      background: #f3f4f6;
+      color: #111827;
+      font-size: 18px;
+    }
+
+    /* 頂部列 */
+    .top-bar {
+      position: sticky;
+      top: 0;
+      z-index: 30;
+      height: 60px;
+      padding: 0 16px;
+      background: #ffffff;
+      border-bottom: 0.5px solid #e5e7eb;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .top-bar-inner {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+    }
+    .top-title {
+      font-size: 22px;
+      font-weight: 700;
+    }
+    .top-right {
+      position: absolute;
+      right: 0;
+      top: 50%;
+      transform: translateY(-50%);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .icon-button {
+      width: 34px;
+      height: 34px;
+      border-radius: 999px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: none;
+      background: #f3f4f6;
+      cursor: pointer;
+    }
+    .icon-gear {
+      width: 22px;
+      height: 22px;
+      opacity: 0.8;
+    }
+
+    .page {
+      display: none;
+      padding-bottom: 72px;
+    }
+    .page.active {
+      display: block;
+    }
+
+    .card {
+      background: #ffffff;
+      border-radius: 18px;
+      box-shadow: 0 2px 4px rgba(15,23,42,0.08);
+    }
+
+    /* 人們 (2x2) */
+    .people-wrapper {
+      padding: 14px 14px 6px;
+    }
+    .people-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 14px;
+    }
+    .people-card {
+      border-radius: 18px;
+      overflow: hidden;
+      background: #ffffff;
+      box-shadow: 0 2px 5px rgba(15, 23, 42, 0.12);
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+    }
+    .people-photo {
+      width: 100%;
+      padding-top: 140%;
+      position: relative;
+      background: #e5e7eb;
+      overflow: hidden;
+    }
+    .people-photo img {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .people-info {
+      padding: 8px 10px 10px;
+    }
+    .people-name-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .people-name {
+      font-size: 18px;
+      font-weight: 700;
+    }
+    .people-age {
+      font-size: 14px;
+      color: #6b7280;
+    }
+    .people-desc {
+      margin-top: 6px;
+      font-size: 14px;
+      color: #6b7280;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .status-badge {
+      margin-top: 6px;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 3px 10px;
+      font-size: 13px;
+      border-radius: 999px;
+      background: #e5f9e7;
+      color: #16a34a;
+    }
+    .status-dot {
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      background: #22c55e;
+    }
+    .status-busy {
+      background: #fef9c3;
+      color: #ca8a04;
+    }
+    .status-busy .status-dot { background: #eab308; }
+    .status-away {
+      background: #e5e7eb;
+      color: #4b5563;
+    }
+    .status-away .status-dot { background: #6b7280; }
+    .status-eating {
+      background: #fee2e2;
+      color: #b91c1c;
+    }
+    .status-eating .status-dot { background: #dc2626; }
+    .status-shower {
+      background: #e0f2fe;
+      color: #0369a1;
+    }
+    .status-shower .status-dot { background: #0284c7; }
+
+    .pager {
+      display: flex;
+      justify-content: center;
+      padding: 10px 0 6px;
+    }
+    .pager-btn {
+      border-radius: 999px;
+      border: 1px solid #d1d5db;
+      padding: 8px 18px;
+      font-size: 16px;
+      background: #ffffff;
+      cursor: pointer;
+      color: #374151;
+    }
+    .pager-btn:hover {
+      background: #f3f4f6;
+    }
+
+    /* 好友 */
+    .tabs-row {
+      display: flex;
+      background: #ffffff;
+      border-bottom: 0.5px solid #e5e7eb;
+    }
+    .tab-btn {
+      flex: 1;
+      text-align: center;
+      padding: 10px 0;
+      font-size: 16px;
+      cursor: pointer;
+      color: #6b7280;
+    }
+    .tab-btn.active {
+      color: #2563eb;
+      border-bottom: 3px solid #2563eb;
+      font-weight: 700;
+    }
+    .list {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      background: #ffffff;
+    }
+    .list-item {
+      display: flex;
+      padding: 12px 16px;
+      border-bottom: 0.5px solid #f0f0f0;
+      cursor: pointer;
+    }
+    .avatar {
+      width: 56px;
+      height: 56px;
+      border-radius: 18px;
+      overflow: hidden;
+      margin-right: 12px;
+      background: #e5e7eb;
+      flex-shrink: 0;
+    }
+    .avatar img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .item-main {
+      flex: 1;
+      min-width: 0;
+    }
+    .item-row1 {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .item-row1-left {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+    .item-name {
+      font-size: 18px;
+      font-weight: 700;
+    }
+    .item-mood {
+      font-size: 22px;
+    }
+    .item-row2 {
+      margin-top: 4px;
+      font-size: 14px;
+      color: #6b7280;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .item-row3 {
+      margin-top: 4px;
+      font-size: 14px;
+      color: #4b5563;
+    }
+    .item-row3 span.label {
+      color: #9ca3af;
+      margin-right: 4px;
+    }
+    .status-inline {
+      margin-left: 4px;
+    }
+
+    /* 詳細檔案 & 相簿 */
+    .profile-header {
+      padding: 14px 16px;
+      background: #ffffff;
+      border-bottom: 0.5px solid #e5e7eb;
+    }
+    .profile-row-main {
+      display: flex;
+      align-items: center;
+    }
+    .profile-main {
+      flex: 1;
+      min-width: 0;
+    }
+    .profile-name-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+    .profile-status-inline {
+      flex-shrink: 0;
+    }
+    .profile-status-edit {
+      margin-top: 6px;
+      display: flex;
+      justify-content: flex-end;
+    }
+    .profile-status-edit select {
+      font-size: 14px;
+      padding: 4px 6px;
+    }
+    .profile-status-inline .status-badge {
+      margin-top: 0;
+    }
+    .profile-avatar {
+      width: 80px;
+      height: 80px;
+      border-radius: 22px;
+      overflow: hidden;
+      margin-right: 14px;
+      background: #e5e7eb;
+      flex-shrink: 0;
+    }
+    .profile-avatar img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .profile-name {
+      font-size: 22px;
+      font-weight: 700;
+    }
+    .profile-sub {
+      margin-top: 4px;
+      font-size: 16px;
+      color: #6b7280;
+    }
+    .profile-actions {
+      margin-top: 12px;
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .btn {
+      border-radius: 12px;
+      border: 1px solid #d1d5db;
+      padding: 7px 12px;
+      font-size: 16px;
+      background: #f9fafb;
+      cursor: pointer;
+    }
+    .btn-primary {
+      border-color: #2563eb;
+      background: #2563eb;
+      color: #ffffff;
+    }
+    .btn-sm {
+      padding: 4px 8px;
+      font-size: 13px;
+      border-radius: 999px;
+      margin-right: 6px;
+    }
+
+    .section {
+      margin-top: 12px;
+      background: #ffffff;
+      border-top: 0.5px solid #e5e7eb;
+      border-bottom: 0.5px solid #e5e7eb;
+    }
+    .section-title {
+      padding: 10px 16px;
+      font-size: 18px;
+      font-weight: 700;
+      color: #374151;
+      border-bottom: 0.5px solid #f3f4f6;
+    }
+
+    /* 新：兩顆大按鈕 */
+    .profile-cta-row {
+      padding: 12px 16px 14px;
+      display: flex;
+      gap: 10px;
+    }
+    .big-cta-btn {
+      flex: 1;
+      border-radius: 999px;
+      border: none;
+      font-size: 17px;
+      padding: 10px 12px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+    .big-cta-btn.secondary {
+      background: #ffffff;
+      border: 1px solid #e5e7eb;
+      color: #374151;
+    }
+    .big-cta-btn.primary {
+      background: #f97316;
+      color: #ffffff;
+      box-shadow: 0 4px 12px rgba(248, 148, 60, 0.45);
+    }
+
+    /* 相簿區塊（別人檔案用） */
+    .album-grid {
+      padding: 12px 16px;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+    }
+    .album-item {
+      position: relative;
+      width: 100%;
+      padding-top: 100%;
+      border-radius: 14px;
+      overflow: hidden;
+      background: #e5e7eb;
+      cursor: pointer;
+    }
+    .album-item img {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: filter 0.15s ease, transform 0.15s ease, opacity 0.15s ease;
+    }
+    .album-item.locked img {
+      filter: blur(8px);
+      transform: scale(1.06);
+      opacity: 0.9;
+    }
+    .album-item.locked::after {
+      content: "🔒 觀看廣告解鎖 30 分鐘";
+      position: absolute;
+      left: 6px;
+      right: 6px;
+      bottom: 6px;
+      padding: 3px 6px;
+      border-radius: 999px;
+      background: rgba(15,23,42,0.78);
+      color: #f9fafb;
+      font-size: 11px;
+      text-align: center;
+    }
+    .set-cover-btn {
+      position: absolute;
+      bottom: 4px;
+      right: 4px;
+      background: rgba(0,0,0,0.55);
+      color: white;
+      font-size: 12px;
+      padding: 2px 6px;
+      border-radius: 10px;
+      border: none;
+      display: none;
+    }
+    .album-item:hover .set-cover-btn {
+      display: inline-block;
+    }
+    .album-gift-btn {
+      position: absolute;
+      left: 4px;
+      bottom: 4px;
+      background: rgba(248, 113, 113, 0.92);
+      color: #fff;
+      font-size: 12px;
+      padding: 2px 6px;
+      border-radius: 999px;
+      border: none;
+    }
+    .album-note {
+      font-size: 13px;
+      color: #6b7280;
+      padding: 0 16px 12px;
+    }
+
+    /* 全螢幕圖片 Viewer */
+    .photo-viewer {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.9);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 2000;
+    }
+    .photo-viewer.show {
+      display: flex;
+    }
+    .photo-viewer img {
+      max-width: 100%;
+      max-height: 100%;
+      border-radius: 8px;
+    }
+    .photo-viewer-close {
+      position: fixed;
+      top: 14px;
+      right: 14px;
+      color: white;
+      font-size: 30px;
+      cursor: pointer;
+    }
+
+    /* 送禮動畫 */
+    .gift-heart {
+      position: fixed;
+      font-size: 28px;
+      pointer-events: none;
+      animation: floatUp 1s ease-out forwards;
+      z-index: 2100;
+    }
+    @keyframes floatUp {
+      0% { opacity: 1; transform: translateY(0) scale(1); }
+      100% { opacity: 0; transform: translateY(-70px) scale(1.5); }
+    }
+
+    /* 基本資料 + 日記 */
+    .info-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    .info-table tr {
+      border-bottom: 0.5px solid #f3f4f6;
+    }
+    .info-key {
+      width: 90px;
+      padding: 10px 16px;
+      font-size: 16px;
+      color: #6b7280;
+    }
+    .info-value {
+      padding: 10px 16px 10px 0;
+      font-size: 16px;
+    }
+    .diary-list {
+      padding: 8px 16px 12px;
+    }
+    .diary-item {
+      padding: 7px 0;
+      border-bottom: 0.5px dashed #e5e7eb;
+      font-size: 16px;
+    }
+    .diary-item:last-child {
+      border-bottom: none;
+    }
+    .diary-date {
+      font-size: 13px;
+      color: #9ca3af;
+      margin-bottom: 3px;
+    }
+
+    /* 聊天頁 */
+    .chat-wrapper {
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+      min-height: 0;
+    }
+    /* 聊天列表 + 右側滑入視窗 */
+    #page-chat {
+      position: relative;
+    }
+    .chat-panel {
+      position: fixed;
+      top: 60px;
+      left: 0;
+      right: 0;
+      bottom: 64px;
+      background: #ffffff;
+      display: flex;
+      flex-direction: column;
+      transform: translateX(100%);
+      transition: transform 0.25s ease-out;
+      box-shadow: -2px 0 8px rgba(15,23,42,0.15);
+      z-index: 35;
+    }
+    .chat-panel.show {
+      transform: translateX(0);
+    }
+    .chat-panel-header {
+      height: 48px;
+      display: flex;
+      align-items: center;
+      padding: 0 10px;
+      border-bottom: 0.5px solid #e5e7eb;
+    }
+    .chat-back-btn {
+      border: none;
+      background: transparent;
+      font-size: 22px;
+      margin-right: 8px;
+      cursor: pointer;
+    }
+    .chat-panel-title {
+      font-size: 18px;
+      font-weight: 600;
+    }
+    .chat-panel-subtitle {
+      font-size: 12px;
+      color: #9ca3af;
+      margin-left: 2px;
+      margin-top: 2px;
+    }
+    .chat-panel-body {
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+      min-height: 0;
+    }
+
+    .chat-messages {
+      flex: 1;
+      overflow-y: auto;
+      padding: 10px 12px 6px;
+    }
+    .bubble-row {
+      display: flex;
+      margin-bottom: 8px;
+    }
+    .bubble-row.me {
+      justify-content: flex-end;
+    }
+    .bubble {
+      max-width: 74%;
+      padding: 10px 12px;
+      border-radius: 20px;
+      font-size: 16px;
+      line-height: 1.5;
+      background: #ffffff;
+      border: 0.5px solid #e5e7eb;
+    }
+    .bubble.them {
+      background: #ffffff;
+      border: 0.5px solid #e5e7eb;
+    }
+    .bubble.me {
+      background: #4ade80;
+      color: #064e3b;
+    }
+    .chat-image {
+      max-width: 220px;
+      max-height: 220px;
+      border-radius: 12px;
+      display: block;
+    }
+
+    .chat-theme-bar {
+      display: flex;
+      padding: 8px 10px 0;
+      gap: 8px;
+      background: transparent;
+    }
+    .chat-theme-pill {
+      flex: 1;
+      text-align: center;
+      font-size: 14px;
+      padding: 6px 0;
+      border-radius: 999px;
+      cursor: pointer;
+      border: 1px solid #d1d5db;
+      background: #ffffff;
+    }
+    .chat-theme-pill.active {
+      background: #111827;
+      color: #f9fafb;
+      border-color: #111827;
+    }
+
+    .chat-theme-light .chat-messages { background: #f3f4f6; }
+    .chat-theme-pink .chat-messages { background: #fef2f2; }
+    .chat-theme-blue .chat-messages { background: #eff6ff; }
+    .chat-theme-dark .chat-messages { background: #030712; }
+    .chat-theme-dark .bubble.them {
+      background: #111827;
+      color: #e5e7eb;
+      border-color: #111827;
+    }
+
+    .chat-input-area {
+      background: #f9fafb;
+      border-top: 0.5px solid #e5e7eb;
+    }
+
+    .chat-more-menu {
+      display: none;
+      padding: 6px 10px;
+      border-bottom: 0.5px solid #e5e7eb;
+      background: #ffffff;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .chat-more-menu.show {
+      display: flex;
+    }
+    .chat-more-btn {
+      font-size: 14px;
+      padding: 6px 10px;
+      border-radius: 999px;
+      border: 1px solid #d1d5db;
+      background: #ffffff;
+      cursor: pointer;
+    }
+
+    .chat-sticker-bar {
+      display: none;
+      padding: 6px 10px 4px;
+      border-bottom: 0.5px solid #e5e7eb;
+      background: #ffffff;
+    }
+    .chat-sticker-bar.show {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .sticker-btn {
+      font-size: 24px;
+      padding: 4px;
+      border-radius: 12px;
+      border: 1px solid #e5e7eb;
+      background: #ffffff;
+      cursor: pointer;
+    }
+
+    .chat-input-bar {
+      display: flex;
+      padding: 8px 10px;
+      align-items: center;
+      gap: 8px;
+    }
+    .chat-input {
+      flex: 1;
+      border-radius: 999px;
+      border: 1px solid #d1d5db;
+      padding: 8px 14px;
+      font-size: 16px;
+      outline: none;
+      background: #ffffff;
+    }
+    .chat-send-btn {
+      padding: 8px 14px;
+      font-size: 16px;
+      border-radius: 999px;
+      border: none;
+      background: #2563eb;
+      color: #ffffff;
+      cursor: pointer;
+    }
+    .chat-plus-btn {
+      padding: 8px 10px;
+      border-radius: 999px;
+      border: none;
+      background: #e5e7eb;
+      cursor: pointer;
+      font-size: 20px;
+    }
+
+    /* 我的檔案 */
+    .my-section-note {
+      font-size: 14px;
+      color: #6b7280;
+      padding: 0 16px 12px;
+    }
+    .form-list {
+      background: #ffffff;
+      border-top: 0.5px solid #e5e7eb;
+      border-bottom: 0.5px solid #e5e7eb;
+    }
+    .form-row {
+      padding: 12px 16px;
+      border-bottom: 0.5px solid #f3f4f6;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 16px;
+    }
+    .form-row:last-child { border-bottom: none; }
+    .form-label { color: #374151; }
+    .form-value { color: #6b7280; }
+
+    .toggle {
+      width: 46px;
+      height: 26px;
+      border-radius: 999px;
+      background: #e5e7eb;
+      position: relative;
+      cursor: pointer;
+    }
+    .toggle-knob {
+      position: absolute;
+      top: 3px;
+      left: 3px;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: #ffffff;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+      transition: all 0.16s ease;
+    }
+    .toggle.on { background: #22c55e; }
+    .toggle.on .toggle-knob { left: 23px; }
+
+    select, textarea {
+      font-size: 15px;
+      padding: 6px 8px;
+      border-radius: 8px;
+      border: 1px solid #d1d5db;
+      background: #f9fafb;
+      width: 100%;
+      outline: none;
+    }
+    textarea {
+      resize: vertical;
+      min-height: 80px;
+    }
+
+    /* 誰來看過我 */
+    .footprint-list {
+      padding: 8px 16px 12px;
+    }
+    .footprint-item {
+      display: flex;
+      align-items: center;
+      margin-bottom: 8px;
+      font-size: 15px;
+    }
+    .footprint-avatar {
+      width: 38px;
+      height: 38px;
+      border-radius: 999px;
+      overflow: hidden;
+      background: #e5e7eb;
+      margin-right: 10px;
+      flex-shrink: 0;
+    }
+    .footprint-avatar img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .footprint-main {
+      flex: 1;
+    }
+    .footprint-name {
+      font-weight: 600;
+    }
+    .footprint-sub {
+      font-size: 13px;
+      color: #6b7280;
+    }
+
+    /* 排行榜 */
+    .rank-wrapper {
+      padding: 10px 12px 14px;
+    }
+    .rank-tabs {
+      display: flex;
+      background: #ffffff;
+      border-radius: 999px;
+      padding: 4px;
+      margin: 4px 10px 12px;
+      box-shadow: 0 2px 4px rgba(15,23,42,0.08);
+    }
+    .rank-tab {
+      flex: 1;
+      text-align: center;
+      font-size: 15px;
+      padding: 6px 0;
+      border-radius: 999px;
+      cursor: pointer;
+      color: #6b7280;
+    }
+    .rank-tab.active {
+      background: #111827;
+      color: #f9fafb;
+      font-weight: 700;
+    }
+    .rank-pyramid-card {
+      padding: 12px 10px 16px;
+    }
+    .rank-row {
+      display: flex;
+      justify-content: center;
+      margin-bottom: 10px;
+      gap: 16px;
+    }
+    .rank-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-size: 13px;
+      background: #fef3c7;
+      color: #92400e;
+    }
+    .rank-badge span.icon {
+      font-size: 18px;
+    }
+    .rank-card {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+    }
+
+    .rank-avatar-wrap {
+      border-radius: 999px;
+      padding: 3px;
+      background: linear-gradient(135deg, #fde68a, #fbbf24);
+      box-shadow: 0 0 0 2px rgba(250, 204, 21, 0.4);
+    }
+    .rank-avatar-wrap.king {
+      padding: 4px;
+      box-shadow: 0 0 0 3px rgba(250, 204, 21, 0.6);
+    }
+    .rank-avatar {
+      width: 110px;
+      height: 110px;
+      border-radius: 999px;
+      overflow: hidden;
+      background: #e5e7eb;
+    }
+    .rank-avatar.medium {
+      width: 80px;
+      height: 80px;
+    }
+    .rank-avatar.small {
+      width: 65px;
+      height: 65px;
+    }
+    .rank-avatar img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .rank-name {
+      font-size: 16px;
+      font-weight: 700;
+      margin-top: 6px;
+    }
+    .rank-sub {
+      font-size: 14px;
+      color: #6b7280;
+    }
+
+    .rank-list {
+      margin-top: 10px;
+      background: #ffffff;
+      border-radius: 18px;
+      overflow: hidden;
+      border: 0.5px solid #e5e7eb;
+    }
+    .rank-list-item {
+      display: flex;
+      align-items: center;
+      padding: 10px 14px;
+      border-bottom: 0.5px solid #f3f4f6;
+      font-size: 15px;
+    }
+    .rank-list-item:last-child { border-bottom: none; }
+    .rank-pos {
+      width: 26px;
+      color: #6b7280;
+    }
+    .rank-list-avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 999px;
+      overflow: hidden;
+      background: #e5e7eb;
+      margin-right: 10px;
+      flex-shrink: 0;
+    }
+    .rank-list-avatar img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .rank-list-main {
+      flex: 1;
+      min-width: 0;
+    }
+    .rank-list-name {
+      font-weight: 600;
+    }
+    .rank-list-sub {
+      font-size: 13px;
+      color: #9ca3af;
+    }
+    .rank-score {
+      font-size: 13px;
+      color: #4b5563;
+    }
+    .rank-note {
+      margin-top: 10px;
+      font-size: 13px;
+      color: #6b7280;
+      text-align: center;
+      padding: 0 10px;
+    }
+
+    /* 底部導覽 */
+    .bottom-nav {
+      position: fixed;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      height: 64px;
+      background: #ffffff;
+      border-top: 0.5px solid #e5e7eb;
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      z-index: 40;
+    }
+    .nav-item {
+      flex: 1;
+      text-align: center;
+      font-size: 12px;
+      color: #9ca3af;
+      cursor: pointer;
+    }
+    .nav-item-inner {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2px;
+    }
+    .nav-icon {
+      width: 28px;
+      height: 28px;
+      border-radius: 999px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 2px solid #d1d5db;
+      font-size: 16px;
+      font-weight: 700;
+      background: #f9fafb;
+    }
+    .nav-item.active {
+      color: #2563eb;
+    }
+    .nav-item.active .nav-icon {
+      border-color: #2563eb;
+      background: #eff6ff;
+      color: #2563eb;
+    }
+
+    /* ================== 基本資料彈窗 & 登入 ================== */
+    .hm-modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.55);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+      backdrop-filter: blur(3px);
+    }
+    .hm-modal {
+      width: 90%;
+      max-width: 420px;
+      max-height: 90vh;
+      background: #ffffff;
+      border-radius: 18px;
+      padding: 20px 18px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    .hm-modal-header h2 {
+      font-size: 20px;
+      margin: 0 0 4px 0;
+    }
+    .hm-modal-header p {
+      margin: 0 0 12px 0;
+      font-size: 13px;
+      color: #666;
+    }
+    .hm-form-group {
+      margin-bottom: 14px;
+    }
+    .hm-form-group label {
+      display: block;
+      font-size: 14px;
+      margin-bottom: 4px;
+    }
+    .hm-required {
+      color: #e53935;
+    }
+    .hm-form-group input[type="text"],
+    .hm-form-group input[type="number"] {
+      width: 100%;
+      padding: 8px 10px;
+      border-radius: 10px;
+      border: 1px solid #ddd;
+      font-size: 14px;
+      box-sizing: border-box;
+    }
+    .hm-form-group input:focus {
+      outline: none;
+      border-color: #ff3b81;
+      box-shadow: 0 0 0 1px rgba(255, 59, 129, 0.15);
+    }
+    .hm-inline {
+      display: flex;
+      gap: 10px;
+    }
+    .hm-inline > div {
+      flex: 1;
+    }
+    .hm-checkbox-group label {
+      display: flex;
+      align-items: center;
+      font-size: 13px;
+      gap: 6px;
+    }
+    .hm-checkbox-group input[type="checkbox"] {
+      width: 16px;
+      height: 16px;
+    }
+    .hm-help-text {
+      font-size: 11px;
+      color: #888;
+      margin: 2px 0 6px 0;
+    }
+    .hm-social-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 6px;
+    }
+    .hm-social-label {
+      display: inline-block;
+      min-width: 78px;
+      font-size: 12px;
+      color: #444;
+    }
+    .hm-modal-footer {
+      margin-top: 14px;
+      text-align: center;
+    }
+    .hm-btn-primary {
+      width: 100%;
+      padding: 10px 0;
+      border-radius: 999px;
+      border: none;
+      background: linear-gradient(135deg, #ff4b8a, #ff7a5c);
+      color: #fff;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .hm-btn-primary:active {
+      transform: scale(0.98);
+    }
+    .hm-btn-secondary {
+      width: 100%;
+      padding: 10px 0;
+      border-radius: 999px;
+      border: 1px solid #e5e7eb;
+      background: #ffffff;
+      color: #374151;
+      font-size: 15px;
+      cursor: pointer;
+      margin-top: 8px;
+    }
+    .hm-btn-secondary span {
+      margin-left: 6px;
+    }
+    .hm-privacy-text {
+      margin-top: 8px;
+      font-size: 11px;
+      color: #999;
+      text-align: center;
+    }
+
+    /* ================== 我的資料卡片 ================== */
+    #hm-profile-section {
+      padding: 16px;
+      box-sizing: border-box;
+    }
+    .hm-profile-card {
+      background: rgba(255, 255, 255, 0.96);
+      border-radius: 18px;
+      padding: 14px 16px 12px 16px;
+      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    .hm-profile-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .hm-profile-avatar {
+      width: 52px;
+      height: 52px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #ff4b8a, #ff7a5c);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      font-weight: 700;
+      font-size: 18px;
+      flex-shrink: 0;
+    }
+    .hm-profile-avatar span {
+      user-select: none;
+    }
+    .hm-profile-basic h3 {
+      margin: 0 0 4px 0;
+      font-size: 17px;
+    }
+    .hm-profile-basic p {
+      margin: 0;
+      font-size: 13px;
+      color: #666;
+    }
+    .hm-profile-region {
+      margin-top: 2px;
+    }
+    .hm-profile-bind {
+      margin-top: 2px;
+      font-size: 11px;
+      color: #9ca3af;
+    }
+    .hm-profile-social-block {
+      margin-top: 12px;
+      padding-top: 10px;
+      border-top: 1px solid #f0f0f0;
+    }
+    .hm-profile-social-title-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      margin-bottom: 6px;
+    }
+    .hm-profile-social-title {
+      font-size: 14px;
+      font-weight: 600;
+    }
+    .hm-profile-social-sub {
+      font-size: 11px;
+      color: #999;
+    }
+    .hm-profile-social-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .hm-profile-social-empty {
+      font-size: 12px;
+      color: #aaa;
+    }
+    .hm-social-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 6px 10px;
+      border-radius: 999px;
+      font-size: 12px;
+      text-decoration: none;
+      border: 1px solid #eee;
+      background: #fafafa;
+      color: #444;
+      cursor: pointer;
+    }
+    .hm-social-chip:hover {
+      background: #fff2f7;
+    }
+    .hm-social-icon {
+      width: 18px;
+      height: 18px;
+      border-radius: 999px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 10px;
+      font-weight: 600;
+    }
+    .hm-social-threads .hm-social-icon {
+      background: #000;
+      color: #fff;
+    }
+    .hm-social-x .hm-social-icon {
+      background: #000;
+      color: #fff;
+    }
+    .hm-social-instagram .hm-social-icon {
+      background: #ff5f6d;
+      color: #fff;
+    }
+    .hm-social-facebook .hm-social-icon {
+      background: #1877f2;
+      color: #fff;
+    }
+    .hm-social-other .hm-social-icon {
+      background: #7b61ff;
+      color: #fff;
+    }
+    .hm-profile-footer {
+      margin-top: 12px;
+      text-align: right;
+    }
+    .hm-btn-outline {
+      border-radius: 999px;
+      padding: 6px 14px;
+      font-size: 12px;
+      border: 1px solid #ff7a5c;
+      background: #fff;
+      color: #ff7a5c;
+      cursor: pointer;
+    }
+    .hm-btn-outline:active {
+      transform: scale(0.97);
+    }
+
+    /* VIP 等級標籤（放在頭像旁邊用） */
+    .vip-badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      margin-left: 6px;
+      padding: 2px 8px;
+      font-size: 11px;
+      border-radius: 999px;
+      background: linear-gradient(135deg, #fbbf24, #f97316);
+      color: #111827;
+      font-weight: 700;
+    }
+
+    /* 我的 6 張照片區塊 */
+    .my-album-note {
+      font-size: 13px;
+      color: #6b7280;
+      padding: 6px 16px 0;
+    }
+    .my-album-grid {
+      padding: 12px 16px 12px;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+    }
+    .my-album-item {
+      position: relative;
+      width: 100%;
+      padding-top: 100%;
+      border-radius: 14px;
+      overflow: hidden;
+      background: #e5e7eb;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+    }
+    .my-album-item img {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .my-album-slot-label {
+      position: absolute;
+      bottom: 4px;
+      left: 4px;
+      right: 4px;
+      font-size: 11px;
+      color: #f9fafb;
+      text-shadow: 0 1px 3px rgba(0,0,0,0.6);
+    }
+    .my-album-upload-btn {
+      position: absolute;
+      top: 6px;
+      right: 6px;
+      font-size: 11px;
+      padding: 2px 6px;
+      border-radius: 999px;
+      border: none;
+      background: rgba(31,41,55,0.9);
+      color: #f9fafb;
+      cursor: pointer;
+    }
+    .my-album-lock-overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(15,23,42,0.82);
+      color: #f9fafb;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      text-align: center;
+      padding: 6px;
+    }
+    .my-album-lock-btn {
+      margin-top: 6px;
+      padding: 4px 10px;
+      font-size: 11px;
+      border-radius: 999px;
+      border: none;
+      background: #f97316;
+      color: #ffffff;
+      cursor: pointer;
+    }
+    .my-album-vip-demo {
+      padding: 0 16px 10px;
+      font-size: 12px;
+      color: #6b7280;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+    .my-album-vip-demo button {
+      font-size: 12px;
+      padding: 4px 10px;
+      border-radius: 999px;
+      border: 1px solid #d1d5db;
+      background: #ffffff;
+      cursor: pointer;
+    }
+
+    /* 好友 tab 紅點 */
+    .friend-tab-badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 16px;
+      padding: 0 6px;
+      margin-left: 4px;
+      font-size: 11px;
+      border-radius: 999px;
+      background: #ef4444;
+      color: #fff;
+    }
+  
+    /* 心情日記廣場 */
+    .mood-wrapper {
+      padding: 10px 12px 80px;
+    }
+    .mood-top-card {
+      padding: 12px 14px;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+    }
+    .mood-top-main {
+      flex: 1;
+    }
+    .mood-title {
+      font-size: 18px;
+      font-weight: 700;
+      color: #111827;
+      margin-bottom: 4px;
+    }
+    .mood-sub {
+      font-size: 13px;
+      color: #6b7280;
+      line-height: 1.4;
+    }
+    .mood-top-side {
+      text-align: right;
+      font-size: 12px;
+      color: #6b7280;
+      white-space: nowrap;
+    }
+    .mood-roses-label {
+      margin-bottom: 2px;
+    }
+    .mood-roses-count {
+      font-size: 20px;
+      font-weight: 700;
+      color: #be123c;
+    }
+    .mood-compose-card {
+      margin-top: 2px;
+      padding: 10px 14px 12px;
+    }
+    .mood-compose-title {
+      font-size: 15px;
+      font-weight: 600;
+      margin-bottom: 6px;
+      color: #111827;
+    }
+    .mood-compose-card textarea {
+      width: 100%;
+      border-radius: 14px;
+      border: 1px solid #e5e7eb;
+      padding: 8px 10px;
+      font-size: 15px;
+      resize: vertical;
+      min-height: 70px;
+      outline: none;
+      font-family: inherit;
+    }
+    .mood-compose-card textarea:focus {
+      border-color: #2563eb;
+      box-shadow: 0 0 0 1px #bfdbfe;
+    }
+    .mood-compose-options {
+      margin-top: 6px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px 12px;
+      align-items: center;
+      font-size: 13px;
+      color: #4b5563;
+    }
+    .mood-compose-options label {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .mood-compose-footer {
+      margin-top: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      font-size: 12px;
+      color: #6b7280;
+    }
+    .mood-rose-cost span {
+      font-weight: 600;
+      color: #be123c;
+    }
+    .mood-list-section {
+      margin-top: 12px;
+    }
+    .mood-list {
+      padding: 8px 0 40px;
+    }
+    .mood-item {
+      margin: 0 0 8px;
+      padding: 10px 14px 10px;
+      border-radius: 16px;
+      border: 0.5px solid #e5e7eb;
+      background: #ffffff;
+      box-shadow: 0 1px 2px rgba(15,23,42,0.03);
+    }
+    .mood-item-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 8px;
+      margin-bottom: 4px;
+    }
+    .mood-item-author {
+      flex: 1;
+      min-width: 0;
+    }
+    .mood-item-author-name {
+      font-size: 14px;
+      font-weight: 600;
+      color: #111827;
+    }
+    .mood-item-meta {
+      margin-top: 2px;
+      font-size: 11px;
+      color: #9ca3af;
+    }
+    .mood-item-badge {
+      font-size: 11px;
+      padding: 2px 8px;
+      border-radius: 999px;
+      background: #eff6ff;
+      color: #1d4ed8;
+      white-space: nowrap;
+    }
+    .mood-item-content {
+      font-size: 14px;
+      color: #374151;
+      line-height: 1.5;
+      margin-top: 4px;
+      word-break: break-word;
+    }
+    .mood-item-actions {
+      margin-top: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 8px;
+      font-size: 12px;
+    }
+    .mood-item-reply-btn {
+      border-radius: 999px;
+      border: 1px solid #d1d5db;
+      padding: 3px 10px;
+      background: #f9fafb;
+      cursor: pointer;
+    }
+    .mood-item-reply-btn:active {
+      transform: scale(0.97);
+    }
+    .mood-item-reply-count {
+      font-size: 11px;
+      color: #9ca3af;
+    }
+    .empty-hint {
+      padding: 10px 16px 40px;
+      font-size: 13px;
+      color: #9ca3af;
+      text-align: center;
+    }
+    @media (min-width: 768px) {
+      .mood-wrapper {
+        max-width: 480px;
+        margin: 0 auto;
+      }
+    }
+
+    .hm-form-group select {
+      width: 100%;
+      padding: 8px 10px;
+      border-radius: 14px;
+      border: 1px solid #e5e7eb;
+      background: #ffffff;
+      font-size: 16px;
+      outline: none;
+    }
+
+    /* Supabase Test Panel */
+    .sb-panel {
+      position: fixed;
+      right: 14px;
+      bottom: 84px;
+      width: 320px;
+      max-width: calc(100vw - 28px);
+      background: rgba(255,255,255,0.96);
+      border: 1px solid #e5e7eb;
+      border-radius: 16px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+      z-index: 9999;
+      overflow: hidden;
+      font-size: 13px;
+      color: #111827;
+    }
+    .sb-panel header{
+      padding: 10px 12px;
+      border-bottom: 1px solid #f1f5f9;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:8px;
+    }
+    .sb-panel header .title{
+      font-weight: 700;
+      font-size: 13px;
+    }
+    .sb-panel .body{
+      padding: 10px 12px;
+      display:flex;
+      flex-direction:column;
+      gap:8px;
+    }
+    .sb-panel input{
+      width:100%;
+      padding:8px 10px;
+      border-radius: 12px;
+      border:1px solid #e5e7eb;
+      font-size: 13px;
+    }
+    .sb-panel .row{display:flex; gap:8px;}
+    .sb-panel .row > *{flex:1;}
+    .sb-panel button{
+      padding:8px 10px;
+      border-radius: 12px;
+      border:1px solid #e5e7eb;
+      background:#fff;
+      cursor:pointer;
+      font-size: 13px;
+    }
+    .sb-panel button.primary{
+      background:#111827;
+      color:#fff;
+      border-color:#111827;
+    }
+    .sb-panel pre{
+      margin:0;
+      padding:8px;
+      background:#0b1020;
+      color:#e5e7eb;
+      border-radius: 12px;
+      font-size: 11px;
+      white-space: pre-wrap;
+      word-break: break-word;
+      max-height: 160px;
+      overflow:auto;
+    }
+    .sb-panel .hint{
+      font-size: 11px;
+      color:#6b7280;
+      line-height: 1.3;
+    }
+
+</style>
+</head>
+<body>
+<!-- 頂部 -->
+<div class="top-bar">
+<div class="top-bar-inner">
+<div class="top-title" id="topTitle">人們 · 心遇 XinYou</div>
+<div class="top-right" id="topRightSlot"></div>
+</div>
+</div>
+<!-- 人們頁 -->
+<div class="page active" id="page-people">
+<div class="people-wrapper">
+<div class="people-grid" id="peopleGrid"></div>
+<div class="pager">
+<button class="pager-btn" id="nextBatchBtn">換一批看看 ➜</button>
+</div>
+</div>
+</div>
+<!-- 詳細檔案頁 -->
+<div class="page" id="page-profileDetail">
+<div id="profileDetailContent"></div>
+</div>
+<!-- 好友頁 -->
+<div class="page" id="page-friends">
+<div class="tabs-row">
+<div class="tab-btn active" data-friendtab="friends">好友</div>
+<div class="tab-btn" data-friendtab="sent">送出申請</div>
+<div class="tab-btn" data-friendtab="received">收到申請</div>
+</div>
+<ul class="list" id="friendsList"></ul>
+</div>
+
+<!-- 心情廣場頁 -->
+<div class="page" id="page-mood">
+  <div class="mood-wrapper">
+    <div class="card mood-top-card">
+      <div class="mood-top-main">
+        <div class="mood-title">心情日記廣場</div>
+        <div class="mood-sub">
+          匿名或顯示暱稱，分享今天的心情。<br/>
+          發佈貼文會消耗一束玫瑰花束（Demo：之後會接每日簽到與儲值機制）。
+        </div>
+      </div>
+      <div class="mood-top-side">
+        <div class="mood-roses-label">可用玫瑰花束</div>
+        <div class="mood-roses-count" id="moodRoseCount">0</div>
+        <button class="hm-btn-outline" type="button" id="btnMoodRules">說明</button>
+      </div>
+    </div>
+
+    <div class="card mood-compose-card">
+      <div class="mood-compose-title">發佈今天的心情</div>
+      <textarea id="moodContentInput" placeholder="今天發生了什麼事？寫幾句讓人理解你心情的話吧。"></textarea>
+      <div class="mood-compose-options">
+        <label>
+          <input type="checkbox" id="moodAllowReplies" checked/>
+          允許別人回覆這則貼文
+        </label>
+        <label>
+          <input type="radio" name="moodIdentity" value="anon" checked/>
+          匿名發佈
+        </label>
+        <label>
+          <input type="radio" name="moodIdentity" value="public"/>
+          顯示我的暱稱
+        </label>
+      </div>
+      <div class="mood-compose-footer">
+        <div class="mood-rose-cost">每次發佈會消耗 <span>1</span> 束玫瑰花束</div>
+        <button class="btn btn-primary btn-sm" type="button" id="btnPostMood">發佈</button>
+      </div>
+    </div>
+
+    <div class="mood-list-section">
+      <div class="section-title">最新心情</div>
+      <div id="moodList" class="mood-list"></div>
+      <div id="moodEmptyHint" class="empty-hint">目前還沒有任何貼文，試著成為第一個分享心情的人吧。</div>
+    </div>
+  </div>
+</div>
+<!-- 排行榜頁 -->
+<div class="page" id="page-rank">
+<div class="rank-tabs">
+<div class="rank-tab active" data-ranktab="pop">人氣榜</div>
+<div class="rank-tab" data-ranktab="receive">收禮榜</div>
+<div class="rank-tab" data-ranktab="send">送禮榜</div>
+</div>
+<div class="rank-wrapper">
+<div class="card rank-pyramid-card" id="rankPyramid"></div>
+<div class="rank-list" id="rankList"></div>
+<div class="rank-note">
+       排行榜目前為示意版。正式版會依照聊天量、禮物、互動分數計算。<br/>
+       No.1 可自由選擇顯示「King」或「Queen」。
+     </div>
+</div>
+</div>
+<!-- 聊天頁 -->
+<div class="page" id="page-chat">
+<div class="section chat-list-section">
+<div class="section-title">聊天列表</div>
+<ul class="list" id="chatThreadList"></ul>
+</div>
+<!-- 右側滑入的聊天室視窗 -->
+<div class="chat-panel" id="chatPanel">
+<div class="chat-panel-header">
+<button class="chat-back-btn" id="chatBackBtn">←</button>
+<div>
+<div class="chat-panel-title" id="chatPanelTitle">聊天</div>
+<div class="chat-panel-subtitle" id="chatPanelSubtitle"></div>
+</div>
+</div>
+<div class="chat-panel-body">
+<div class="chat-theme-bar">
+<div class="chat-theme-pill active" data-theme="light">淺色</div>
+<div class="chat-theme-pill" data-theme="pink">淡粉</div>
+<div class="chat-theme-pill" data-theme="blue">淡藍</div>
+<div class="chat-theme-pill" data-theme="dark">深色</div>
+</div>
+<div class="chat-wrapper chat-theme-light" id="chatWrapper">
+<div class="chat-messages" id="chatMessages">
+<div class="bubble-row">
+<div class="bubble them">
+               請先從左側「聊天列表」選擇官方訊息或好友，再開始對話。（Demo）
+             </div>
+</div>
+</div>
+<div class="chat-input-area">
+<div class="chat-more-menu" id="chatMoreMenu">
+<button class="chat-more-btn" data-type="sticker">😊 貼圖</button>
+<button class="chat-more-btn" id="chatPhotoBtn">🖼 照片</button>
+<button class="chat-more-btn" id="chatGifBtn">GIF 動圖</button>
+</div>
+<div class="chat-sticker-bar" id="stickerBar">
+<button class="sticker-btn">😊</button>
+<button class="sticker-btn">😂</button>
+<button class="sticker-btn">🥺</button>
+<button class="sticker-btn">❤️</button>
+<button class="sticker-btn">👍</button>
+<button class="sticker-btn">🔥</button>
+</div>
+<div class="chat-input-bar">
+<button class="chat-plus-btn" id="chatPlusBtn">＋</button>
+<input class="chat-input" id="chatInput" placeholder="輸入訊息..."/>
+<button class="chat-send-btn" id="chatSendBtn">傳送</button>
+</div>
+<input accept="image/*" id="chatPhotoInput" style="display:none" type="file"/><div class="photo-preview" style="display:flex;flex-wrap:wrap;gap:8px;padding:10px 0;"></div>
+<input accept="image/gif,image/*,video/*" id="chatGifInput" style="display:none" type="file"/>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- 我的頁 -->
+<div class="page" id="page-me">
+<div class="profile-header">
+<div class="profile-row-main">
+<div class="profile-avatar">
+<img alt="我的頭像" id="myAvatarImage" onclick="document.getElementById('myAvatarFileInput').click();" src="https://picsum.photos/200/200?random=99" style="cursor:pointer;"/>
+<input accept="image/*" id="myAvatarFileInput" onchange="hmHandleAvatarFile(this)" style="display:none;" type="file"/>
+</div>
+<div class="profile-main">
+<div class="profile-name-row">
+<div class="profile-name">
+<span id="myProfileName">未設定姓名</span>
+<span class="vip-badge" id="myVipBadge" style="display:none;"></span>
+</div>
+<div class="profile-status-inline">
+<span class="status-badge" id="myStatusBadge">
+<span class="status-dot"></span><span id="myStatusText">已上線</span>
+</span>
+</div>
+</div>
+<div class="profile-sub" id="myProfileSub">台灣 · 尚未填寫居住區域與身高體重</div>
+<div class="profile-status-edit">
+<label for="statusSelect" style="font-size:14px; margin-right:4px;">狀態：</label>
+<select id="statusSelect">
+<option value="online">已上線</option>
+<option value="busy">忙碌中…</option>
+<option value="eating">用餐去…</option>
+<option value="shower">洗澡中…</option>
+<option value="away">暫離中…</option>
+<option value="offline">離線中</option>
+<option value="chatty">想聊天</option>
+</select>
+</div>
+</div>
+</div>
+</div>
+<!-- HeartMeet 我的資料卡片（連動彈跳視窗資料） -->
+<section id="hm-profile-section">
+<div class="hm-profile-card">
+<div class="hm-profile-header">
+<div class="hm-profile-avatar">
+<span id="hm-profile-avatar-text">Me</span>
+</div>
+<div class="hm-profile-basic">
+<h3 id="hm-profile-name">未設定姓名</h3>
+<p id="hm-profile-meta">身高 / 體重 未填寫</p>
+<p class="hm-profile-region" id="hm-profile-region">居住區域：未填寫</p>
+<p class="hm-profile-bind" id="hm-profile-bind">尚未綁定帳號</p>
+</div>
+</div>
+<div class="hm-profile-social-block">
+<div class="hm-profile-social-title-row">
+<span class="hm-profile-social-title">社群串聯</span>
+<span class="hm-profile-social-sub">多平台連結，增加真實感</span>
+</div>
+<div class="hm-profile-social-list" id="hm-profile-social-list">
+<span class="hm-profile-social-empty">目前尚未串聯任何社群帳號</span>
+</div>
+</div>
+<div class="hm-profile-footer">
+<button class="hm-btn-outline" id="hm-profile-edit-btn">
+           編輯基本資料 / 社群串聯
+         </button>
+</div>
+</div>
+</section>
+<!-- 我的 6 張照片區 -->
+<div class="section">
+<div class="section-title">我的照片（最多 6 張，示意）</div>
+<div class="my-album-note">
+       前 2 張為免費預覽，後 4 張需觀看一次廣告暫時解鎖；成為 VIP1～VIP5 後，6 張將全部永久開放（Demo 模式用按鈕切換 VIP 等級）。
+     </div>
+<div class="my-album-grid" id="myAlbumGrid"></div>
+<div class="my-album-vip-demo">
+<span id="vipLevelText">目前 VIP 等級：無（Demo）</span>
+<button id="vipLevelToggleBtn" type="button">切換 VIP 等級（0→5 循環）</button>
+</div>
+</div>
+<div class="section">
+<div class="section-title">好友限定的小語（只有好友看得到）</div>
+<div class="diary-list">
+<div class="diary-item">
+<div style="font-size:16px; margin-bottom:4px;">
+           在這裡寫一些比較私人的心情，只讓好友看得到。
+         </div>
+<textarea id="friendNoteInput">今天好難過，希望能有好天氣出現。</textarea>
+<div style="margin-top:8px; font-size:14px; color:#9ca3af;">
+           好友列表顯示預覽：
+         </div>
+<div class="item-row3" id="friendNotePreview" style="margin-top:4px;">
+<span class="label">好友限定：</span>今天好難過，希望能有好天氣出現。
+         </div>
+</div>
+</div>
+</div>
+<div class="section">
+<div class="section-title">誰來看過我（最近足跡示意）</div>
+<div class="footprint-list">
+<div class="footprint-item">
+<div class="footprint-avatar">
+<img alt="footprint1" src="https://picsum.photos/200/200?random=301"/>
+</div>
+<div class="footprint-main">
+<div class="footprint-name">小茵</div>
+<div class="footprint-sub">來自 台北 · 2 小時前來看過你</div>
+</div>
+</div>
+<div class="footprint-item">
+<div class="footprint-avatar">
+<img alt="footprint2" src="https://picsum.photos/200/200?random=302"/>
+</div>
+<div class="footprint-main">
+<div class="footprint-name">Ken</div>
+<div class="footprint-sub">來自 高雄 · 昨天晚上路過你的檔案</div>
+</div>
+</div>
+<div class="footprint-item">
+<div class="footprint-avatar">
+<img alt="footprint3" src="https://picsum.photos/200/200?random=303"/>
+</div>
+<div class="footprint-main">
+<div class="footprint-name">Rin</div>
+<div class="footprint-sub">來自 新北 · 3 天前拜訪</div>
+</div>
+</div>
+<div class="my-section-note">
+         正式版可以把這裡做成 VIP 才能看完整名單／時間的功能。
+       </div>
+</div>
+</div>
+<div class="section">
+<div class="section-title">我的日記（免費 5 則，VIP 可至 30 則）</div>
+<div class="diary-list" id="myDiaryList"></div>
+<div class="diary-list">
+<div class="diary-item">
+<div id="myDiaryLimitText" style="font-size:14px; color:#6b7280; margin-bottom:6px;">
+           免費用戶可建立 5 則代表日記；升級 VIP 後可擴充到 30 則。這些日記會成為你對外展示的重點資料。（Demo）
+         </div>
+<textarea id="myDiaryInput" placeholder="寫一則想讓別人看到的心情日記..."></textarea>
+<div style="margin-top:6px; display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+<input accept="image/*" id="myDiaryImageUpload" style="display:none;" type="file"/>
+<input accept="image/*" capture="environment" id="myDiaryImageCamera" style="display:none;" type="file"/>
+<button class="hm-btn-outline" id="myDiaryImageUploadBtn" type="button">上傳照片</button>
+<button class="hm-btn-outline" id="myDiaryImageCameraBtn" type="button">拍照</button>
+<div style="display:flex; align-items:center; gap:4px;">
+<input id="myDiaryImageSize" max="100" min="40" style="width:120px;" type="range" value="80"/>
+<span id="myDiaryImageSizeText" style="font-size:12px; color:#6b7280;">照片大小：80%</span>
+</div>
+<button class="hm-btn-outline" id="myDiaryAddBtn" type="button">新增日記</button>
+</div>
+<div id="myDiaryImagePreview" style="margin-top:8px; display:none;">
+  <div style="font-size:12px; color:#6b7280; margin-bottom:4px;">圖片預覽（僅本機顯示，不會上傳到伺服器）：</div>
+  <img id="myDiaryImagePreviewImg" alt="日記圖片預覽" style="max-width:100%; border-radius:12px; display:block;"/>
+</div>
+</div>
+</div>
+</div>
+<!-- 帳號與安全：已移到最底部 -->
+<div class="section">
+<div class="section-title">搜尋與通知設定（示意）</div>
+<div class="form-list">
+<div class="form-row">
+<div class="form-label">國家 / 地區</div>
+<div class="form-value">台灣 · 全部地區 &gt;</div>
+</div>
+<div class="form-row">
+<div class="form-label">接受好友申請</div>
+<div class="toggle on"><div class="toggle-knob"></div></div>
+</div>
+<div class="form-row">
+<div class="form-label">聊天通知</div>
+<div class="toggle on"><div class="toggle-knob"></div></div>
+</div>
+</div>
+<div class="my-section-note">
+       這裡之後可以連到真正的設定頁，讓用戶細調通知、搜尋條件等。
+     </div>
+</div>
+<div class="section">
+<div class="section-title">帳號與安全</div>
+<div class="diary-list">
+<div class="diary-item">
+<div style="font-size:16px; margin-bottom:6px;">
+           若你是在他人裝置上使用，建議離開前先登出，以免個人資料被他人查看。
+         </div>
+<button class="hm-btn-outline" id="hm-logout-btn" type="button">
+           登出目前帳號（清除本機暫存資料）
+         </button>
+<div style="margin-top:8px; font-size:13px; color:#9ca3af;">
+           Demo：登出會清除本機的綁定資訊、基本資料與相簿暫存，下次進入時會重新跳出綁定與填寫資料的視窗。
+         </div>
+</div>
+</div>
+</div>
+</div>
+
+<!-- 底部導航 -->
+<div class="bottom-nav">
+  <div class="nav-item active" data-page="people">
+    <div class="nav-item-inner">
+      <div class="nav-icon">人</div>
+      <span>巧遇</span>
+    </div>
+  </div>
+  <div class="nav-item" data-page="friends">
+    <div class="nav-item-inner">
+      <div class="nav-icon">友</div>
+      <span>好友</span>
+    </div>
+  </div>
+  <div class="nav-item" data-page="mood">
+    <div class="nav-item-inner">
+      <div class="nav-icon">心</div>
+      <span>心情</span>
+    </div>
+  </div>
+  <div class="nav-item" data-page="rank" style="display:none;">
+    <div class="nav-item-inner">
+      <div class="nav-icon">冠</div>
+      <span>排行榜</span>
+    </div>
+  </div>
+  <div class="nav-item" data-page="chat">
+    <div class="nav-item-inner">
+      <div class="nav-icon">聊</div>
+      <span>聊天</span>
+    </div>
+  </div>
+  <div class="nav-item" data-page="me">
+    <div class="nav-item-inner">
+      <div class="nav-icon">我</div>
+      <span>我的</span>
+    </div>
+  </div>
+</div>
+
+
+<div>
+
+</div>
+<p class="hm-privacy-text">
+       ※ Demo 版本不會真的連到 Google / Facebook / Apple，僅模擬綁定流程。
+     </p>
+</div>
+</div>
+<!-- 基本資料彈跳視窗：HeartMeet Profile Modal -->
+<div class="hm-modal-backdrop" id="hm-profile-modal">
+<div class="hm-modal">
+<div class="hm-modal-header">
+<h2>完成基本資料，開始配對</h2>
+<p>目前僅支援e mail登入。</p>
+</div>
+<form id="hm-profile-form">
+<div class="hm-form-group">
+<label for="hm-name">* <span class="hm-required">*</span>稱呼（暱稱）</label>
+<input id="hm-name" name="name" placeholder="給自己一個好記的稱呼" required="" type="text"/>
+</div>
+<div class="hm-form-group hm-inline">
+<div>
+<label for="hm-height">* <span class="hm-required">*</span>身高 (cm)</label>
+<input id="hm-height" max="230" min="120" name="height" placeholder="例如：172" required="" type="number"/>
+</div>
+   <!-- 全螢幕 Viewer -->
+<div class="photo-viewer" id="photoViewer">
+<img alt="photo" src=""/>
+<div class="photo-viewer-close" onclick="closeViewer()">✕</div>
+</div>
+<!-- 登入綁定 Modal -->
+
+<div>
+<label for="hm-weight">* <span class="hm-required">*</span>體重 (kg)</label>
+<input id="hm-weight" max="200" min="35" name="weight" placeholder="例如：65" required="" type="number"/>
+
+</div>
+</div>
+<div class="hm-form-group hm-inline">
+  <div>
+    <label for="hm-gender">* <span class="hm-required">*</span>性別</label>
+    <select id="hm-gender" name="gender" required>
+      <option value="">（請選擇）</option>
+      <option value="male">男</option>
+      <option value="female">女</option>
+    </select>
+  </div>
+  <div>
+    <label for="hm-age-range">* <span class="hm-required">*</span>年齡層</label>
+    <select id="hm-age-range" name="age_range" required>
+      <option value="">（請選擇）</option>
+      <option value="18-20">18～20</option>
+      <option value="20-25">20～25</option>
+      <option value="25-30">25～30</option>
+      <option value="30-35">30～35</option>
+      <option value="35-40">35～40</option>
+      <option value="40-45">40～45</option>
+      <option value="45-50">45～50</option>
+      <option value="50-55">50～55</option>
+      <option value="55-60">55～60</option>
+      <option value="60+">60 以上</option>
+    </select>
+  </div>
+</div>
+<div class="hm-form-group">
+<label for="hm-region">居住縣市（可稍後再填）</label>
+<select id="hm-region" name="region">
+  <option value="">（未選擇）</option>
+  <optgroup label="北部">
+    <option value="臺北市">臺北市</option>
+    <option value="新北市">新北市</option>
+    <option value="基隆市">基隆市</option>
+    <option value="桃園市">桃園市</option>
+    <option value="新竹市">新竹市</option>
+    <option value="新竹縣">新竹縣</option>
+    <option value="宜蘭縣">宜蘭縣</option>
+  </optgroup>
+  <optgroup label="中部">
+    <option value="苗栗縣">苗栗縣</option>
+    <option value="臺中市">臺中市</option>
+    <option value="彰化縣">彰化縣</option>
+    <option value="南投縣">南投縣</option>
+    <option value="雲林縣">雲林縣</option>
+  </optgroup>
+  <optgroup label="南部">
+    <option value="嘉義市">嘉義市</option>
+    <option value="嘉義縣">嘉義縣</option>
+    <option value="臺南市">臺南市</option>
+    <option value="高雄市">高雄市</option>
+    <option value="屏東縣">屏東縣</option>
+  </optgroup>
+  <optgroup label="東部/離島">
+    <option value="花蓮縣">花蓮縣</option>
+    <option value="臺東縣">臺東縣</option>
+    <option value="澎湖縣">澎湖縣</option>
+    <option value="金門縣">金門縣</option>
+    <option value="連江縣">連江縣</option>
+  </optgroup>
+  <option value="__other__">其他（自行輸入）</option>
+</select>
+<input id="hm-region-other" name="region_other" placeholder="請輸入居住地（例：海外 / XX縣 XX鄉鎮市區）" type="text" style="display:none;margin-top:8px;"/>
+</div>
+<div class="hm-form-group">
+<label>社群帳號串聯（可選填，增加信任感）</label>
+<p class="hm-help-text">
+           Threads / X / IG / FB 皆可先略過，之後也可以在「我的資料」中再補上或修改社群帳號。
+         </p>
+<div class="hm-social-row">
+<span class="hm-social-label">Threads</span>
+<input id="hm-threads" name="threads" placeholder="貼上 Threads 個人頁連結或帳號（選填）" type="text"/>
+</div>
+<div class="hm-social-row">
+<span class="hm-social-label">X (Twitter)</span>
+<input id="hm-x" name="x" placeholder="貼上 X 個人頁連結或帳號（選填）" type="text"/>
+</div>
+<div class="hm-social-row">
+<span class="hm-social-label">Instagram</span>
+<input id="hm-instagram" name="instagram" placeholder="貼上 IG 個人頁連結或帳號（選填）" type="text"/>
+</div>
+<div class="hm-social-row">
+<span class="hm-social-label">Facebook</span>
+<input id="hm-facebook" name="facebook" placeholder="貼上 FB 個人頁連結或帳號（選填）" type="text"/>
+</div>
+<div class="hm-social-row">
+<span class="hm-social-label">其他</span>
+<input id="hm-other" name="other" placeholder="例如：LINE ID / 官方網站 / YouTube 頻道（選填）" type="text"/>
+</div>
+</div>
+<div class="hm-form-group hm-checkbox-group">
+<label>
+<input id="hm-agree" required="" type="checkbox"/>
+           我已閱讀並同意 HeartMeet 的服務條款與隱私政策
+         </label>
+</div>
+<div class="hm-modal-footer">
+<button class="hm-btn-primary" type="submit">完成並開始使用</button>
+</div>
+<p class="hm-privacy-text">
+         ※ 部分資料只用於系統配對與實名感驗證，不會公開顯示您的真實姓名。
+       </p>
+</form>
+</div>
+</div>
+<script>
+  // === Supabase defaults (prefill localStorage if missing) ===
+  // NOTE: anon key is designed to be public. Do NOT use service_role key on client.
+  try {
+    if (!localStorage.getItem("SB_URL")) localStorage.setItem("SB_URL", "https://eqtvoxcavjgronfmalfw.supabase.co");
+    if (!localStorage.getItem("SB_ANON_KEY")) localStorage.setItem("SB_ANON_KEY", "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVxdHZveGNhdmpncm9uZm1hbGZ3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjU1OTMzMzQsImV4cCI6MjA4MTE2OTMzNH0.974KqoueFlUJ9V2F-hzFznxGhxvr0mK6ujlT1yauxGk");
+  } catch (e) {
+    console.warn("localStorage not available", e);
+  }
+
+  // ==== 人們（Supabase profiles 動態載入） ====
+  // 注意：此區域已移除 Demo 假資料，改為從 public.profiles 讀取真實使用者（排除自己）。
+  // 若尚未登入或 RLS/政策未放行，列表會顯示空狀態但不會爆。
+  const people = [];
+  const peopleById = new Map();
+  let peopleLoadedOnce = false;
+
+  function hmNormalizeProfileRow(row) {
+    if (!row) return null;
+    const id = row.id;
+    if (!id) return null;
+    const name = (row.name || "").trim() || "未命名";
+    const region = (row.region || "").trim() || "未設定";
+    const height = (row.height == null ? "" : String(row.height));
+    const weight = (row.weight == null ? "" : String(row.weight));
+    const avatar = row.avatar_url || "https://picsum.photos/300/400?random=" + Math.floor(Math.random()*5000+1);
+
+    // 狀態：優先用資料表 status；沒有就用 last_seen_at 粗略判斷
+    let status = (row.status || "").trim() || "offline";
+    let statusText = "離線";
+    try {
+      if (status === "online") statusText = "已上線";
+      else if (status === "busy") statusText = "忙碌中";
+      else if (status === "away") statusText = "暫離";
+      else if (status === "eating") statusText = "用餐中";
+      else if (status === "shower") statusText = "洗澡中";
+      else if (row.last_seen_at) {
+        const t = new Date(row.last_seen_at).getTime();
+        if (!isNaN(t)) {
+          const diffMin = Math.floor((Date.now() - t) / 60000);
+          if (diffMin <= 3) { status = "online"; statusText = "剛剛在線"; }
+          else if (diffMin <= 30) { status = "away"; statusText = "剛剛在線"; }
+        }
+      }
+    } catch (e) { /* ignore */ }
+
+    const age = row.age == null ? "" : String(row.age);
+    const ageRange = row.age_range == null ? "" : String(row.age_range);
+    const ageText = ageRange ? (ageRange + "歲") : (age ? (age + "歲") : "—");
+    const desc = "居住：" + region;
+
+    return {
+      id: String(id),
+      name,
+      ageText,
+      desc,
+      avatar,
+      status,
+      statusText,
+      vipLevel: 0,
+      album: [] // 之後可以接相簿表/Storage；目前先留空
+    };
+  }
+
+  async function hmLoadPeopleFromSupabase(force) {
+    if (!force && peopleLoadedOnce) return { ok: true, skipped: true };
+    const cli = await hmGetSupabaseClient();
+    if (!cli) return { ok: false, reason: "no_sb_url_key" };
+
+    // 需要登入，才有 auth.uid() 供 RLS 判斷（避免 403 / missing sub）
+    const sessRes = await cli.auth.getSession();
+    const session = (sessRes && sessRes.data) ? sessRes.data.session : null;
+    if (!session || !session.user) return { ok: false, reason: "not_signed_in" };
+
+    const uid = session.user.id;
+
+    // 讀 profiles：排除自己
+    const q = await cli
+      .from("profiles")
+      .select("id,name,region,gender,age_range,height,weight,avatar_url,status,age,last_seen_at,created_at")
+      .neq("id", uid)
+      .order("created_at", { ascending: false })
+      .limit(40);
+
+    if (q.error) return { ok: false, reason: "select_error", error: q.error };
+
+    people.length = 0;
+    peopleById.clear();
+    (q.data || []).forEach(function (row) {
+      const p = hmNormalizeProfileRow(row);
+      if (!p) return;
+      people.push(p);
+      peopleById.set(p.id, p);
+    });
+
+
+    // 先刷新封鎖清單（blocks），再補齊每個人的 avatar（profile_photos: is_avatar=true）
+    try { await hmRefreshBlocksFromSupabase(); } catch (e) { /* ignore */ }
+    try {
+      const ids = (q.data || []).map(r => r.id).filter(Boolean);
+      if (ids.length) {
+        const av = await cli
+          .from("profile_photos")
+          .select("user_id,url,is_avatar,created_at")
+          .in("user_id", ids)
+          .eq("is_avatar", true)
+          .order("created_at", { ascending: false })
+          .limit(200);
+        if (!av.error) {
+          const map = new Map();
+          (av.data || []).forEach(r => {
+            if (!map.has(String(r.user_id)) && r.url) map.set(String(r.user_id), r.url);
+          });
+          people.forEach(p => {
+            const u = map.get(String(p.id));
+            if (u) p.avatar = u;
+          });
+        }
+      }
+    } catch (e) { /* ignore */ }
+
+
+    peopleLoadedOnce = true;
+
+    // 重新挑一批給巧遇顯示
+    try {
+      pickRandomBatch();
+      renderPeopleGrid();
+    } catch (e) { /* ignore */ }
+
+    return { ok: true, count: people.length };
+  }
+
+
+  // 預設相簿照片（當使用者尚未自己上傳時，當作底圖）
+  const albumPhotos = [
+    "https://picsum.photos/400/400?random=901",
+    "https://picsum.photos/400/400?random=902",
+    "https://picsum.photos/400/400?random=903",
+    "https://picsum.photos/400/400?random=904",
+    "https://picsum.photos/400/400?random=905",
+    "https://picsum.photos/400/400?random=906"
+  ];
+
+  const peopleGridEl = document.getElementById("peopleGrid");
+  const nextBatchBtn = document.getElementById("nextBatchBtn");
+  const profileDetailContent = document.getElementById("profileDetailContent");
+  const topTitleEl = document.getElementById("topTitle");
+  const topRightSlot = document.getElementById("topRightSlot");
+
+  let currentBatch = [];
+  let currentProfileId = null; // 目前正在查看的檔案 id（給相簿解鎖後重刷用）
+
+  // 封鎖名單（示意，僅儲存在前端）
+  let blockedIds = [];
+
+  function hmIsBlocked(id) {
+    return blockedIds.includes(id);
+  }
+
+  function shuffleArray(arr) {
+    const copy = arr.slice();
+    for (let i = copy.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [copy[i], copy[j]] = [copy[j], copy[i]];
+    }
+    return copy;
+  }
+
+  function pickRandomBatch() {
+    const available = people.filter(p => !hmIsBlocked(p.id));
+    const shuffled = shuffleArray(available);
+    currentBatch = shuffled.slice(0, 4);
+  }
+
+  function renderPeopleGrid() {
+    if (currentBatch.length === 0 || currentBatch.every(p => hmIsBlocked(p.id))) {
+      pickRandomBatch();
+    }
+    peopleGridEl.innerHTML = "";
+    const visibleBatch = currentBatch.filter(p => !hmIsBlocked(p.id));
+    currentBatch = visibleBatch;
+    currentBatch.forEach(p => {
+      const card = document.createElement("div");
+      card.className = "people-card";
+      card.onclick = () => openProfileDetail(p.id);
+
+      const photo = document.createElement("div");
+      photo.className = "people-photo";
+      photo.innerHTML = '<img src="' + p.avatar + '" alt="' + p.name + '" />';
+
+      const info = document.createElement("div");
+      info.className = "people-info";
+
+      const row1 = document.createElement("div");
+      row1.className = "people-name-row";
+
+      const nameEl = document.createElement("div");
+      nameEl.className = "people-name";
+      nameEl.textContent = p.name;
+
+      const ageEl = document.createElement("div");
+      ageEl.className = "people-age";
+      ageEl.textContent = p.ageText;
+
+      row1.appendChild(nameEl);
+      row1.appendChild(ageEl);
+
+      let statusClass = "status-badge";
+      if (p.status === "busy") statusClass += " status-busy";
+      if (p.status === "away" || p.status === "offline") statusClass += " status-away";
+      if (p.status === "eating") statusClass += " status-eating";
+      if (p.status === "shower") statusClass += " status-shower";
+
+      const statusDiv = document.createElement("span");
+      statusDiv.className = statusClass;
+      statusDiv.innerHTML = '<span class="status-dot"></span><span>' + (p.statusText || "已上線") + '</span>';
+
+      const desc = document.createElement("div");
+      desc.className = "people-desc";
+      desc.textContent = p.desc;
+
+      info.appendChild(row1);
+      info.appendChild(statusDiv);
+      info.appendChild(desc);
+
+      card.appendChild(photo);
+      card.appendChild(info);
+
+      peopleGridEl.appendChild(card);
+    });
+  }
+
+  nextBatchBtn.addEventListener("click", () => {
+    pickRandomBatch();
+    renderPeopleGrid();
+  });
+
+  // ===== 好友（Supabase 實裝，已移除 Demo 假資料） =====
+  const friendsListEl = document.getElementById("friendsList");
+
+  // 這三個陣列存的是「對方的 user_id（UUID）」
+  let friendIds = [];
+  let sentRequestIds = [];
+  let receivedRequestIds = [];
+
+  // 以 id 為 key 的 profiles 快取（只放好友/邀請相關的對象）
+  let friendProfilesById = Object.create(null);
+
+  function isUuid(v) {
+    return typeof v === "string" && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(v);
+  }
+
+  function onlineStatusFromLastSeen(lastSeenAt) {
+    try {
+      if (!lastSeenAt) return { status: "offline", text: "離線" };
+      const t = new Date(lastSeenAt).getTime();
+      if (!isFinite(t)) return { status: "offline", text: "離線" };
+      const diffSec = (Date.now() - t) / 1000;
+      if (diffSec <= 120) return { status: "online", text: "在線" };      // 2 分鐘內視為在線
+      if (diffSec <= 3600) return { status: "away", text: "剛剛在線" };   // 1 小時內
+      return { status: "offline", text: "離線" };
+    } catch (_e) {
+      return { status: "offline", text: "離線" };
+    }
+  }
+
+  async function hmGetAuthedUid(cli) {
+    const sessRes = await cli.auth.getSession();
+    const session = sessRes && sessRes.data ? sessRes.data.session : null;
+    return session && session.user ? session.user.id : null;
+  }
+
+  async function hmTouchLastSeen(cli, uid) {
+    try {
+      if (!cli || !uid) return;
+      // 只更新 last_seen_at，不動其他欄位
+      await cli.from("profiles").upsert({ id: uid, last_seen_at: new Date().toISOString() }, { onConflict: "id" });
+    } catch (_e) {}
+  }
+
+  async function hmRefreshFriendsFromSupabase() {
+    try {
+      const cli = await hmGetSupabaseClient();
+      if (!cli) {
+        friendIds = []; sentRequestIds = []; receivedRequestIds = [];
+        friendProfilesById = Object.create(null);
+        renderFriendsList(currentFriendTab || "friends");
+        return;
+      }
+      const uid = await hmGetAuthedUid(cli);
+      if (!uid) {
+        friendIds = []; sentRequestIds = []; receivedRequestIds = [];
+        friendProfilesById = Object.create(null);
+        updateFriendTabCounts();
+        renderFriendsList(currentFriendTab || "friends");
+        return;
+      }
+
+      // 更新在線時間（你選 B：顯示線上狀態）
+      hmTouchLastSeen(cli, uid);
+
+      // 1) 讀取好友關係（friends）
+      const frRes = await cli
+        .from("friends")
+        .select("user_a,user_b,created_at")
+        .or(`user_a.eq.${uid},user_b.eq.${uid}`);
+
+      if (frRes.error) throw frRes.error;
+
+      const fIds = [];
+      (frRes.data || []).forEach(r => {
+        const other = (r.user_a === uid) ? r.user_b : r.user_a;
+        if (other && other !== uid) fIds.push(other);
+      });
+      friendIds = Array.from(new Set(fIds));
+
+      // 2) 讀取送出申請（friend_requests: pending）
+      const sentRes = await cli
+        .from("friend_requests")
+        .select("to_user, status")
+        .eq("from_user", uid)
+        .eq("status", "pending");
+
+      if (sentRes.error) throw sentRes.error;
+      sentRequestIds = Array.from(new Set((sentRes.data || []).map(x => x.to_user).filter(Boolean)));
+
+      // 3) 讀取收到申請（friend_requests: pending）
+      const recvRes = await cli
+        .from("friend_requests")
+        .select("from_user, status")
+        .eq("to_user", uid)
+        .eq("status", "pending");
+
+      if (recvRes.error) throw recvRes.error;
+      receivedRequestIds = Array.from(new Set((recvRes.data || []).map(x => x.from_user).filter(Boolean)));
+
+      // 4) 拉取相關 profiles（好友 + 邀請相關）
+      const allIds = Array.from(new Set([ ...friendIds, ...sentRequestIds, ...receivedRequestIds ].filter(Boolean)));
+      friendProfilesById = Object.create(null);
+      if (allIds.length) {
+        const pRes = await cli
+          .from("profiles")
+          .select("id,name,region,avatar_url,last_seen_at")
+          .in("id", allIds);
+        if (pRes.error) throw pRes.error;
+        (pRes.data || []).forEach(p => { friendProfilesById[p.id] = p; });
+      }
+
+      updateFriendTabCounts();
+      renderFriendsList(currentFriendTab || "friends");
+    } catch (e) {
+      console.warn("[friends] refresh failed", e);
+      updateFriendTabCounts();
+      renderFriendsList(currentFriendTab || "friends");
+    }
+  }
+
+  // 對你送出的好友申請
+
+  // 封鎖 / 檢舉相關（示意）
+  function hmBlockUser(id) {
+    if (!blockedIds.includes(id)) {
+      blockedIds.push(id);
+    }
+    // 被封鎖時，從好友與申請清單中移除
+    friendIds = friendIds.filter(x => x !== id);
+    sentRequestIds = sentRequestIds.filter(x => x !== id);
+    receivedRequestIds = receivedRequestIds.filter(x => x !== id);
+
+    // 簡單刷新人們與好友畫面（示意）
+    if (typeof renderPeopleGrid === "function") {
+      currentBatch = [];
+      renderPeopleGrid();
+    }
+    if (typeof renderFriendsPage === "function") {
+      renderFriendsPage();
+    }
+    alert("已封鎖此用戶（Demo 版僅記錄在本機）");
+  }
+
+  function hmReportUser(id) {
+    const p = getPersonById(id);
+    alert("已送出對「" + (p ? p.name : "此用戶") + "」的舉報（Demo 示意）\n正式版會送到後端審核。");
+  }
+
+  function hmBlockOrReport(id) {
+    const p = getPersonById(id);
+    if (!p) return;
+
+    const choice = window.prompt(
+      "請選擇動作：\n1：封鎖此用戶\n2：僅舉報檢舉\n3：封鎖 + 舉報\n（輸入 1 / 2 / 3）",
+      "1"
+    );
+    if (!choice) return;
+
+    if (choice === "1") {
+      hmBlockUser(id);
+    } else if (choice === "2") {
+      hmReportUser(id);
+    } else if (choice === "3") {
+      hmBlockUser(id);
+      hmReportUser(id);
+    } else {
+      alert("未執行任何動作。");
+      return;
+    }
+
+    // Demo：封鎖 / 檢舉後回到「人們」頁
+    showPage("people");
+  }
+
+  let currentFriendTab = "friends";
+  let friendTabFriendsEl = null;
+  let friendTabSentEl = null;
+  let friendTabReceivedEl = null;
+
+  function getPersonById(id) {
+    return people.find(p => p.id === id) || null;
+  }
+
+  function hmGetRelation(id) {
+    if (friendIds.includes(id)) return "friend";
+    if (sentRequestIds.includes(id)) return "sent";
+    if (receivedRequestIds.includes(id)) return "received";
+    return "none";
+  }
+
+  function createTabBadgeHTML(num) {
+    if (!num) return "";
+    return '<span class="friend-tab-badge">' + num + '</span>';
+  }
+
+  function updateFriendTabCounts() {
+    if (!friendTabFriendsEl || !friendTabSentEl || !friendTabReceivedEl) return;
+    friendTabFriendsEl.innerHTML = "好友" + createTabBadgeHTML(friendIds.length);
+    friendTabSentEl.innerHTML = "送出申請" + createTabBadgeHTML(sentRequestIds.length);
+    friendTabReceivedEl.innerHTML = "收到申請" + createTabBadgeHTML(receivedRequestIds.length);
+  }
+
+  // 送出好友申請
+  
+  // 送出好友申請（Supabase）
+  async function hmAddFriend(id) {
+    try {
+      if (!isUuid(id)) {
+        alert("目前好友系統已切換到 Supabase 真實使用者（UUID）。此 Demo 使用者尚未上雲，無法發送好友申請。");
+        return;
+      }
+      const cli = await hmGetSupabaseClient();
+      if (!cli) return alert("Supabase 尚未初始化。");
+      const uid = await hmGetAuthedUid(cli);
+      if (!uid) return alert("請先登入 Supabase 再操作好友功能。");
+      if (id === uid) return alert("不能加自己為好友。");
+
+      // 若已是好友就不重複送
+      if (friendIds.includes(id)) return alert("你們已經是好友了。");
+      if (sentRequestIds.includes(id)) return alert("已送出好友申請，請耐心等候。");
+
+      const res = await cli.from("friend_requests").insert({ from_user: uid, to_user: id, status: "pending" }).select("id").single();
+      if (res.error) throw res.error;
+      await hmRefreshFriendsFromSupabase();
+      updateFriendTabCounts();
+      renderFriendsList("sent");
+      alert("已送出好友申請。");
+    } catch (e) {
+      console.warn(e);
+      alert("送出申請失敗：" + (e && e.message ? e.message : String(e)));
+    }
+  }
+
+
+  // 同意好友
+  
+  // 同意對方好友申請（Supabase）
+  async function hmAcceptFriend(id) {
+    try {
+      if (!isUuid(id)) return;
+      const cli = await hmGetSupabaseClient();
+      if (!cli) return alert("Supabase 尚未初始化。");
+      const uid = await hmGetAuthedUid(cli);
+      if (!uid) return alert("請先登入 Supabase 再操作好友功能。");
+
+      // 1) update request -> accepted
+      const up = await cli
+        .from("friend_requests")
+        .update({ status: "accepted" })
+        .eq("from_user", id)
+        .eq("to_user", uid)
+        .eq("status", "pending")
+        .select("id")
+        .maybeSingle();
+      if (up.error) throw up.error;
+
+      // 2) insert into friends (avoid duplicates by sorting)
+      const a = (uid < id) ? uid : id;
+      const b = (uid < id) ? id : uid;
+      const ins = await cli.from("friends").insert({ user_a: a, user_b: b }).select("id").maybeSingle();
+      if (ins.error) {
+        // ignore duplicate errors, but still refresh
+        console.warn("[friends insert]", ins.error);
+      }
+
+      await hmRefreshFriendsFromSupabase();
+      renderFriendsList("friends");
+      alert("已同意好友申請。");
+    } catch (e) {
+      console.warn(e);
+      alert("同意失敗：" + (e && e.message ? e.message : String(e)));
+    }
+  }
+
+
+  // 拒絕好友
+  
+  // 拒絕對方好友申請（Supabase）
+  async function hmRejectFriend(id) {
+    try {
+      if (!isUuid(id)) return;
+      const cli = await hmGetSupabaseClient();
+      if (!cli) return alert("Supabase 尚未初始化。");
+      const uid = await hmGetAuthedUid(cli);
+      if (!uid) return alert("請先登入 Supabase 再操作好友功能。");
+
+      const up = await cli
+        .from("friend_requests")
+        .update({ status: "rejected" })
+        .eq("from_user", id)
+        .eq("to_user", uid)
+        .eq("status", "pending")
+        .select("id")
+        .maybeSingle();
+      if (up.error) throw up.error;
+
+      await hmRefreshFriendsFromSupabase();
+      renderFriendsList("received");
+      alert("已拒絕好友申請。");
+    } catch (e) {
+      console.warn(e);
+      alert("拒絕失敗：" + (e && e.message ? e.message : String(e)));
+    }
+  }
+
+
+  // 取消自己送出的申請
+  
+  // 取消自己送出的好友申請（Supabase）
+  async function hmCancelFriendRequest(id) {
+    try {
+      if (!isUuid(id)) return;
+      const cli = await hmGetSupabaseClient();
+      if (!cli) return alert("Supabase 尚未初始化。");
+      const uid = await hmGetAuthedUid(cli);
+      if (!uid) return alert("請先登入 Supabase 再操作好友功能。");
+
+      const up = await cli
+        .from("friend_requests")
+        .update({ status: "canceled" })
+        .eq("from_user", uid)
+        .eq("to_user", id)
+        .eq("status", "pending")
+        .select("id")
+        .maybeSingle();
+      if (up.error) throw up.error;
+
+      await hmRefreshFriendsFromSupabase();
+      renderFriendsList("sent");
+      alert("已取消好友申請。");
+    } catch (e) {
+      console.warn(e);
+      alert("取消失敗：" + (e && e.message ? e.message : String(e)));
+    }
+  }
+
+
+  // ===== 詳細檔案：VIP + 好友流程 =====
+  function openProfileDetail(id) {
+    const p = (peopleById && peopleById.get(String(id))) || people.find(x => String(x.id) === String(id));
+    if (!p) return;
+    currentProfileId = id;
+
+    let statusClass = "status-badge";
+    if (p.status === "busy") statusClass += " status-busy";
+    if (p.status === "away" || p.status === "offline") statusClass += " status-away";
+    if (p.status === "eating") statusClass += " status-eating";
+    if (p.status === "shower") statusClass += " status-shower";
+
+    const statusBadgeHtml =
+      '<span class="' + statusClass + '"><span class="status-dot"></span><span>' +
+      (p.statusText || "已上線") + "</span></span>";
+
+    const vipLevel = typeof p.vipLevel === "number" ? p.vipLevel : 0;
+    const vipTag = '<span class="vip-badge">VIP' + vipLevel + '</span>';
+
+    const relation = hmGetRelation(p.id);
+    let actionHtml = "";
+
+    if (relation === "friend") {
+      actionHtml = '<button class="btn btn-primary" onclick="openChatWith(' + JSON.stringify(p.id) + ')">1 對 1 聊天</button>';
+    } else if (relation === "sent") {
+      actionHtml = '<button class="btn" disabled>已送出好友申請</button>';
+    } else if (relation === "received") {
+      actionHtml = ''
+        + '<button class="btn btn-primary btn-sm" onclick="hmAcceptFriend(' + JSON.stringify(p.id) + ')">同意好友申請</button>'
+        + '<button class="btn btn-sm" onclick="hmRejectFriend(' + JSON.stringify(p.id) + ')">拒絕</button>';
+    } else {
+      actionHtml = '<button class="btn btn-primary" onclick="hmAddFriend(' + JSON.stringify(p.id) + ')">加入好友</button>';
+    }
+
+    const totalSlots = (Array.isArray(p.album) && p.album.length > 0)
+      ? p.album.length
+      : 6;
+
+    const myVipLevel = hmGetVipLevel();
+    const unlocked = hmAlbumIsUnlocked();
+
+    const albumHtml = Array.from({ length: totalSlots }).map((_, idx) => {
+      const src = hmGetPersonAlbumPhotoSrc(p.id, idx);
+      const isFree = idx < 2;
+      const isLocked = !isFree && myVipLevel === 0 && !unlocked;
+      const lockedClass = isLocked ? " locked" : "";
+      return ''
+        + '<div class="album-item' + lockedClass + '" onclick="handleStrangerAlbumClick(' + JSON.stringify(p.id) + ',' + idx + ')">'
+        + '  <img src="' + src + '" alt="photo' + (idx + 1) + '" />'
+        + '  <div class="album-gift-btn" onclick="event.stopPropagation(); sendGiftAnimation(this)">💝 送禮</div>'
+        + '</div>';
+    }).join("");
+
+    profileDetailContent.innerHTML = ''
+      + '<div class="profile-header">'
+      + '  <div class="profile-row-main">'
+      + '    <div class="profile-avatar">'
+      + '      <img src="' + p.avatar + '" alt="' + p.name + '" />'
+      + '    </div>'
+      + '    <div>'
+      + '      <div class="profile-name">' + p.name + ' ' + vipTag + '</div>'
+      + '      <div class="profile-sub">' + p.ageText + ' · 台灣 · 暫無更多介紹</div>'
+      + '      <div style="margin-top:6px; font-size:15px;">' + statusBadgeHtml + '</div>'
+      + '    </div>'
+      + '  </div>'
+      + '  <div class="profile-actions">'
+      + '    <button class="btn" onclick="hmBlockOrReport(' + p.id + ')">封鎖 / 舉報</button>'
+      +      actionHtml
+      + '  </div>'
+      + '</div>'
+      + '<div class="section">'
+      + '  <div class="profile-cta-row">'
+      + '    <button class="big-cta-btn primary" onclick="sendGiftAnimationFromHeader(this)">🎁 送禮物</button>'
+      + '  </div>'
+      + '</div>'
+      + '<div class="section">'
+      + '  <div class="section-title">相簿（每張都有送禮入口）</div>'
+      + '  <div class="album-grid" id="strangerAlbumGrid">'
+      +       albumHtml
+      + '  </div>'
+      + '  <div class="album-note">'
+      + '    相簿僅示意，正式版可以上傳自己的照片、設定可見範圍與解鎖方式。<br/>'
+      + '    Demo：前兩張為免費預覽，後四張需觀看廣告才可在 30 分鐘內解鎖。'
+      + '  </div>'
+      + '</div>'
+      + '<div class="section">'
+      + '  <div class="section-title">基本資料</div>'
+      + '  <table class="info-table">'
+      + '    <tr><td class="info-key">暱稱</td><td class="info-value">' + p.name + '</td></tr>'
+      + '    <tr><td class="info-key">性別</td><td class="info-value">未設定</td></tr>'
+      + '    <tr><td class="info-key">年齡層</td><td class="info-value">' + p.ageText + '</td></tr>'
+      + '    <tr><td class="info-key">國家</td><td class="info-value">台灣</td></tr>'
+      + '    <tr><td class="info-key">地區</td><td class="info-value">未設定</td></tr>'
+      + '    <tr><td class="info-key">自我介紹</td><td class="info-value">' + p.desc + '</td></tr>'
+      + '  </table>'
+      + '</div>'
+      + '<div class="section">'
+      + '  <div class="section-title">公開日記</div>'
+      + '  <div class="diary-list">'
+      + '    <div class="diary-item">'
+      + '      <div class="diary-date">2025-11-25</div>'
+      + '      <div>這裡之後可以顯示對方的 5 篇代表日記，讓人更了解他。</div>'
+      + '    </div>'
+      + '  </div>'
+      + '</div>';
+
+    showPage("profileDetail");
+    // 從 Supabase 拉取對方相簿（profile_photos）與公開日記（diaries）
+    try { hmLoadRemoteAssetsForProfile(p.id); } catch (e) { /* ignore */ }
+
+    topTitleEl.textContent = p.name;
+    topRightSlot.innerHTML = "";
+  }
+
+  // ==== 好友列表 ====
+  function renderStatusInline(status, text) {
+    let cls = "status-badge status-inline";
+    if (status === "online") cls += " status-busy";
+    if (status === "busy") cls += " status-busy";
+    if (status === "away" || status === "offline") cls += " status-away";
+    if (status === "eating") cls += " status-eating";
+    if (status === "shower") cls += " status-shower";
+    return '<span class="' + cls + '"><span class="status-dot"></span><span>' + text + "</span></span>";
+  }
+
+  
+  // 查看好友公開資料（先用簡易 alert，後續可接你原本的「對外資料頁」模板）
+  function hmOpenFriendProfile(id) {
+    try {
+      const p = friendProfilesById && friendProfilesById[id] ? friendProfilesById[id] : null;
+      if (!p) return alert("找不到此好友資料。");
+      alert("好友資料\n\n姓名：" + (p.name || "—") + "\n地區：" + (p.region || "—"));
+    } catch (e) {}
+  }
+
+function renderFriendsList(type) {
+    friendsListEl.innerHTML = "";
+    currentFriendTab = type;
+    const noteText = (friendNoteInput && friendNoteInput.value.trim()) || "（尚未設定）";
+
+    let ids = [];
+    if (type === "friends") ids = friendIds.slice();
+    else if (type === "sent") ids = sentRequestIds.slice();
+    else if (type === "received") ids = receivedRequestIds.slice();
+
+    if (!ids.length) {
+      const li = document.createElement("li");
+      li.className = "item";
+      li.innerHTML = '<div class="item-info"><div class="item-row1"><div class="item-name">目前沒有資料</div></div><div class="item-row3">（此區已改為 Supabase 真實資料；若你尚未建立好友/邀請，會顯示空清單）</div></div>';
+      friendsListEl.appendChild(li);
+      return;
+    }
+
+    ids.forEach((id) => {
+      const p = friendProfilesById[id] || { id, name: "（未設定）", region: "", avatar_url: "" };
+      const st = onlineStatusFromLastSeen(p.last_seen_at);
+      const statusHtml = renderStatusInline(st.status, st.text);
+
+      const safeId = JSON.stringify(String(id)); // 支援 UUID
+      const avatar = p.avatar_url || "https://picsum.photos/160/160?random=88";
+
+      let row3Html = "";
+      let extraActionsHtml = "";
+
+      if (type === "friends") {
+        row3Html = '<div class="item-row3"><span class="label">好友限定：</span>' + noteText + '</div>';
+        extraActionsHtml = ''
+          + '<div class="item-row3">'
+          + '  <button class="btn btn-sm" onclick="hmOpenFriendProfile(' + safeId + ')">查看資料</button>'
+          + '</div>';
+      } else if (type === "sent") {
+        row3Html = '<div class="item-row3"><span class="label">狀態：</span>已送出好友申請，等待對方回應</div>';
+        extraActionsHtml = ''
+          + '<div class="item-row3">'
+          + '  <button class="btn btn-sm" onclick="hmCancelFriendRequest(' + safeId + ')">取消申請</button>'
+          + '</div>';
+      } else if (type === "received") {
+        row3Html = '<div class="item-row3"><span class="label">狀態：</span>對方想加你為好友</div>';
+        extraActionsHtml = ''
+          + '<div class="item-row3">'
+          + '  <button class="btn btn-sm" onclick="hmAcceptFriend(' + safeId + ')">同意</button>'
+          + '  <button class="btn btn-sm btn-outline" onclick="hmRejectFriend(' + safeId + ')">拒絕</button>'
+          + '</div>';
+      }
+
+      const li = document.createElement("li");
+      li.className = "item";
+      li.innerHTML = ''
+        + '<div class="item-photo"><img src="' + avatar + '" alt="avatar"></div>'
+        + '<div class="item-info">'
+        + '  <div class="item-row1">'
+        + '    <div class="item-name">' + (p.name || "（未設定）") + '</div>'
+        + '    <div class="item-right">' + statusHtml + '</div>'
+        + '  </div>'
+        + '  <div class="item-row2"><span class="label">地區：</span>' + (p.region || "—") + '</div>'
+        + row3Html
+        + extraActionsHtml
+        + '</div>';
+
+      friendsListEl.appendChild(li);
+    });
+  }
+
+  // ==== 排行榜假資料 ====
+  const rankPyramidEl = document.getElementById("rankPyramid");
+  const rankListEl = document.getElementById("rankList");
+
+  const rankData = {
+    pop: [
+      { pos: 1, title: "King", name: "Sunny", city: "台北", age: "20+", score: 9820, avatar: "https://picsum.photos/200/200?random=201" },
+      { pos: 2, title: "Princess", name: "Amy", city: "高雄", age: "25+", score: 9130, avatar: "https://picsum.photos/200/200?random=202" },
+      { pos: 3, title: "Prince", name: "Max", city: "新北", age: "22+", score: 8990, avatar: "https://picsum.photos/200/200?random=203" },
+      { pos: 4, title: "Duke", name: "Lynn", city: "台中", age: "23+", score: 8500, avatar: "https://picsum.photos/200/200?random=204" },
+      { pos: 5, title: "Duke", name: "Zero", city: "桃園", age: "20+", score: 8420, avatar: "https://picsum.photos/200/200?random=205" },
+      { pos: 6, title: "Duchess", name: "Mika", city: "台南", age: "27+", score: 8300, avatar: "https://picsum.photos/200/200?random=206" },
+      { pos: 7, title: "Marquis", name: "阿哲", city: "新竹", age: "28+", score: 7900, avatar: "https://picsum.photos/200/200?random=207" },
+      { pos: 8, title: "Baron", name: "小葉", city: "基隆", age: "24+", score: 7600, avatar: "https://picsum.photos/200/200?random=208" }
+    ],
+    receive: [
+      { pos: 1, title: "Queen", name: "Rin", city: "台北", age: "21+", score: 10010, avatar: "https://picsum.photos/200/200?random=211" },
+      { pos: 2, title: "Princess", name: "Nana", city: "新北", age: "26+", score: 9200, avatar: "https://picsum.photos/200/200?random=212" },
+      { pos: 3, title: "Duke", name: "Ken", city: "高雄", age: "29+", score: 8800, avatar: "https://picsum.photos/200/200?random=213" },
+      { pos: 4, title: "Duchess", name: "Sasa", city: "桃園", age: "23+", score: 8400, avatar: "https://picsum.photos/200/200?random=214" }
+    ],
+    send: [
+      { pos: 1, title: "King", name: "Leo", city: "台中", age: "30+", score: 11000, avatar: "https://picsum.photos/200/200?random=221" },
+      { pos: 2, title: "Prince", name: "Sean", city: "台北", age: "24+", score: 9600, avatar: "https://picsum.photos/200/200?random=222" },
+      { pos: 3, title: "Duke", name: "Kai", city: "新北", age: "27+", score: 9000, avatar: "https://picsum.photos/200/200?random=223" },
+      { pos: 4, title: "Baron", name: "米糕", city: "花蓮", age: "32+", score: 8200, avatar: "https://picsum.photos/200/200?random=224" }
+    ]
+  };
+
+  function renderRank(type) {
+    const data = rankData[type] || [];
+    if (data.length === 0) {
+      rankPyramidEl.innerHTML = "<div style='font-size:14px; color:#9ca3af; text-align:center;'>暫無排名資料</div>";
+      rankListEl.innerHTML = "";
+      return;
+    }
+
+    const king = data[0];
+    const second = data[1];
+    const third = data[2];
+    const fourth = data[3];
+    const fifth = data[4];
+    const sixth = data[5];
+    const rest = data.slice(6);
+
+    let pyramidHtml = ''
+      + '<div class="rank-row">'
+      + '  <div class="rank-card">'
+      + '    <div class="rank-badge">'
+      + '      <span class="icon">👑</span>'
+      + '      <span>' + king.title + '</span>'
+      + '    </div>'
+      + '    <div class="rank-avatar-wrap king">'
+      + '      <div class="rank-avatar">'
+      + '        <img src="' + king.avatar + '" alt="' + king.name + '" />'
+      + '      </div>'
+      + '    </div>'
+      + '    <div class="rank-name">' + king.name + '</div>'
+      + '    <div class="rank-sub">' + king.city + ' · ' + king.age + '</div>'
+      + '  </div>'
+      + '</div>';
+
+    pyramidHtml += '<div class="rank-row">';
+    if (second) {
+      pyramidHtml += ''
+        + '<div class="rank-card">'
+        + '  <div class="rank-avatar-wrap">'
+        + '    <div class="rank-avatar medium">'
+        + '      <img src="' + second.avatar + '" alt="' + second.name + '" />'
+        + '    </div>'
+        + '  </div>'
+        + '  <div class="rank-name">' + second.name + '</div>'
+        + '  <div class="rank-sub">' + second.title + ' · ' + second.city + '</div>'
+        + '</div>';
+    }
+    if (third) {
+      pyramidHtml += ''
+        + '<div class="rank-card">'
+        + '  <div class="rank-avatar-wrap">'
+        + '    <div class="rank-avatar medium">'
+        + '      <img src="' + third.avatar + '" alt="' + third.name + '" />'
+        + '    </div>'
+        + '  </div>'
+        + '  <div class="rank-name">' + third.name + '</div>'
+        + '  <div class="rank-sub">' + third.title + ' · ' + third.city + '</div>'
+        + '</div>';
+    }
+    pyramidHtml += '</div>';
+
+    pyramidHtml += '<div class="rank-row">';
+    [fourth, fifth, sixth].forEach(item => {
+      if (!item) return;
+      pyramidHtml += ''
+        + '<div class="rank-card">'
+        + '  <div class="rank-avatar-wrap">'
+        + '    <div class="rank-avatar small">'
+        + '      <img src="' + item.avatar + '" alt="' + item.name + '" />'
+        + '    </div>'
+        + '  </div>'
+        + '  <div class="rank-name">' + item.name + '</div>'
+        + '  <div class="rank-sub">' + item.title + ' · ' + item.city + '</div>'
+        + '</div>';
+    });
+    pyramidHtml += '</div>';
+
+    rankPyramidEl.innerHTML = pyramidHtml;
+
+    rankListEl.innerHTML = "";
+    rest.forEach(item => {
+      const li = document.createElement("div");
+      li.className = "rank-list-item";
+      li.innerHTML = ''
+        + '<div class="rank-pos">' + item.pos + '</div>'
+        + '<div class="rank-list-avatar">'
+        + '  <img src="' + item.avatar + '" alt="' + item.name + '" />'
+        + '</div>'
+        + '<div class="rank-list-main">'
+        + '  <div class="rank-list-name">' + item.name + ' · ' + item.title + '</div>'
+        + '  <div class="rank-list-sub">' + item.city + ' · ' + item.age + '</div>'
+        + '</div>'
+        + '<div class="rank-score">' + item.score + ' 分</div>';
+      rankListEl.appendChild(li);
+    });
+  }
+
+  const pages = {
+    people: document.getElementById("page-people"),
+    profileDetail: document.getElementById("page-profileDetail"),
+    friends: document.getElementById("page-friends"),
+    mood: document.getElementById("page-mood"),
+    rank: document.getElementById("page-rank"),
+    chat: document.getElementById("page-chat"),
+    me: document.getElementById("page-me")
+  };
+
+  function showPage(pageName) {
+    Object.keys(pages).forEach(k => {
+      pages[k].classList.toggle("active", k === pageName);
+    });
+
+    // 進入好友頁時：從 Supabase 拉取真實好友/邀請資料
+    try {
+      if (pageName === "friends") {
+        hmRefreshFriendsFromSupabase();
+      }
+    } catch (e) {}
+
+    // 進入巧遇頁時：從 Supabase 拉取真實 profiles（排除自己），取代 Demo 假資料
+    try {
+      if (pageName === "people") {
+        hmLoadPeopleFromSupabase(false);
+      }
+    } catch (e) {}
+  }
+
+  function renderTopRightForPage(pageName) {
+    topRightSlot.innerHTML = "";
+    if (pageName === "me") {
+      const btn = document.createElement("button");
+      btn.className = "icon-button";
+      btn.innerHTML = ''
+        + '<svg class="icon-gear" viewBox="0 0 20 20" fill="none">'
+        + '<path d="M9.999 12.5a2.5 2.5 0 1 0 0-5.001 2.5 2.5 0 0 0 0 5z" stroke="#4B5563" stroke-width="1.3" />'
+        + '<path d="M15.167 8.583a5.53 5.53 0 0 0-.11-.44l1.16-1.174a.55.55 0 0 0 .09-.648l-1.1-1.905a.55.55 0 0 0-.628-.26l-1.62.49a5.43 5.43 0 0 0-.77-.44l-.25-1.68A.55.55 0 0 0 11.41 2h-2.2a.55.55 0 0 0-.546.46l-.25 1.68a5.42 5.42 0 0 0-.77.44l-1.62-.49a.55.55 0 0 0-.629.26L4.295 5.3a.55.55 0 0 0 .09.649l1.16 1.173c-.05.144-.087.291-.11.441L4.5 8.999a.55.55 0 0 0-.5.546v2.91c0 .29.219.53.5.546l1.935.12c.034.145.077.288.129.429l-1.178 1.24a.55.55 0 0 0-.067.659l1.2 1.856a.55.55 0 0 0 .622.239l1.74-.56c.13.073.263.14.4.2l.27 1.78a.55.55 0 0 0 .545.46h2.2a.55.55 0 0 0 .545-.46l.27-1.78c.137-.06.27-.127.4-.2l1.74.56a.55.55 0 0 0 .622-.239l1.2-1.857a.55.55 0 0 0-.068-.658l-1.177-1.24c.052-.141.095-.284.129-.429l1.935-.12a.55.55 0 0 0 .5-.547v-2.91a.55.55 0 0 0-.5-.546L15.167 8.583z" stroke="#4B5563" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>'
+        + '</svg>';
+      btn.addEventListener("click", () => {
+        alert("設定面板之後會接上真正的功能（目前為示意）。");
+      });
+      topRightSlot.appendChild(btn);
+    }
+  }
+
+  function switchPage(pageName) {
+    if (pageName === "people") topTitleEl.textContent = "人們 · 心遇 XinYou";
+    if (pageName === "friends") topTitleEl.textContent = "好友";
+    if (pageName === "mood") topTitleEl.textContent = "心情廣場";
+    if (pageName === "rank") topTitleEl.textContent = "排行榜";
+    if (pageName === "chat") topTitleEl.textContent = "聊天";
+    if (pageName === "me") topTitleEl.textContent = "我的檔案";
+
+    if (pageName !== "profileDetail") {
+      showPage(pageName);
+    }
+    renderTopRightForPage(pageName);
+
+    // 切換到其他頁面時，自動關閉聊天室滑窗
+    if (pageName !== "chat") {
+      hideChatPanel();
+    }
+  }
+
+  // 開啟聊天：只有好友可以
+  function openChatWith(id) {
+    const relation = hmGetRelation(id);
+    if (relation !== "friend") {
+      alert("只有成為好友後才能使用 1 對 1 聊天。（Demo）");
+      return;
+    }
+    ensureFriendChatThread(id);
+    switchPage("chat");
+    openChatThread("friend-" + id);
+  }
+
+  window.openChatWith = openChatWith;
+  window.hmAddFriend = hmAddFriend;
+  window.hmAcceptFriend = hmAcceptFriend;
+  window.hmRejectFriend = hmRejectFriend;
+  window.hmCancelFriendRequest = hmCancelFriendRequest;
+
+  document.querySelectorAll(".nav-item").forEach(item => {
+    item.addEventListener("click", () => {
+      const page = item.getAttribute("data-page");
+      document.querySelectorAll(".nav-item").forEach(i => i.classList.remove("active"));
+      item.classList.add("active");
+      switchPage(page);
+
+      if (page === "rank") renderRank(currentRankTab);
+    });
+  });
+
+  document.querySelectorAll("[data-friendtab]").forEach(btn => {
+    btn.addEventListener("click", () => {
+      document.querySelectorAll("[data-friendtab]").forEach(b => b.classList.remove("active"));
+      btn.classList.add("active");
+      const type = btn.getAttribute("data-friendtab");
+      currentFriendTab = type;
+      renderFriendsList(type);
+    });
+  });
+
+  let currentRankTab = "pop";
+  document.querySelectorAll("[data-ranktab]").forEach(btn => {
+    btn.addEventListener("click", () => {
+      document.querySelectorAll("[data-ranktab]").forEach(b => b.classList.remove("active"));
+      btn.classList.add("active");
+      currentRankTab = btn.getAttribute("data-ranktab");
+      renderRank(currentRankTab);
+    });
+  });
+
+  // toggle
+  document.querySelectorAll(".toggle").forEach(t => {
+    t.addEventListener("click", () => {
+      t.classList.toggle("on");
+    });
+  });
+
+
+  // 聊天送出 & + 功能（改為列表式對話：官方 + 好友）
+  const chatMessagesEl = document.getElementById("chatMessages");
+  const chatInputEl = document.getElementById("chatInput");
+  const chatSendBtn = document.getElementById("chatSendBtn");
+  const stickerBar = document.getElementById("stickerBar");
+  const chatMoreMenu = document.getElementById("chatMoreMenu");
+  const chatPlusBtn = document.getElementById("chatPlusBtn");
+  const chatWrapper = document.getElementById("chatWrapper");
+  const chatPhotoBtn = document.getElementById("chatPhotoBtn");
+  const chatGifBtn = document.getElementById("chatGifBtn");
+  const chatPhotoInput = document.getElementById("chatPhotoInput");
+  const chatGifInput = document.getElementById("chatGifInput");
+  const chatThreadListEl = document.getElementById("chatThreadList");
+  const chatPanel = document.getElementById("chatPanel");
+  const chatBackBtn = document.getElementById("chatBackBtn");
+  const chatPanelTitleEl = document.getElementById("chatPanelTitle");
+  const chatPanelSubtitleEl = document.getElementById("chatPanelSubtitle");
+
+  let currentChatThreadId = null;
+  const chatThreads = {};
+  const chatHistories = {};
+
+  function ensureChatThread(thread) {
+    if (!thread || !thread.id) return;
+    if (!chatThreads[thread.id]) {
+      chatThreads[thread.id] = thread;
+    }
+    if (!chatHistories[thread.id]) {
+      chatHistories[thread.id] = [];
+    }
+  }
+
+  function ensureFriendChatThread(personId) {
+    const p = getPersonById(personId);
+    if (!p) return;
+    const id = "friend-" + personId;
+    if (!chatThreads[id]) {
+      ensureChatThread({
+        id,
+        personId,
+        title: p.name,
+        preview: p.desc || "成為好友後即可開始聊天。",
+        isOfficial: false,
+        pinned: false,
+        avatar: p.avatar,
+        unread: 0
+      });
+    }
+  }
+
+  function showChatPanel(thread) {
+    if (!chatPanel) return;
+    chatPanel.classList.add("show");
+
+    if (chatPanelTitleEl) {
+      if (thread && thread.isOfficial) {
+        chatPanelTitleEl.textContent = "心遇小精靈";
+      } else if (thread && thread.personId) {
+        const p = getPersonById(thread.personId);
+        chatPanelTitleEl.textContent = (p && p.name) ? p.name : (thread.title || "聊天");
+      } else if (thread && thread.title) {
+        chatPanelTitleEl.textContent = thread.title;
+      } else {
+        chatPanelTitleEl.textContent = "聊天";
+      }
+    }
+
+    if (chatPanelSubtitleEl) {
+      if (thread && thread.isOfficial) {
+        chatPanelSubtitleEl.textContent = "官方訊息 / 系統公告";
+      } else if (thread && thread.personId) {
+        chatPanelSubtitleEl.textContent = "1 對 1 聊天";
+      } else {
+        chatPanelSubtitleEl.textContent = "";
+      }
+    }
+  }
+
+  function hideChatPanel() {
+    if (!chatPanel) return;
+    chatPanel.classList.remove("show");
+  }
+
+  function renderChatThreadList() {
+    if (!chatThreadListEl) return;
+    const threads = Object.values(chatThreads).filter(t => !t.hidden);
+
+    threads.sort((a, b) => {
+      if (a.pinned && !b.pinned) return -1;
+      if (!a.pinned && b.pinned) return 1;
+      return 0;
+    });
+
+    chatThreadListEl.innerHTML = "";
+
+    threads.forEach(thread => {
+      const li = document.createElement("li");
+      li.className = "list-item";
+      li.dataset.threadId = thread.id;
+
+      const avatarDiv = document.createElement("div");
+      avatarDiv.className = "avatar";
+      avatarDiv.innerHTML = '<img src="' + (thread.avatar || "https://picsum.photos/200/200?random=990") + '" alt="' + thread.title + '">';
+      li.appendChild(avatarDiv);
+
+      const main = document.createElement("div");
+      main.className = "item-main";
+
+      const row1 = document.createElement("div");
+      row1.className = "item-row1";
+
+      const left = document.createElement("div");
+      left.className = "item-row1-left";
+
+      const nameSpan = document.createElement("span");
+      nameSpan.className = "item-name";
+      nameSpan.textContent = thread.title;
+      left.appendChild(nameSpan);
+
+      if (thread.isOfficial) {
+        const moodSpan = document.createElement("span");
+        moodSpan.className = "item-mood";
+        moodSpan.textContent = "📢";
+        left.appendChild(moodSpan);
+      }
+
+      row1.appendChild(left);
+
+      if (thread.unread && thread.unread > 0) {
+        const badge = document.createElement("span");
+        badge.className = "friend-tab-badge";
+        badge.textContent = thread.unread > 99 ? "99+" : String(thread.unread);
+        row1.appendChild(badge);
+      }
+
+      main.appendChild(row1);
+
+      const row2 = document.createElement("div");
+      row2.className = "item-row2";
+      row2.textContent = thread.preview || "";
+      main.appendChild(row2);
+
+      if (thread.isOfficial) {
+        const row3 = document.createElement("div");
+        row3.className = "item-row3";
+        row3.innerHTML = '<span class="label">官方通知：</span>此聊天室會放置系統公告、活動通知，可刪除（Demo）。';
+        main.appendChild(row3);
+      }
+
+      li.appendChild(main);
+
+      if (thread.isOfficial) {
+        const delBtn = document.createElement("button");
+        delBtn.type = "button";
+        delBtn.className = "btn btn-sm";
+        delBtn.textContent = "刪除";
+        delBtn.style.marginLeft = "8px";
+        delBtn.addEventListener("click", (e) => {
+          e.stopPropagation();
+          if (!confirm("確定要從列表中移除官方訊息嗎？（Demo）")) return;
+          thread.hidden = true;
+          if (currentChatThreadId === thread.id) {
+            currentChatThreadId = null;
+            if (chatMessagesEl) {
+              chatMessagesEl.innerHTML = "";
+            }
+            topTitleEl.textContent = "聊天";
+          }
+          renderChatThreadList();
+        });
+        li.appendChild(delBtn);
+      }
+
+      li.addEventListener("click", () => {
+        openChatThread(thread.id);
+      });
+
+      chatThreadListEl.appendChild(li);
+    });
+  }
+
+  function renderChatMessages(threadId) {
+    if (!chatMessagesEl) return;
+    const msgs = chatHistories[threadId] || [];
+
+    chatMessagesEl.innerHTML = "";
+
+    if (!msgs.length) {
+      const row = document.createElement("div");
+      row.className = "bubble-row";
+      row.innerHTML = '<div class="bubble them">尚未開始聊天，先傳一則訊息試試看。（Demo）</div>';
+      chatMessagesEl.appendChild(row);
+      return;
+    }
+
+    msgs.forEach(msg => {
+      const row = document.createElement("div");
+      row.className = "bubble-row" + (msg.from === "me" ? " me" : "");
+      let inner = "";
+
+      if (msg.type === "image" && msg.dataUrl) {
+        inner = '<img src="' + msg.dataUrl + '" alt="' + (msg.label || "image") + '" class="chat-image" />';
+      } else {
+        inner = (msg.text || "").replace(/\n/g, "<br>");
+      }
+
+      row.innerHTML = '<div class="bubble ' + (msg.from === "me" ? "me" : "them") + '">' + inner + "</div>";
+      chatMessagesEl.appendChild(row);
+    });
+
+    chatMessagesEl.scrollTop = chatMessagesEl.scrollHeight;
+  }
+
+  function openChatThread(threadId) {
+    const thread = chatThreads[threadId];
+    if (!thread) return;
+
+    currentChatThreadId = threadId;
+    thread.unread = 0;
+    renderChatThreadList();
+
+    // 保持頂部標題為「聊天」，實際對話對象顯示在聊天室視窗內
+    topTitleEl.textContent = "聊天";
+
+    renderChatMessages(threadId);
+    showChatPanel(thread);
+  }
+
+  function initChatModule() {
+    if (!chatThreadListEl) return;
+
+    // 官方聊天室
+    ensureChatThread({
+      id: "official",
+      title: "心遇小精靈（官方）",
+      preview: "歡迎加入心遇 XinYou！有任何問題可以在這裡詢問我。",
+      isOfficial: true,
+      pinned: true,
+      avatar: "https://picsum.photos/200/200?random=991",
+      unread: 1
+    });
+
+    if (!chatHistories["official"] || chatHistories["official"].length === 0) {
+      chatHistories["official"] = [
+        {
+          from: "them",
+          type: "text",
+          text: "歡迎來到「心遇 XinYou」聊天介面示意。\n目前是前端原型，未連接真實後端。"
+        },
+        {
+          from: "me",
+          type: "text",
+          text: "老闆你可以切換上方聊天背景、試試輸入文字、用下面的 + 號打開貼圖 / 照片 / GIF。"
+        }
+      ];
+    }
+
+    // 依照現有好友列表建立對話室
+    friendIds.forEach(fid => {
+      ensureFriendChatThread(fid);
+    });
+
+    renderChatThreadList();
+  }
+
+  function sendChat() {
+    if (!chatInputEl) return;
+    const text = chatInputEl.value.trim();
+    if (!text) return;
+    if (!currentChatThreadId) {
+      alert("請先從上方聊天列表選擇一個對話，再輸入訊息。（Demo）");
+      return;
+    }
+    const msgs = chatHistories[currentChatThreadId] || (chatHistories[currentChatThreadId] = []);
+    msgs.push({
+      from: "me",
+      type: "text",
+      text,
+      ts: Date.now()
+    });
+
+    const thread = chatThreads[currentChatThreadId];
+    if (thread) {
+      thread.preview = text;
+    }
+
+    chatInputEl.value = "";
+    renderChatMessages(currentChatThreadId);
+    renderChatThreadList();
+  }
+
+  chatSendBtn.addEventListener("click", sendChat);
+  chatInputEl.addEventListener("keydown", e => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      sendChat();
+    }
+  });
+
+  chatPlusBtn.addEventListener("click", () => {
+    chatMoreMenu.classList.toggle("show");
+  });
+
+  // 貼圖 / 照片 / GIF
+  chatMoreMenu.querySelectorAll(".chat-more-btn").forEach(btn => {
+    const type = btn.getAttribute("data-type");
+    if (type === "sticker") {
+      btn.addEventListener("click", () => {
+        stickerBar.classList.toggle("show");
+      });
+    }
+  });
+
+  function sendImageMessage(dataUrl, label) {
+    if (!currentChatThreadId) {
+      alert("請先從上方聊天列表選擇一個對話，再傳送圖片。（Demo）");
+      return;
+    }
+    const msgs = chatHistories[currentChatThreadId] || (chatHistories[currentChatThreadId] = []);
+    msgs.push({
+      from: "me",
+      type: "image",
+      dataUrl,
+      label,
+      ts: Date.now()
+    });
+
+    const thread = chatThreads[currentChatThreadId];
+    if (thread && !thread.preview) {
+      thread.preview = label === "gif" ? "[GIF]" : "[圖片]";
+    }
+
+    renderChatMessages(currentChatThreadId);
+    renderChatThreadList();
+  }
+
+  chatPhotoBtn.addEventListener("click", () => {
+    chatPhotoInput.click();
+  });
+  chatGifBtn.addEventListener("click", () => {
+    chatGifInput.click();
+  });
+
+  chatPhotoInput.addEventListener("change", e => {
+    const file = e.target.files && e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = ev => {
+      const dataUrl = ev.target && ev.target.result;
+      if (!dataUrl) return;
+      sendImageMessage(dataUrl, "photo");
+    };
+    reader.readAsDataURL(file);
+    e.target.value = "";
+  });
+
+  chatGifInput.addEventListener("change", e => {
+    const file = e.target.files && e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = ev => {
+      const dataUrl = ev.target && ev.target.result;
+      if (!dataUrl) return;
+      sendImageMessage(dataUrl, "gif");
+    };
+    reader.readAsDataURL(file);
+    e.target.value = "";
+  });
+
+  stickerBar.querySelectorAll(".sticker-btn").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const emo = btn.textContent || "";
+      chatInputEl.value += emo;
+      chatInputEl.focus();
+    });
+  });
+
+  // 聊天背景主題
+  document.querySelectorAll(".chat-theme-pill").forEach(pill => {
+    pill.addEventListener("click", () => {
+      document.querySelectorAll(".chat-theme-pill").forEach(p => p.classList.remove("active"));
+      pill.classList.add("active");
+      const theme = pill.getAttribute("data-theme");
+      chatWrapper.className = "chat-wrapper chat-theme-" + theme;
+    });
+  });
+
+  // 我的狀態
+  const statusSelect = document.getElementById("statusSelect");
+  const myStatusBadge = document.getElementById("myStatusBadge");
+  const myStatusText = document.getElementById("myStatusText");
+  const myProfileSub = document.getElementById("myProfileSub");
+  function updateMyStatus() {
+    const val = statusSelect.value;
+    let text = "已上線";
+    let cls = "status-badge";
+
+    if (val === "online") text = "已上線";
+    if (val === "busy") { text = "忙碌中…"; cls += " status-busy"; }
+    if (val === "eating") { text = "用餐去…"; cls += " status-eating"; }
+    if (val === "shower") { text = "洗澡中…"; cls += " status-shower"; }
+    if (val === "away") { text = "暫離中…"; cls += " status-away"; }
+    if (val === "offline") { text = "離線中"; cls += " status-away"; }
+    if (val === "chatty") text = "想聊天";
+
+    myStatusBadge.className = cls;
+    myStatusText.textContent = text;
+    myProfileSub.textContent = "台灣 · 30 歲左右 · " + text;
+  }
+  statusSelect.addEventListener("change", updateMyStatus);
+
+  // 好友限定小語同步預覽
+  const friendNoteInput = document.getElementById("friendNoteInput");
+  const friendNotePreview = document.getElementById("friendNotePreview");
+  function updateFriendNotePreview() {
+    const t = friendNoteInput.value.trim() || "（尚未設定）";
+    friendNotePreview.innerHTML = '<span class="label">好友限定：</span>' + t;
+  }
+  friendNoteInput.addEventListener("input", updateFriendNotePreview);
+
+  // 我的日記（免費 5 則，VIP 可至 30 則）模組
+  function hmGetDiaryLimit() {
+    const vip = hmGetVipLevel();
+    return vip > 0 ? 30 : 5;
+  }
+
+  function hmLoadDiaries() {
+    try {
+      const raw = localStorage.getItem("hmMyDiaries");
+      if (!raw) return [];
+      const arr = JSON.parse(raw);
+      return Array.isArray(arr) ? arr : [];
+    } catch (e) {
+      return [];
+    }
+  }
+
+  function hmSaveDiaries(list) {
+    try {
+      localStorage.setItem("hmMyDiaries", JSON.stringify(list));
+    } catch (e) {}
+  }
+
+  function hmDeleteDiary(diaryId) {
+    const list = hmLoadDiaries().filter(d => d.id !== diaryId);
+    hmSaveDiaries(list);
+    renderMyDiaries();
+  }
+
+  function renderMyDiaries() {
+    const listEl = document.getElementById("myDiaryList");
+    const limitTextEl = document.getElementById("myDiaryLimitText");
+    if (!listEl || !limitTextEl) return;
+
+    const diaries = hmLoadDiaries();
+    const limit = hmGetDiaryLimit();
+    const vip = hmGetVipLevel();
+
+    limitTextEl.textContent = vip > 0
+      ? "目前已建立 " + diaries.length + " 則日記，VIP 身份最多可建立 " + limit + " 則。"
+      : "目前已建立 " + diaries.length + " 則日記，免費版最多可建立 " + limit + " 則，升級 VIP 後可到 30 則。";
+
+    listEl.innerHTML = "";
+
+    if (!diaries.length) {
+      const empty = document.createElement("div");
+      empty.className = "diary-item";
+      empty.innerHTML = '<div class="diary-date">尚未建立任何日記</div><div>可以寫幾句想讓別人看到的自我介紹或心情。</div>';
+      listEl.appendChild(empty);
+      return;
+    }
+
+    diaries.slice().reverse().forEach(diary => {
+      const item = document.createElement("div");
+      item.className = "diary-item";
+
+      const header = document.createElement("div");
+      header.style.display = "flex";
+      header.style.justifyContent = "space-between";
+      header.style.alignItems = "center";
+
+      const dateDiv = document.createElement("div");
+      dateDiv.className = "diary-date";
+      const time = diary.createdAt ? new Date(diary.createdAt) : new Date();
+      const y = time.getFullYear();
+      const m = String(time.getMonth() + 1).padStart(2, "0");
+      const day = String(time.getDate()).padStart(2, "0");
+      const hh = String(time.getHours()).padStart(2, "0");
+      const mm = String(time.getMinutes()).padStart(2, "0");
+      dateDiv.textContent = y + "-" + m + "-" + day + " " + hh + ":" + mm;
+
+      const delBtn = document.createElement("button");
+      delBtn.type = "button";
+      delBtn.className = "btn btn-sm";
+      delBtn.textContent = "刪除";
+      delBtn.addEventListener("click", () => {
+        if (confirm("確定要刪除這則日記嗎？（Demo）")) {
+          hmDeleteDiary(diary.id);
+        }
+      });
+
+      header.appendChild(dateDiv);
+      header.appendChild(delBtn);
+      item.appendChild(header);
+
+      if (diary.image) {
+        const img = document.createElement("img");
+        img.src = diary.image;
+        img.alt = "日記圖片";
+        img.style.maxWidth = (diary.imageSize || 100) + "%";
+        img.style.borderRadius = "12px";
+        img.style.marginTop = "6px";
+        img.style.marginBottom = "6px";
+        item.appendChild(img);
+      }
+
+      if (diary.text) {
+        const textDiv = document.createElement("div");
+        textDiv.innerHTML = String(diary.text).replace(/\n/g, "<br>");
+        item.appendChild(textDiv);
+      }
+
+      listEl.appendChild(item);
+    });
+  }
+
+
+  // Viewer & 送禮動畫
+  function openPhotoViewer(src) {
+    const viewer = document.getElementById("photoViewer");
+    const img = viewer.querySelector("img");
+    img.src = src;
+    viewer.classList.add("show");
+  }
+  function closeViewer() {
+    document.getElementById("photoViewer").classList.remove("show");
+  }
+  window.openPhotoViewer = openPhotoViewer;
+  window.closeViewer = closeViewer;
+
+  // 依「使用者 id + 第幾張」取得對方的相簿照片
+  
+  // ==============================
+  // Supabase: profile_photos + diaries (公開日記) + blocks/reports
+  // ==============================
+  const remoteAlbumCache = new Map(); // user_id -> [url...]
+  const remoteDiaryCache = new Map(); // user_id -> [{content, created_at}...]
+  let blockedIds = Array.isArray(blockedIds) ? blockedIds : []; // 保留原本變數
+
+  async function hmRefreshBlocksFromSupabase() {
+    try {
+      const cli = await hmGetSupabaseClient();
+      if (!cli) return;
+      const uid = await hmGetAuthedUid(cli);
+      if (!uid) return;
+      const res = await cli.from("blocks").select("blocked_id").eq("blocker_id", uid);
+      if (res.error) throw res.error;
+      blockedIds = (res.data || []).map(r => r.blocked_id).filter(Boolean);
+    } catch (e) {
+      console.warn("[blocks] refresh failed", e);
+    }
+  }
+
+  async function hmFetchRemoteAlbum(profileId) {
+    try {
+      const cli = await hmGetSupabaseClient();
+      if (!cli) return;
+      const res = await cli
+        .from("profile_photos")
+        .select("url,is_avatar,created_at")
+        .eq("user_id", profileId)
+        .order("created_at", { ascending: false })
+        .limit(12);
+      if (res.error) throw res.error;
+
+      const urls = (res.data || [])
+        .filter(r => !r.is_avatar)
+        .map(r => r.url)
+        .filter(Boolean);
+
+      remoteAlbumCache.set(String(profileId), urls);
+      return urls;
+    } catch (e) {
+      console.warn("[profile_photos] fetch album failed", e);
+      return null;
+    }
+  }
+
+  async function hmFetchRemotePublicDiaries(profileId) {
+    try {
+      const cli = await hmGetSupabaseClient();
+      if (!cli) return;
+      const res = await cli
+        .from("diaries")
+        .select("content,created_at")
+        .eq("user_id", profileId)
+        .eq("is_public", true)
+        .order("created_at", { ascending: false })
+        .limit(5);
+      if (res.error) throw res.error;
+      remoteDiaryCache.set(String(profileId), res.data || []);
+      return res.data || [];
+    } catch (e) {
+      console.warn("[diaries] fetch public failed", e);
+      return null;
+    }
+  }
+
+  function hmRenderPublicDiaryList(profileId) {
+    const el = document.getElementById("publicDiaryList");
+    if (!el) return;
+    const list = remoteDiaryCache.get(String(profileId)) || [];
+    if (!list.length) {
+      el.innerHTML = '<div class="diary-item"><div style="color:#6b7280;">尚無公開日記</div></div>';
+      return;
+    }
+    el.innerHTML = list.map(d => {
+      const dt = d.created_at ? new Date(d.created_at) : null;
+      const dateStr = dt ? dt.toISOString().slice(0,10) : "";
+      const content = (d.content || "").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+      return ''
+        + '<div class="diary-item">'
+        + '  <div class="diary-date">' + dateStr + '</div>'
+        + '  <div>' + content + '</div>'
+        + '</div>';
+    }).join("");
+  }
+
+  function hmRenderStrangerAlbumGrid(profileId) {
+    const grid = document.getElementById("strangerAlbumGrid");
+    if (!grid) return;
+    const p = getPersonById(profileId);
+    const totalSlots = 6;
+    const myVipLevel = hmGetVipLevel();
+    const unlocked = hmAlbumIsUnlocked();
+
+    const urls = remoteAlbumCache.get(String(profileId)) || [];
+    const albumHtml = Array.from({ length: totalSlots }).map((_, idx) => {
+      const src = urls[idx] || ("https://picsum.photos/400/400?random=" + (901 + idx));
+      const isFree = idx < 2;
+      const isLocked = !isFree && myVipLevel === 0 && !unlocked;
+      const lockedClass = isLocked ? " locked" : "";
+      return ''
+        + '<div class="album-item' + lockedClass + '" onclick="handleStrangerAlbumClick(' + JSON.stringify(String(profileId)) + ',' + idx + ')">'
+        + '  <img src="' + src + '" alt="photo' + (idx + 1) + '" />'
+        + '  <div class="album-gift-btn" onclick="event.stopPropagation(); sendGiftAnimation(this)">💝 送禮</div>'
+        + '</div>';
+    }).join("");
+    grid.innerHTML = albumHtml;
+  }
+
+  async function hmLoadRemoteAssetsForProfile(profileId) {
+    await Promise.all([
+      hmFetchRemoteAlbum(profileId),
+      hmFetchRemotePublicDiaries(profileId)
+    ]);
+    // 若目前仍在此頁，刷新區塊
+    if (String(currentProfileId) === String(profileId)) {
+      hmRenderStrangerAlbumGrid(profileId);
+      hmRenderPublicDiaryList(profileId);
+    }
+  }
+
+  // Override: person album src from cache
+  function hmGetPersonAlbumPhotoSrc(personId, idx) {
+    const urls = remoteAlbumCache.get(String(personId)) || [];
+    if (urls[idx]) return urls[idx];
+    if (albumPhotos && albumPhotos[idx]) return albumPhotos[idx];
+    return "https://picsum.photos/400/400?random=" + (901 + idx);
+  }
+
+  async function hmBlockUser(id) {
+    try {
+      if (!isUuid(id)) return alert("此用戶不是 Supabase UUID，無法封鎖（僅雲端用戶可用）。");
+      const cli = await hmGetSupabaseClient();
+      if (!cli) return alert("Supabase 尚未初始化。");
+      const uid = await hmGetAuthedUid(cli);
+      if (!uid) return alert("請先登入 Supabase 再操作封鎖。");
+
+      const res = await cli.from("blocks").insert({ blocker_id: uid, blocked_id: id }).select("id").single();
+      if (res.error) throw res.error;
+
+      await hmRefreshBlocksFromSupabase();
+      // 封鎖後刷新巧遇與好友頁
+      currentBatch = [];
+      renderPeopleGrid();
+      renderFriendsPage();
+      alert("已封鎖此用戶。");
+    } catch (e) {
+      console.warn("[blocks] insert failed", e);
+      alert("封鎖失敗：" + ((e && e.message) ? e.message : String(e)));
+    }
+  }
+
+  async function hmReportUser(id) {
+    try {
+      if (!isUuid(id)) return alert("此用戶不是 Supabase UUID，無法檢舉（僅雲端用戶可用）。");
+      const reason = window.prompt("請輸入檢舉原因（會送到後台審核）：", "不當內容 / 詐騙疑慮 / 垃圾訊息");
+      if (reason == null) return;
+      const cli = await hmGetSupabaseClient();
+      if (!cli) return alert("Supabase 尚未初始化。");
+      const uid = await hmGetAuthedUid(cli);
+      if (!uid) return alert("請先登入 Supabase 再操作檢舉。");
+
+      const res = await cli.from("reports").insert({ reporter_id: uid, reported_id: id, reason: reason }).select("id").single();
+      if (res.error) throw res.error;
+      alert("已送出檢舉。");
+    } catch (e) {
+      console.warn("[reports] insert failed", e);
+      alert("檢舉失敗：" + ((e && e.message) ? e.message : String(e)));
+    }
+  }
+
+  function spawnHeart(x, y) {
+    const h = document.createElement("div");
+    h.className = "gift-heart";
+    h.textContent = "💗";
+    h.style.left = x + "px";
+    h.style.top = y + "px";
+    document.body.appendChild(h);
+    setTimeout(() => h.remove(), 1000);
+  }
+  function sendGiftAnimation(el) {
+    const rect = el.getBoundingClientRect();
+    spawnHeart(rect.left + rect.width / 2, rect.top);
+    alert("這邊之後會打開送禮物面板。");
+  }
+  function sendGiftAnimationFromHeader(btn) {
+    const rect = btn.getBoundingClientRect();
+    spawnHeart(rect.left + rect.width / 2, rect.top);
+    alert("這邊之後會打開送禮物面板。");
+  }
+  function setAsAvatar(idx) {
+    let newAvatar;
+    if (currentProfileId != null) {
+      newAvatar = hmGetPersonAlbumPhotoSrc(currentProfileId, idx);
+    } else {
+      newAvatar = hmGetAlbumPhotoSrc(idx);
+    }
+    const avatarImg = document.querySelector(".profile-avatar img");
+    if (avatarImg) avatarImg.src = newAvatar;
+    alert("已把這張照片設為頭貼！（Demo）");
+  }
+  window.sendGiftAnimation = sendGiftAnimation;
+  window.sendGiftAnimationFromHeader = sendGiftAnimationFromHeader;
+  window.setAsAvatar = setAsAvatar;
+  const HM_MOOD_LS_KEY = "hmMoodPosts";
+  const HM_MOOD_ROSE_KEY = "hmMoodRoses";
+
+  function hmLoadMoodRoses() {
+    try {
+      const raw = localStorage.getItem(HM_MOOD_ROSE_KEY);
+      if (!raw) return 3; // Demo：第一次給 3 束
+      const n = Number(raw);
+      return Number.isFinite(n) && n >= 0 ? n : 0;
+    } catch (e) {
+      return 0;
+    }
+  }
+
+  function hmSaveMoodRoses(n) {
+    try {
+      localStorage.setItem(HM_MOOD_ROSE_KEY, String(n));
+    } catch (e) {}
+  }
+
+  function hmUpdateMoodRoseUI() {
+    const el = document.getElementById("moodRoseCount");
+    if (el) {
+      el.textContent = hmLoadMoodRoses();
+    }
+  }
+
+  function hmLoadMoodPosts() {
+    try {
+      const raw = localStorage.getItem(HM_MOOD_LS_KEY);
+      if (!raw) return [];
+      const arr = JSON.parse(raw);
+      return Array.isArray(arr) ? arr : [];
+    } catch (e) {
+      return [];
+    }
+  }
+
+  function hmSaveMoodPosts(list) {
+    try {
+      localStorage.setItem(HM_MOOD_LS_KEY, JSON.stringify(list));
+    } catch (e) {}
+  }
+
+  function hmGetCurrentNickname() {
+    // 嘗試從「我的資料」區塊或 localStorage 取得暱稱
+    const nameEl = document.getElementById("myProfileName");
+    if (nameEl && nameEl.textContent.trim()) {
+      return nameEl.textContent.trim();
+    }
+    try {
+      const raw = localStorage.getItem("hmProfileData");
+      if (raw) {
+        const data = JSON.parse(raw);
+        if (data && data.name) return String(data.name);
+      }
+    } catch (e) {}
+    return "";
+  }
+
+  function hmRenderMoodList() {
+    const listEl = document.getElementById("moodList");
+    const emptyEl = document.getElementById("moodEmptyHint");
+    if (!listEl) return;
+    const posts = hmLoadMoodPosts()
+      .slice()
+      .sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+
+    listEl.innerHTML = "";
+
+    if (!posts.length) {
+      if (emptyEl) emptyEl.style.display = "block";
+      return;
+    }
+    if (emptyEl) emptyEl.style.display = "none";
+
+    const nickname = hmGetCurrentNickname();
+
+    posts.forEach(post => {
+      const card = document.createElement("div");
+      card.className = "mood-item";
+
+      const header = document.createElement("div");
+      header.className = "mood-item-header";
+
+      const left = document.createElement("div");
+      left.className = "mood-item-author";
+
+      const nameDiv = document.createElement("div");
+      nameDiv.className = "mood-item-author-name";
+      const isAnon = !post.identity || post.identity === "anon";
+      nameDiv.textContent = isAnon ? "匿名用戶" : (nickname || "某位用戶");
+
+      const metaDiv = document.createElement("div");
+      metaDiv.className = "mood-item-meta";
+      const t = new Date(post.createdAt || Date.now());
+      const y = t.getFullYear();
+      const m = String(t.getMonth() + 1).padStart(2, "0");
+      const d = String(t.getDate()).padStart(2, "0");
+      const hh = String(t.getHours()).padStart(2, "0");
+      const mm = String(t.getMinutes()).padStart(2, "0");
+      metaDiv.textContent = y + "-" + m + "-" + d + " " + hh + ":" + mm;
+
+      left.appendChild(nameDiv);
+      left.appendChild(metaDiv);
+
+      const badge = document.createElement("div");
+      badge.className = "mood-item-badge";
+      badge.textContent = post.allowReplies ? "開放回覆" : "不開放回覆";
+
+      header.appendChild(left);
+      header.appendChild(badge);
+      card.appendChild(header);
+
+      const contentDiv = document.createElement("div");
+      contentDiv.className = "mood-item-content";
+      contentDiv.innerHTML = String(post.text || "").replace(/\n/g, "<br>");
+      card.appendChild(contentDiv);
+
+      if (post.allowReplies) {
+        const actions = document.createElement("div");
+        actions.className = "mood-item-actions";
+
+        const replyBtn = document.createElement("button");
+        replyBtn.type = "button";
+        replyBtn.className = "mood-item-reply-btn";
+        replyBtn.textContent = "回覆";
+        replyBtn.addEventListener("click", () => {
+          const msg = prompt("輸入想回覆的一句話（Demo，僅本機暫存）：");
+          if (!msg || !msg.trim()) return;
+          const all = hmLoadMoodPosts();
+          const found = all.find(p => p.id === post.id);
+          if (found) {
+            if (!Array.isArray(found.replies)) found.replies = [];
+            found.replies.push({
+              id: Date.now(),
+              text: msg.trim(),
+              createdAt: Date.now()
+            });
+            hmSaveMoodPosts(all);
+            hmRenderMoodList();
+          }
+        });
+
+        const replyCount = document.createElement("div");
+        replyCount.className = "mood-item-reply-count";
+        const count = Array.isArray(post.replies) ? post.replies.length : 0;
+        replyCount.textContent = count ? (count + " 則回覆") : "尚無回覆";
+
+        actions.appendChild(replyBtn);
+        actions.appendChild(replyCount);
+        card.appendChild(actions);
+      }
+
+      listEl.appendChild(card);
+    });
+  }
+
+  function initMoodSquare() {
+    hmUpdateMoodRoseUI();
+    hmRenderMoodList();
+
+    const contentInput = document.getElementById("moodContentInput");
+    const allowRepliesInput = document.getElementById("moodAllowReplies");
+    const postBtn = document.getElementById("btnPostMood");
+    const rulesBtn = document.getElementById("btnMoodRules");
+    const roseCountEl = document.getElementById("moodRoseCount");
+
+    if (rulesBtn) {
+      rulesBtn.addEventListener("click", () => {
+        alert("心情日記廣場規則（Demo）：\n\n· 禁止指名道姓攻擊或造謠現實人物\n· 請勿張貼聯絡方式與個資\n· 發佈會消耗 1 束玫瑰花束，可透過每日簽到或儲值獲得（之後會接上真正機制）。");
+      });
+    }
+
+    if (roseCountEl) {
+      // Demo：雙擊玫瑰數量可暫時補充，方便你測試
+      roseCountEl.addEventListener("dblclick", () => {
+        let n = hmLoadMoodRoses();
+        n += 5;
+        hmSaveMoodRoses(n);
+        hmUpdateMoodRoseUI();
+        alert("Demo：已暫時補充 5 束玫瑰，方便測試。正式版會改成每日簽到或儲值取得。");
+      });
+    }
+
+    if (postBtn && contentInput && allowRepliesInput) {
+      postBtn.addEventListener("click", () => {
+        const text = contentInput.value.trim();
+        if (!text) {
+          alert("請先寫一些內容，再發佈心情。");
+          return;
+        }
+
+        let roses = hmLoadMoodRoses();
+        if (roses <= 0) {
+          alert("玫瑰花束不足，暫時無法發佈。之後可以透過每日簽到或儲值取得（Demo）。");
+          return;
+        }
+
+        const identityRadio = document.querySelector('input[name="moodIdentity"]:checked');
+        const identity = identityRadio ? identityRadio.value : "anon";
+        const allowReplies = !!allowRepliesInput.checked;
+
+        const posts = hmLoadMoodPosts();
+        posts.push({
+          id: Date.now(),
+          text,
+          identity,
+          allowReplies,
+          createdAt: Date.now(),
+          replies: []
+        });
+        hmSaveMoodPosts(posts);
+
+        roses -= 1;
+        hmSaveMoodRoses(roses);
+        hmUpdateMoodRoseUI();
+
+        contentInput.value = "";
+        allowRepliesInput.checked = true;
+        const anonRadio = document.querySelector('input[name="moodIdentity"][value="anon"]');
+        if (anonRadio) anonRadio.checked = true;
+
+        hmRenderMoodList();
+      });
+    }
+  }
+
+
+  // ================== 基本資料 + 綁定帳號 + 我的資料卡片 ==================
+  function hmHasCompletedProfile() {
+    try {
+      return localStorage.getItem("hmProfileCompleted") === "true";
+    } catch (e) {
+      return false;
+    }
+  }
+
+  function hmSaveProfileData(data) {
+    try {
+      localStorage.setItem("hmProfileData", JSON.stringify(data));
+      localStorage.setItem("hmProfileCompleted", "true");
+    } catch (e) {
+      console.warn("無法儲存使用者資料到 localStorage：", e);
+    }
+  }
+
+  // ==============================
+  // Supabase sync (public.profiles)
+  // ==============================
+  // 目標：在「編輯基本資料」存檔時，同步寫入 Supabase 的 public.profiles。
+  // 方式：upsert（以登入者 auth.uid() 對應同一筆 profiles.id）
+  // 注意：不在程式硬寫 Key，改讀取 localStorage：SB_URL / SB_ANON_KEY（由測試面板寫入）
+
+  var HM_SB_URL_KEY = "SB_URL";
+  var HM_SB_ANON_KEY = "SB_ANON_KEY";
+  var HM_SB_SDK_URL = "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.3/dist/umd/supabase.js";
+
+  // ====== A) 寫死 Supabase 專案連線資訊（必要時仍可用 localStorage 覆蓋） ======
+  // 1) Project URL：已寫死為你目前專案
+  // 2) anon public key：若你不想再用測試面板貼 key，請把下面字串換成你的 anon key。
+  //    （Supabase Dashboard → Project Settings → API → anon public key）
+  var HM_SB_DEFAULT_URL = "https://eqtvoxcavjgronfmalfw.supabase.co";
+  // TODO: 請把這裡換成你的 anon public key（很長一串 JWT）
+  var HM_SB_DEFAULT_ANON_KEY = "";
+
+  // 若瀏覽器尚未存過 SB_URL/SB_ANON_KEY，先用寫死的預設值補上（之後仍可被覆蓋）。
+  try {
+    if (!localStorage.getItem(HM_SB_URL_KEY) && HM_SB_DEFAULT_URL) {
+      localStorage.setItem(HM_SB_URL_KEY, HM_SB_DEFAULT_URL);
+    }
+    if (!localStorage.getItem(HM_SB_ANON_KEY) && HM_SB_DEFAULT_ANON_KEY) {
+      localStorage.setItem(HM_SB_ANON_KEY, HM_SB_DEFAULT_ANON_KEY);
+    }
+  } catch (e) { /* ignore */ }
+  var hmSupabaseClient = null;
+  var hmSupabaseSdkLoading = null;
+
+  function hmSbLog(msg) {
+    try {
+      var el = document.getElementById("sb_log");
+      if (!el) return;
+      if (typeof msg === "string") el.textContent = msg;
+      else el.textContent = JSON.stringify(msg, null, 2);
+    } catch (e) { /* ignore */ }
+  }
+
+  function hmEnsureSupabaseSdk() {
+    if (window.supabase && window.supabase.createClient) return Promise.resolve();
+    if (hmSupabaseSdkLoading) return hmSupabaseSdkLoading;
+
+    hmSupabaseSdkLoading = new Promise(function (resolve, reject) {
+      var existing = document.getElementById("hm_supabase_sdk");
+      if (existing) {
+        // wait until ready
+        var t0 = Date.now();
+        var timer = setInterval(function () {
+          if (window.supabase && window.supabase.createClient) {
+            clearInterval(timer);
+            resolve();
+          }
+          if (Date.now() - t0 > 15000) {
+            clearInterval(timer);
+            reject(new Error("Supabase SDK 載入逾時"));
+          }
+        }, 200);
+        return;
+      }
+
+      var s = document.createElement("script");
+      s.id = "hm_supabase_sdk";
+      s.src = HM_SB_SDK_URL;
+      s.async = true;
+      s.onload = function () {
+        if (window.supabase && window.supabase.createClient) resolve();
+        else reject(new Error("Supabase SDK 載入後仍未找到 createClient"));
+      };
+      s.onerror = function () { reject(new Error("Supabase SDK 載入失敗")); };
+      document.head.appendChild(s);
+    });
+
+    return hmSupabaseSdkLoading;
+  }
+
+  function hmGetSupabaseClient() {
+    var url = "";
+    var key = "";
+    try {
+      url = (localStorage.getItem(HM_SB_URL_KEY) || HM_SB_DEFAULT_URL || "").trim();
+      key = (localStorage.getItem(HM_SB_ANON_KEY) || HM_SB_DEFAULT_ANON_KEY || "").trim();
+    } catch (e) { /* ignore */ }
+
+    if (!url || !key) return Promise.resolve(null);
+    if (hmSupabaseClient) return Promise.resolve(hmSupabaseClient);
+
+    return hmEnsureSupabaseSdk().then(function () {
+      hmSupabaseClient = window.supabase.createClient(url, key, {
+        auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: false }
+      });
+      return hmSupabaseClient;
+    });
+  }
+
+  async function hmSyncProfileToSupabase(profile) {
+    try {
+      var cli = await hmGetSupabaseClient();
+      if (!cli) {
+        // 沒設定 URL/Key 就不做同步（避免影響 demo 使用）
+        return { ok: false, skipped: true, reason: "no_sb_url_key" };
+      }
+
+      // 取得 session（避免 missing sub claim / 403：沒有 session 就不要呼叫 getSession）
+      var sessRes = await cli.auth.getSession();
+      if (sessRes && sessRes.error) throw sessRes.error;
+      var session = (sessRes && sessRes.data) ? sessRes.data.session : null;
+      if (!session || !session.user) {
+        return { ok: false, skipped: true, reason: "not_signed_in" };
+      }
+
+      var uid = session.user.id;
+      // 轉型（避免 int 欄位塞到字串）
+      var heightVal = profile.height === "" || profile.height == null ? null : Number(profile.height);
+      var weightVal = profile.weight === "" || profile.weight == null ? null : Number(profile.weight);
+      if (Number.isNaN(heightVal)) heightVal = null;
+      if (Number.isNaN(weightVal)) weightVal = null;
+       
+var nameVal = (profile && profile.name != null) ? String(profile.name).trim() : "";
+if (!nameVal) nameVal = null;
+       
+      var payload = {
+        id: uid,
+        name: nameVal,                 
+        region: profile.region || null,
+        height: heightVal,
+        weight: weightVal,
+        gender: profile.gender || null,
+        age_range: profile.age_range || null,
+        avatar_url: profile.avatar_url || null
+      };
+
+      // upsert：同一個 uid 永遠寫回同一筆 profiles.id
+      var upsertRes = await cli
+        .from("profiles")
+        .upsert(payload, { onConflict: "id" })
+        .select("id,name,region,height,weight,gender,age_range,avatar_url,created_at")
+        .single();
+
+      if (upsertRes && upsertRes.error) throw upsertRes.error;
+
+      // 方便除錯：把結果寫到測試面板 log
+      hmSbLog({ ok: true, profiles_upsert: upsertRes.data });
+      return { ok: true, data: upsertRes.data };
+    } catch (e) {
+      console.warn("同步 profiles 到 Supabase 失敗：", e);
+      hmSbLog({ ok: false, error: (e && e.message) ? e.message : String(e) });
+      return { ok: false, error: e };
+    }
+  }
+
+  
+  // ================== Supabase profiles：讀取（頁面載入自動回填） ==================
+  async function hmFetchProfileFromSupabase() {
+    try {
+      const cli = await hmGetSupabaseClient();
+      if (!cli) return { ok: false, skipped: true, reason: "no_sb_url_key" };
+
+      const sessRes = await cli.auth.getSession();
+      if (sessRes.error) throw sessRes.error;
+
+      const session = sessRes.data && sessRes.data.session;
+      if (!session || !session.user) return { ok: false, skipped: true, reason: "no_session" };
+
+      const uid = session.user.id;
+
+      const res = await cli
+        .from("profiles")
+        .select("id,name,region,height,weight,gender,age_range,avatar_url,created_at,updated_at")
+        .eq("id", uid)
+        .maybeSingle();
+
+      if (res.error) throw res.error;
+
+      if (!res.data) {
+        hmSbLog({ ok: true, profiles_read: null, note: "no_row" });
+        return { ok: true, data: null };
+      }
+
+      hmSbLog({ ok: true, profiles_read: res.data });
+      return { ok: true, data: res.data };
+    } catch (e) {
+      console.warn("讀取 Supabase profiles 失敗：", e);
+      hmSbLog({ ok: false, error: (e && e.message) ? e.message : String(e) });
+      return { ok: false, error: e };
+    }
+  }
+
+  async function hmHydrateProfileFromSupabase() {
+    const got = await hmFetchProfileFromSupabase();
+    if (!got || !got.ok || !got.data) return got;
+
+    // Merge into local profile (keep socials/other local-only fields)
+    let localProfile = {};
+    try {
+      const raw = localStorage.getItem("hmProfileData");
+      if (raw) localProfile = JSON.parse(raw) || {};
+    } catch (e) { /* ignore */ }
+
+    const merged = Object.assign({}, localProfile);
+
+    // Supabase as source of truth for these fields
+    if (got.data.name != null) merged.name = got.data.name;
+    if (got.data.region != null) merged.region = got.data.region;
+    if (got.data.height != null) merged.height = got.data.height;
+    if (got.data.weight != null) merged.weight = got.data.weight;
+    if (got.data.gender != null) merged.gender = got.data.gender;
+    if (got.data.age_range != null) merged.age_range = got.data.age_range;
+    if (got.data.avatar_url != null) merged.avatar_url = got.data.avatar_url;
+
+    hmSaveProfileData(merged);
+
+    // Refresh UI
+    try { hmInitProfileCard(); } catch (e) { /* ignore */ }
+    try { hmInitMyProfileHeader(); } catch (e) { /* ignore */ }
+
+    // If the edit modal/form is present, also refill it
+    try {
+      if (document.getElementById("hm-name")) {
+        hmFillProfileForm({ lockBasic: hmHasCompletedProfile() });
+      }
+    } catch (e) { /* ignore */ }
+
+    return { ok: true, data: merged };
+  }
+// 保持相容：某些舊版程式碼呼叫 hmUpsertProfileToSupabase
+  // 這裡直接 alias 到 hmSyncProfileToSupabase，避免 ReferenceError
+  window.hmUpsertProfileToSupabase = hmSyncProfileToSupabase;
+
+  function hmSetAuthProvider(provider) {
+    try {
+      localStorage.setItem("hmAuthProvider", provider);
+    } catch (e) {
+      console.warn("無法儲存綁定系統：", e);
+    }
+  }
+
+  function hmGetAuthProvider() {
+    try {
+      return localStorage.getItem("hmAuthProvider") || "";
+    } catch (e) {
+      return "";
+    }
+  }
+
+  function hmBuildSocialUrl(platform, value) {
+    if (!value) return null;
+    const v = value.trim();
+    if (!v) return null;
+    if (v.startsWith("http://") || v.startsWith("https://")) {
+      return v;
+    }
+    switch (platform) {
+      case "threads":
+        return "https://www.threads.net/@" + v.replace(/^@/, "");
+      case "x":
+        return "https://x.com/" + v.replace(/^@/, "");
+      case "instagram":
+        return "https://www.instagram.com/" + v.replace(/^@/, "");
+      case "facebook":
+        return "https://www.facebook.com/" + v;
+      case "other":
+      default:
+        return null;
+    }
+  }
+
+  
+  
+  
+  // ================== Region (縣市選單 + 其他) ==================
+  const HM_TW_CITIES = [
+    "臺北市","新北市","基隆市","桃園市","新竹市","新竹縣","宜蘭縣",
+    "苗栗縣","臺中市","彰化縣","南投縣","雲林縣",
+    "嘉義市","嘉義縣","臺南市","高雄市","屏東縣",
+    "花蓮縣","臺東縣","澎湖縣","金門縣","連江縣"
+  ];
+
+  function hmWireRegionOtherToggle() {
+    const sel = document.getElementById("hm-region");
+    const other = document.getElementById("hm-region-other");
+    if (!sel || !other) return;
+
+    function apply() {
+      const v = (sel.value || "").trim();
+      if (v === "__other__") {
+        other.style.display = "block";
+      } else {
+        other.style.display = "none";
+        other.value = "";
+      }
+    }
+
+    sel.addEventListener("change", apply);
+    apply();
+  }
+
+  function hmGetRegionFromForm() {
+    const sel = document.getElementById("hm-region");
+    const other = document.getElementById("hm-region-other");
+    if (!sel) return "";
+    const v = (sel.value || "").trim();
+    if (v === "__other__") {
+      return (other && other.value ? other.value.trim() : "");
+    }
+    return v;
+  }
+
+  function hmSetRegionToForm(regionText) {
+    const sel = document.getElementById("hm-region");
+    const other = document.getElementById("hm-region-other");
+    if (!sel) return;
+
+    const r = (regionText || "").trim();
+
+    // If no region -> reset
+    if (!r) {
+      sel.value = "";
+      if (other) { other.value = ""; other.style.display = "none"; }
+      return;
+    }
+
+    // If matches known city list -> select it
+    if (HM_TW_CITIES.indexOf(r) >= 0) {
+      sel.value = r;
+      if (other) { other.value = ""; other.style.display = "none"; }
+      return;
+    }
+
+    // Otherwise -> "other"
+    sel.value = "__other__";
+    if (other) {
+      other.value = r;
+      other.style.display = "block";
+    }
+  }
+function hmFillProfileForm(options) {
+    const opts = options || {};
+    const nameInput = document.getElementById("hm-name");
+    const heightInput = document.getElementById("hm-height");
+    const weightInput = document.getElementById("hm-weight");
+    const regionInput = document.getElementById("hm-region");
+    const threadsInput = document.getElementById("hm-threads");
+    const xInput = document.getElementById("hm-x");
+    const igInput = document.getElementById("hm-instagram");
+    const fbInput = document.getElementById("hm-facebook");
+    const otherInput = document.getElementById("hm-other");
+    const agreeInput = document.getElementById("hm-agree");
+
+    if (!nameInput) return;
+
+    let profile = null;
+    const dataStr = localStorage.getItem("hmProfileData");
+    if (dataStr) {
+      try {
+        profile = JSON.parse(dataStr);
+      } catch (e) {
+        console.warn("解析 hmProfileData 失敗（fill form）：", e);
+      }
+    }
+    profile = profile || {};
+
+    const socials = profile.socials || {};
+
+    // 基本欄位
+    nameInput.value = profile.name || "";
+    heightInput.value = profile.height || "";
+    weightInput.value = profile.weight || "";
+        hmSetRegionToForm(profile.region || "");
+// 社群欄位
+    threadsInput.value = socials.threads || "";
+    xInput.value = socials.x || "";
+    igInput.value = socials.instagram || "";
+    fbInput.value = socials.facebook || "";
+    otherInput.value = socials.other || "";
+
+    const lockBasic = !!opts.lockBasic;
+
+    // 控制是否可編輯
+    nameInput.readOnly = lockBasic;
+    heightInput.readOnly = lockBasic;
+    weightInput.readOnly = lockBasic;
+        if (regionInput) {
+      if (regionInput.tagName === "SELECT") regionInput.disabled = lockBasic;
+      else regionInput.readOnly = lockBasic;
+    }
+if (agreeInput) {
+      if (lockBasic) {
+        // 已完成基本資料後再次開啟，只編輯社群帳號，條款視為已同意
+        agreeInput.checked = true;
+        agreeInput.disabled = true;
+      } else {
+        agreeInput.disabled = false;
+        agreeInput.checked = false;
+      }
+    }
+  }
+
+
+  function hmInitAvatar() {
+    try {
+      const imgEl = document.getElementById("myAvatarImage");
+      if (!imgEl) return;
+      const dataUrl = localStorage.getItem("hmAvatarImage");
+      if (dataUrl) {
+        imgEl.src = dataUrl;
+        try {
+          hmApplyAvatarToProfileCard();
+        } catch (e2) {
+          console.warn("同步對外頭貼失敗：", e2);
+        }
+      }
+    } catch (e) {
+      console.warn("初始化頭貼失敗：", e);
+    }
+  }
+
+function hmHandleAvatarFile(inputEl) {
+  try {
+    const imgEl = document.getElementById("myAvatarImage");
+    if (!inputEl || !imgEl) return;
+    const file = inputEl.files && inputEl.files[0];
+    if (!file) return;
+
+    // 先用 Object URL 讓各種瀏覽器（含 iOS / Android）立即預覽
+    try {
+      const objectUrl = URL.createObjectURL(file);
+      imgEl.src = objectUrl;
+      try {
+        hmApplyAvatarToProfileCard();
+      } catch (e3) {
+        console.warn("同步對外頭貼失敗 (object URL)：", e3);
+      }
+    } catch (eObj) {
+      console.warn("建立 Object URL 失敗：", eObj);
+    }
+
+    // 再用 FileReader 讀成 base64，存進 localStorage，供下次載入使用
+    const reader = new FileReader();
+    reader.onload = function (ev) {
+      const result = ev.target && ev.target.result;
+      if (!result) return;
+      try {
+        localStorage.setItem("hmAvatarImage", result);
+      } catch (err) {
+        console.warn("儲存頭貼失敗：", err);
+      }
+      try {
+        hmApplyAvatarToProfileCard();
+      } catch (e2) {
+        console.warn("同步對外頭貼失敗 (base64)：", e2);
+      }
+    };
+    reader.readAsDataURL(file);
+  } catch (e) {
+    console.warn("處理頭貼上傳失敗：", e);
+  }
+}
+
+function hmBindAvatarUploader() {
+  const imgEl = document.getElementById("myAvatarImage");
+  const input = document.getElementById("myAvatarFileInput");
+  const btn = document.getElementById("myAvatarChangeBtn");
+  if (!imgEl || !input) return;
+
+  // 按鈕：更換頭貼
+  if (btn) {
+    btn.onclick = function () {
+      input.click();
+    };
+  }
+
+  // 點擊頭像也能開啟上傳（iOS / Android / Desktop 通用）
+  imgEl.onclick = function () {
+    input.click();
+  };
+
+  // 統一走 hmHandleAvatarFile，確保各環境一致
+  input.onchange = function () {
+    try {
+      hmHandleAvatarFile(input);
+    } catch (e) {
+      console.warn("頭貼變更處理失敗：", e);
+    }
+  };
+}
+
+function hmApplyAvatarToProfileCard() {
+    const avatarWrapper = document.querySelector(".hm-profile-avatar");
+    const avatarTextEl = document.getElementById("hm-profile-avatar-text");
+    if (!avatarWrapper || !avatarTextEl) return;
+    const dataUrl = localStorage.getItem("hmAvatarImage");
+    if (dataUrl) {
+      avatarWrapper.style.backgroundImage = "url('" + dataUrl + "')";
+      avatarWrapper.style.backgroundSize = "cover";
+      avatarWrapper.style.backgroundPosition = "center";
+      avatarWrapper.style.color = "transparent";
+    } else {
+      avatarWrapper.style.backgroundImage = "";
+      avatarWrapper.style.backgroundSize = "";
+      avatarWrapper.style.backgroundPosition = "";
+      avatarWrapper.style.color = "#fff";
+    }
+  }
+
+function hmInitProfileCard() {
+    const dataStr = localStorage.getItem("hmProfileData");
+    const nameEl = document.getElementById("hm-profile-name");
+    const metaEl = document.getElementById("hm-profile-meta");
+    const regionEl = document.getElementById("hm-profile-region");
+    const avatarTextEl = document.getElementById("hm-profile-avatar-text");
+    const socialListEl = document.getElementById("hm-profile-social-list");
+    const bindEl = document.getElementById("hm-profile-bind");
+
+    if (!nameEl || !metaEl || !regionEl || !avatarTextEl || !socialListEl) return;
+
+    let profile = null;
+    if (dataStr) {
+      try {
+        profile = JSON.parse(dataStr);
+      } catch (e) {
+        console.warn("解析 hmProfileData 失敗：", e);
+      }
+    }
+    const name = profile && profile.name ? profile.name : "未設定姓名";
+    const height = profile && profile.height ? profile.height : "";
+    const weight = profile && profile.weight ? profile.weight : "";
+    const region = profile && profile.region ? profile.region : "未填寫";
+
+    nameEl.textContent = name;
+    regionEl.textContent = "居住區域：" + region;
+
+    if (height || weight) {
+      const hText = height ? height + "cm" : "身高未填寫";
+      const wText = weight ? weight + "kg" : "體重未填寫";
+      metaEl.textContent = hText + " ／ " + wText;
+    } else {
+      metaEl.textContent = "身高 / 體重 未填寫";
+    }
+
+    let avatarText = "Me";
+    if (name && typeof name === "string") {
+      const trimmed = name.trim();
+      if (trimmed.length === 1) avatarText = trimmed;
+      else if (trimmed.length >= 2) avatarText = trimmed.slice(0, 2);
+    }
+    avatarTextEl.textContent = avatarText;
+
+    const provider = hmGetAuthProvider();
+    if (bindEl) {
+      if (!provider) {
+        bindEl.textContent = "尚未綁定帳號";
+      } else if (provider === "google") {
+        bindEl.textContent = "已綁定：Google 帳號（示意）";
+      } else if (provider === "facebook") {
+        bindEl.textContent = "已綁定：Facebook 帳號（示意）";
+      } else if (provider === "apple") {
+        bindEl.textContent = "已綁定：Apple 帳號（示意）";
+      } else {
+        bindEl.textContent = "已綁定：其他系統帳號（示意）";
+      }
+    }
+
+    const socials = (profile && profile.socials) || {};
+    const items = [];
+    const config = [
+      { key: "threads", label: "Threads", short: "Th", className: "hm-social-threads" },
+      { key: "x", label: "X", short: "X", className: "hm-social-x" },
+      { key: "instagram", label: "IG", short: "IG", className: "hm-social-instagram" },
+      { key: "facebook", label: "FB", short: "FB", className: "hm-social-facebook" },
+      { key: "other", label: "其他", short: "?", className: "hm-social-other" }
+    ];
+
+    socialListEl.innerHTML = "";
+    config.forEach((c) => {
+      const rawValue = socials[c.key];
+      if (!rawValue || !rawValue.trim) return;
+      if (!rawValue.trim()) return;
+      const url = hmBuildSocialUrl(c.key, rawValue);
+      items.push({
+        key: c.key,
+        label: c.label,
+        short: c.short,
+        className: c.className,
+        raw: rawValue.trim(),
+        url
+      });
+    });
+
+    if (items.length === 0) {
+      const span = document.createElement("span");
+      span.className = "hm-profile-social-empty";
+      span.textContent = "目前尚未串聯任何社群帳號";
+      socialListEl.appendChild(span);
+    } else {
+      items.forEach((item) => {
+        let el;
+        if (item.url) {
+          el = document.createElement("a");
+          el.href = item.url;
+          el.target = "_blank";
+          el.rel = "noopener noreferrer";
+        } else {
+          el = document.createElement("div");
+        }
+
+        el.className = "hm-social-chip " + item.className;
+
+        const icon = document.createElement("span");
+        icon.className = "hm-social-icon";
+        icon.textContent = item.short;
+
+        const text = document.createElement("span");
+        const displayRaw = item.raw.length > 14 ? item.raw.slice(0, 13) + "..." : item.raw;
+        text.textContent = item.label + "｜" + displayRaw;
+
+        el.appendChild(icon);
+        el.appendChild(text);
+        socialListEl.appendChild(el);
+      });
+    }
+  }
+
+  
+  function hmInitMyProfileHeader() {
+    try {
+      const dataStr = localStorage.getItem("hmProfileData");
+      const nameSpan = document.getElementById("myProfileName");
+      const subEl = document.getElementById("myProfileSub");
+      const statusTextEl = document.getElementById("myStatusText");
+
+      if (!nameSpan || !subEl) return;
+
+      let profile = null;
+      if (dataStr) {
+        try {
+          profile = JSON.parse(dataStr);
+        } catch (e) {
+          console.warn("解析 hmProfileData 失敗（header）：", e);
+        }
+      }
+
+      const name = profile && profile.name ? profile.name : "未設定姓名";
+      const height = profile && profile.height ? profile.height : "";
+      const weight = profile && profile.weight ? profile.weight : "";
+      const region = profile && profile.region ? profile.region : "";
+
+      nameSpan.textContent = name;
+
+      let subText = "台灣";
+      if (region) {
+        subText += " · " + region;
+      }
+
+      if (height || weight) {
+        let hw = "";
+        if (height) hw += height + "cm";
+        if (height && weight) hw += " / ";
+        if (weight) hw += weight + "kg";
+        if (hw) subText += " · " + hw;
+      }
+
+      if (statusTextEl && statusTextEl.textContent) {
+        subText += " · " + statusTextEl.textContent;
+      }
+
+      subEl.textContent = subText;
+    } catch (e) {
+      console.warn("初始化我的資料頁頭時發生錯誤：", e);
+    }
+  }
+
+// ================== VIP & 我的 6 張照片（本機示意） ==================
+  const MY_ALBUM_SLOTS = 6;
+  let myAlbumPhotosCache = null;
+
+  function hmGetVipLevel() {
+    try {
+      const raw = localStorage.getItem("hmVipLevel");
+      const n = parseInt(raw || "0", 10);
+      if (isNaN(n) || n < 0) return 0;
+      if (n > 5) return 5;
+      return n;
+    } catch (e) {
+      return 0;
+    }
+  }
+
+  function hmSetVipLevel(level) {
+    const lvl = Math.min(Math.max(level, 0), 5);
+    try {
+      localStorage.setItem("hmVipLevel", String(lvl));
+    } catch (e) {}
+    hmUpdateVipUI();
+    renderMyAlbum();
+    renderMyDiaries();
+    initMoodSquare();
+    if (pages.profileDetail.classList.contains("active") && currentProfileId != null) {
+      openProfileDetail(currentProfileId);
+    }
+  }
+
+  function hmUpdateVipUI() {
+    const lvl = hmGetVipLevel();
+    const badge = document.getElementById("myVipBadge");
+    const textEl = document.getElementById("vipLevelText");
+
+    if (badge) {
+      if (lvl <= 0) {
+        badge.style.display = "none";
+        badge.textContent = "";
+      } else {
+        badge.style.display = "inline-flex";
+        badge.textContent = "VIP" + lvl;
+      }
+    }
+
+    if (textEl) {
+      if (lvl <= 0) {
+        textEl.textContent = "目前 VIP 等級：無（Demo）";
+      } else {
+        textEl.textContent = "目前 VIP 等級：VIP" + lvl + "（Demo）";
+      }
+    }
+  }
+
+  function hmLoadAlbumPhotos() {
+    if (myAlbumPhotosCache) return myAlbumPhotosCache;
+    try {
+      const raw = localStorage.getItem("hmMyAlbumPhotos");
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (Array.isArray(parsed) && parsed.length === MY_ALBUM_SLOTS) {
+          myAlbumPhotosCache = parsed;
+          return parsed;
+        }
+      }
+    } catch (e) {
+      console.warn("讀取相簿照片失敗：", e);
+    }
+    myAlbumPhotosCache = new Array(MY_ALBUM_SLOTS).fill(null);
+    return myAlbumPhotosCache;
+  }
+
+  function hmSaveAlbumPhotos() {
+    try {
+      localStorage.setItem("hmMyAlbumPhotos", JSON.stringify(myAlbumPhotosCache || []));
+    } catch (e) {
+      console.warn("儲存相簿照片失敗：", e);
+    }
+  }
+
+  function hmAlbumGetUnlockUntil() {
+    try {
+      const raw = localStorage.getItem("hmAlbumUnlockUntil");
+      const t = parseInt(raw || "0", 10);
+      return isNaN(t) ? 0 : t;
+    } catch (e) {
+      return 0;
+    }
+  }
+
+  function hmAlbumIsUnlocked() {
+    if (hmGetVipLevel() > 0) return true;
+    const until = hmAlbumGetUnlockUntil();
+    return until > Date.now();
+  }
+
+  function hmAlbumUnlockFor30Minutes() {
+    const unlockUntil = Date.now() + 30 * 60 * 1000;
+    try {
+      localStorage.setItem("hmAlbumUnlockUntil", String(unlockUntil));
+    } catch (e) {
+      console.warn("儲存相簿解鎖時間失敗：", e);
+    }
+    alert("Demo：假設你看完一段廣告，接下來 30 分鐘內 6 張照片都會開放給陌生人與好友查看。");
+    renderMyAlbum();
+    if (pages.profileDetail.classList.contains("active") && currentProfileId != null) {
+      openProfileDetail(currentProfileId);
+    }
+  }
+
+  function hmAlbumUnlock() {
+    hmAlbumUnlockFor30Minutes();
+  }
+
+  function hmGetAlbumPhotoSrc(idx) {
+    const photos = hmLoadAlbumPhotos();
+    const fallback = albumPhotos;
+    const p = photos[idx];
+    if (p) return p;
+    if (fallback && fallback[idx]) return fallback[idx];
+    return "https://picsum.photos/400/400?random=" + (901 + idx);
+  }
+
+  function renderMyAlbum() {
+    const grid = document.getElementById("myAlbumGrid");
+    if (!grid) return;
+    const photos = hmLoadAlbumPhotos();
+
+    grid.innerHTML = "";
+
+    for (let i = 0; i < MY_ALBUM_SLOTS; i++) {
+      const slot = document.createElement("div");
+      slot.className = "my-album-item";
+
+      const img = document.createElement("img");
+      img.alt = "我的相簿照片 " + (i + 1);
+      if (photos[i]) {
+        img.src = photos[i];
+        img.style.objectFit = "cover";
+      } else {
+        img.style.objectFit = "contain";
+      }
+      slot.appendChild(img);
+
+      const label = document.createElement("div");
+      label.className = "my-album-label";
+      if (i < 2) {
+        label.textContent = "第 " + (i + 1) + " 張 · 對外免費預覽";
+      } else {
+        label.textContent = "第 " + (i + 1) + " 張 · 對陌生人為鎖定照片（需解鎖後才會顯示）";
+      }
+      slot.appendChild(label);
+
+      const fileInput = document.createElement("input");
+      fileInput.type = "file";
+      fileInput.accept = "image/*";
+      fileInput.style.display = "none";
+      fileInput.id = "myAlbumInput_" + i;
+      slot.appendChild(fileInput);
+
+      const uploadBtn = document.createElement("button");
+      uploadBtn.type = "button";
+      uploadBtn.className = "my-album-upload-btn";
+      uploadBtn.textContent = photos[i] ? "更換" : "上傳";
+      uploadBtn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        fileInput.click();
+      });
+      slot.appendChild(uploadBtn);
+
+      fileInput.addEventListener("change", (e) => {
+        const file = e.target.files && e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = (ev) => {
+          const result = ev.target && ev.target.result;
+          if (!result) return;
+          const arr = hmLoadAlbumPhotos();
+          arr[i] = result;
+          myAlbumPhotosCache = arr;
+          hmSaveAlbumPhotos();
+          renderMyAlbum();
+          if (pages.profileDetail.classList.contains("active") && currentProfileId != null) {
+            openProfileDetail(currentProfileId);
+          }
+        };
+        reader.readAsDataURL(file);
+      });
+
+      grid.appendChild(slot);
+    }
+  }
+
+
+  function hmShowAlbumAdPrompt() {
+    const go = confirm("這 4 張照片需觀看一段廣告才能在 30 分鐘內解鎖。\n要前往廣告頁（Demo）嗎？");
+    if (!go) return;
+    window.open("https://example.com", "_blank");
+    hmAlbumUnlockFor30Minutes();
+  }
+
+  function handleStrangerAlbumClick(personId, idx) {
+    const vip = hmGetVipLevel();
+    if (idx < 2 || vip > 0 || hmAlbumIsUnlocked()) {
+      openPhotoViewer(hmGetPersonAlbumPhotoSrc(personId, idx));
+    } else {
+      hmShowAlbumAdPrompt();
+    }
+  }
+  window.handleStrangerAlbumClick = handleStrangerAlbumClick;
+  window.hmGetAlbumPhotoSrc = hmGetAlbumPhotoSrc;
+  window.hmGetPersonAlbumPhotoSrc = hmGetPersonAlbumPhotoSrc;
+
+  if (chatBackBtn) {
+    chatBackBtn.addEventListener("click", () => {
+      hideChatPanel();
+    });
+  }
+
+  document.addEventListener("DOMContentLoaded", function () {
+    pickRandomBatch();
+    renderPeopleGrid();
+
+    // 好友 tab 元件
+    friendTabFriendsEl = document.querySelector('.tab-btn[data-friendtab="friends"]');
+    friendTabSentEl = document.querySelector('.tab-btn[data-friendtab="sent"]');
+    friendTabReceivedEl = document.querySelector('.tab-btn[data-friendtab="received"]');
+    updateFriendTabCounts();
+
+    renderFriendsList("friends");
+    updateMyStatus();
+    updateFriendNotePreview();
+    renderTopRightForPage("people");
+    renderRank("pop");
+
+    // 初始化 VIP & 我的照片
+    hmUpdateVipUI();
+    renderMyAlbum();
+    renderMyDiaries();
+    initMoodSquare();
+
+    // 初始化「我的」頭貼（讀取 & 點擊上傳）
+    hmInitAvatar();
+    hmBindAvatarUploader();
+
+    // 初始化聊天模組
+    initChatModule();
+
+    // 我的日記輸入元件綁定
+    const diaryInput = document.getElementById("myDiaryInput");
+    const diaryImageUpload = document.getElementById("myDiaryImageUpload");
+    const diaryImageCamera = document.getElementById("myDiaryImageCamera");
+    const diaryImageUploadBtn = document.getElementById("myDiaryImageUploadBtn");
+    const diaryImageCameraBtn = document.getElementById("myDiaryImageCameraBtn");
+    const diaryImageSize = document.getElementById("myDiaryImageSize");
+    const diaryImageSizeText = document.getElementById("myDiaryImageSizeText");
+    const diaryImagePreview = document.getElementById("myDiaryImagePreview");
+    const diaryImagePreviewImg = document.getElementById("myDiaryImagePreviewImg");
+    const diaryAddBtn = document.getElementById("myDiaryAddBtn");
+    let diaryPendingImage = null;
+    let diaryPendingImageSize = diaryImageSize ? (Number(diaryImageSize.value) || 80) : 80;
+
+    function bindDiaryFileInput(inputEl) {
+      if (!inputEl) return;
+      inputEl.addEventListener("change", (e) => {
+        const file = e.target.files && e.target.files[0];
+        if (!file) {
+          diaryPendingImage = null;
+          if (diaryImagePreview) {
+            diaryImagePreview.style.display = "none";
+          }
+          if (diaryImagePreviewImg) {
+            diaryImagePreviewImg.removeAttribute("src");
+          }
+          return;
+        }
+        const reader = new FileReader();
+        reader.onload = (ev) => {
+          diaryPendingImage = ev.target && ev.target.result;
+          if (diaryImagePreview && diaryImagePreviewImg && diaryPendingImage) {
+            diaryImagePreviewImg.src = diaryPendingImage;
+            diaryImagePreview.style.display = "block";
+          }
+        };
+        reader.readAsDataURL(file);
+      });
+    }
+
+    if (diaryImageUploadBtn && diaryImageUpload) {
+      diaryImageUploadBtn.addEventListener("click", () => diaryImageUpload.click());
+    }
+    if (diaryImageCameraBtn && diaryImageCamera) {
+      diaryImageCameraBtn.addEventListener("click", () => diaryImageCamera.click());
+    }
+
+    bindDiaryFileInput(diaryImageUpload);
+    bindDiaryFileInput(diaryImageCamera);
+
+    if (diaryImageSize && diaryImageSizeText) {
+      const updateDiarySizeLabel = () => {
+        diaryPendingImageSize = Number(diaryImageSize.value) || 80;
+        diaryImageSizeText.textContent = "照片大小：" + diaryPendingImageSize + "%";
+      };
+      diaryImageSize.addEventListener("input", updateDiarySizeLabel);
+      updateDiarySizeLabel();
+    }
+
+    function handleDiaryAdd() {
+      if (!diaryInput) return;
+      const text = diaryInput.value.trim();
+      if (!text && !diaryPendingImage) {
+        alert("請至少輸入一些文字或選擇一張圖片。");
+        return;
+      }
+      const list = hmLoadDiaries();
+      const limit = hmGetDiaryLimit();
+      if (list.length >= limit) {
+        alert("目前最多只能建立 " + limit + " 則日記。若要更多可以考慮升級 VIP（Demo）。");
+        return;
+      }
+      const now = new Date();
+      const diary = {
+        id: now.getTime(),
+        text,
+        image: diaryPendingImage,
+        imageSize: diaryPendingImageSize,
+        createdAt: now.toISOString()
+      };
+      list.push(diary);
+      hmSaveDiaries(list);
+      diaryInput.value = "";
+      if (diaryImageUpload) diaryImageUpload.value = "";
+      if (diaryImageCamera) diaryImageCamera.value = "";
+      diaryPendingImage = null;
+      if (diaryImagePreview) diaryImagePreview.style.display = "none";
+      if (diaryImagePreviewImg) diaryImagePreviewImg.removeAttribute("src");
+      renderMyDiaries();
+    }
+
+    if (diaryAddBtn) {
+      diaryAddBtn.addEventListener("click", handleDiaryAdd);
+    }
+
+    const vipToggleBtn = document.getElementById("vipLevelToggleBtn");
+    if (vipToggleBtn) {
+      vipToggleBtn.addEventListener("click", () => {
+        let lvl = hmGetVipLevel();
+        lvl = (lvl + 1) % 6; // 0~5 循環
+        hmSetVipLevel(lvl);
+      });
+    }
+
+    // 登入 / 基本資料 Modal
+    const loginModal = document.getElementById("hm-login-modal");
+    const profileModal = document.getElementById("hm-profile-modal");
+    const form = document.getElementById("hm-profile-form");
+
+    if (!hmHasCompletedProfile()) {
+      if (loginModal) loginModal.style.display = "flex";
+    }
+
+    function handleFakeLogin(provider) {
+      hmSetAuthProvider(provider);
+      if (loginModal) loginModal.style.display = "none";
+      if (!hmHasCompletedProfile() && profileModal) {
+        // 初次綁定後，開啟完整基本資料填寫
+        const headerTitle = profileModal.querySelector(".hm-modal-header h2");
+        const headerSub = profileModal.querySelector(".hm-modal-header p");
+        if (headerTitle) headerTitle.textContent = "完成基本資料，開始配對";
+        if (headerSub) headerSub.textContent = "為了提升真實度與配對品質，請先填寫以下資訊。";
+        hmFillProfileForm({ lockBasic: false });
+        profileModal.style.display = "flex";
+      }
+      hmInitProfileCard();
+      hmInitMyProfileHeader();
+      hmWireRegionOtherToggle();
+      // A) 頁面載入時自動從 public.profiles 讀回資料並回填
+      hmHydrateProfileFromSupabase();
+    }
+
+    const btnGoogle = document.getElementById("hm-login-google");
+    const btnFacebook = document.getElementById("hm-login-facebook");
+    const btnApple = document.getElementById("hm-login-apple");
+
+    if (btnGoogle) {
+      btnGoogle.addEventListener("click", () => handleFakeLogin("google"));
+    }
+    if (btnFacebook) {
+      btnFacebook.addEventListener("click", () => handleFakeLogin("facebook"));
+    }
+    if (btnApple) {
+      btnApple.addEventListener("click", () => handleFakeLogin("apple"));
+    }
+
+    if (form) {
+      form.addEventListener("submit", async function (e) {
+        e.preventDefault();
+
+        const alreadyCompleted = hmHasCompletedProfile();
+
+        const name = document.getElementById("hm-name").value.trim();
+        const height = document.getElementById("hm-height").value.trim();
+        const weight = document.getElementById("hm-weight").value.trim();
+                const region = hmGetRegionFromForm();
+const gender = (document.getElementById("hm-gender") || {}).value ? document.getElementById("hm-gender").value.trim() : "";
+const age_range = (document.getElementById("hm-age-range") || {}).value ? document.getElementById("hm-age-range").value.trim() : "";
+const threads = document.getElementById("hm-threads").value.trim();
+        const x = document.getElementById("hm-x").value.trim();
+        const instagram = document.getElementById("hm-instagram").value.trim();
+        const facebook = document.getElementById("hm-facebook").value.trim();
+        const other = document.getElementById("hm-other").value.trim();
+        const agree = document.getElementById("hm-agree").checked;
+
+        let existingProfile = null;
+        try {
+          const raw = localStorage.getItem("hmProfileData");
+          if (raw) existingProfile = JSON.parse(raw);
+        } catch (err) {
+          console.warn("解析現有 Profile 失敗：", err);
+        }
+        if (!existingProfile) existingProfile = {};
+
+        if (!alreadyCompleted || !existingProfile.name || !existingProfile.height || !existingProfile.weight) {
+          // 第一次完成基本資料（或本機資料缺失），需要完整驗證
+          if (!name) {
+            alert("請填寫稱呼（暱稱）");
+            return;
+          }
+          if (!height || !weight) {
+            alert("身高與體重為必填欄位");
+            return;
+          }
+          if (!agree) {
+            alert("請勾選同意服務條款與隱私政策");
+            return;
+          }
+        } else {
+          // 已完成基本資料後再次開啟，只允許修改社群帳號
+          // 不再強制檢查稱呼 / 身高 / 體重
+        }
+
+        let profileData;
+        if (!alreadyCompleted || !existingProfile.name || !existingProfile.height || !existingProfile.weight) {
+          // 初次建立或補齊缺漏，全部寫入
+          profileData = {
+            name,
+            height,
+            weight,
+            region,
+            gender,
+            age_range,
+            socials: { threads, x, instagram, facebook, other },
+            createdAt: existingProfile.createdAt || new Date().toISOString()
+          };
+        } else {
+  // 已完成基本資料後：仍允許把 name/height/weight/region 同步寫回 Supabase
+  // （避免 Supabase 那筆 name 仍為 NULL 時永遠補不上）
+  profileData = Object.assign({}, existingProfile, {
+    name,
+    height,
+    weight,
+    region,
+    gender,
+    age_range,
+    socials: { threads, x, instagram, facebook, other }
+  });
+}
+
+
+        hmSaveProfileData(profileData);
+
+        // 同步寫入 Supabase public.profiles（以 auth.uid() 當作 id，使用 upsert）
+        // 若尚未設定 SB_URL/SB_ANON_KEY 或尚未登入，會自動略過，不影響本地 Demo 流程。
+        try {
+          const sbRes = await hmUpsertProfileToSupabase(profileData);
+          if (sbRes && sbRes.ok) {
+            console.log("已同步至 Supabase profiles：", sbRes.data);
+          } else if (sbRes && sbRes.skipped) {
+            console.log("Supabase 同步略過：", sbRes.reason);
+          }
+        } catch (err) {
+          console.warn("Supabase profiles 同步失敗（不影響本地 Demo）：", err);
+        }
+        if (profileModal) profileModal.style.display = "none";
+
+        hmInitProfileCard();
+        hmInitMyProfileHeader();
+        console.log(alreadyCompleted ? "HeartMeet 社群資料已更新：" : "HeartMeet 基本資料已完成：", profileData);
+      });
+    }
+
+    hmInitProfileCard();
+    hmInitMyProfileHeader();
+    hmInitAvatar();
+    hmBindAvatarUploader();
+
+    const editBtn = document.getElementById("hm-profile-edit-btn");
+    if (editBtn && profileModal) {
+      editBtn.addEventListener("click", function () {
+        const isCompleted = hmHasCompletedProfile();
+        const headerTitle = profileModal.querySelector(".hm-modal-header h2");
+        const headerSub = profileModal.querySelector(".hm-modal-header p");
+
+        if (isCompleted) {
+          if (headerTitle) headerTitle.textContent = "編輯社群帳號";
+          if (headerSub) headerSub.textContent = "基本資料（稱呼、身高、體重、居住區域）已鎖定，如需修改請刪除帳號重新建立。本畫面僅供補上或調整社群帳號。";
+          hmFillProfileForm({ lockBasic: true });
+        } else {
+          if (headerTitle) headerTitle.textContent = "完成基本資料，開始配對";
+          if (headerSub) headerSub.textContent = "為了提升真實度與配對品質，請先填寫以下資訊。";
+          hmFillProfileForm({ lockBasic: false });
+        }
+
+        profileModal.style.display = "flex";
+      });
+    }
+
+    const logoutBtn = document.getElementById("hm-logout-btn");
+    if (logoutBtn) {
+      logoutBtn.addEventListener("click", function () {
+        if (!confirm("確定要登出並清除本機的暫存資料嗎？\n（包含基本資料、綁定系統、VIP 等級與相簿照片 Demo 資料）")) {
+          return;
+        }
+        try {
+          localStorage.removeItem("hmProfileData");
+          localStorage.removeItem("hmProfileCompleted");
+          localStorage.removeItem("hmAuthProvider");
+          localStorage.removeItem("hmVipLevel");
+          localStorage.removeItem("hmMyAlbumPhotos");
+          localStorage.removeItem("hmAlbumUnlockUntil");
+          localStorage.removeItem("hmAvatarImage");
+          sessionStorage.removeItem("hmAlbumUnlocked");
+        } catch (e) {
+          console.warn("登出時清除 localStorage / sessionStorage 失敗：", e);
+        }
+        location.reload();
+      });
+    }
+  });
+ </script>
+
+<script>
+document.addEventListener("change", function (e) {
+  const input = e.target;
+  if (
+    input.type === "file" &&
+    (input.id.includes("photo") || input.id.includes("diary"))
+  ) {
+    let preview = input.parentElement.querySelector(".photo-preview");
+    if (!preview) {
+      preview = document.createElement("div");
+      preview.className = "photo-preview";
+      preview.style.display = "flex";
+      preview.style.flexWrap = "wrap";
+      preview.style.gap = "8px";
+      preview.style.padding = "10px 0";
+      input.parentElement.appendChild(preview);
+    }
+    preview.innerHTML = "";
+
+    const files = input.files;
+    if (!files || files.length === 0) return;
+
+    [...files].forEach((file) => {
+      if (!file.type.startsWith("image/")) return;
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        const img = document.createElement("img");
+        img.src = ev.target.result;
+        img.style.width = "90px";
+        img.style.height = "90px";
+        img.style.objectFit = "cover";
+        img.style.borderRadius = "12px";
+        img.style.boxShadow = "0 2px 6px rgba(0,0,0,0.15)";
+        preview.appendChild(img);
+      };
+      reader.readAsDataURL(file);
+    });
+  }
+});
+</script>
+   
+
+<!-- Supabase Test Panel -->
+<div class="sb-panel" id="hmSbPanel">
+  <header>
+    <div class="title">Supabase Test Panel</div>
+    <button id="sb_toggle_btn" type="button">收起</button>
+  </header>
+  <div class="body" id="sb_body">
+    <div class="hint">
+      這個面板只做兩件事：1) 存 SB_URL / SB_ANON_KEY 到瀏覽器（localStorage） 2) 用 Email/Password 登入，讓 RLS 有 auth.uid() 可判斷。
+    </div>
+    <div>
+      <div class="hint">Project URL</div>
+      <input id="sb_url_input" placeholder="https://xxxxx.supabase.co" />
+    </div>
+    <div>
+      <div class="hint">anon public key</div>
+      <input id="sb_key_input" placeholder="eyJhbGciOi..." />
+    </div>
+    <div class="row">
+      <button id="sb_save_btn" type="button">儲存設定</button>
+      <button id="sb_init_btn" type="button">初始化</button>
+    </div>
+    <div class="row">
+      <input id="sb_email" placeholder="Email" />
+      <input id="sb_pass" placeholder="Password" type="password" />
+    </div>
+    <div class="row">
+      <button id="sb_signup_btn" type="button">註冊</button>
+      <button class="primary" id="sb_signin_btn" type="button">登入</button>
+      <button id="sb_signout_btn" type="button">登出</button>
+    </div>
+    <div class="row">
+      <button id="sb_refresh_people" type="button">刷新巧遇</button>
+      <button id="sb_whoami" type="button">我現在是誰</button>
+    </div>
+    <pre id="sb_log">尚未初始化</pre>
+  </div>
+</div>
+
+<script>
+(function(){
+  const URL_KEY = "SB_URL";
+  const KEY_KEY = "SB_ANON_KEY";
+
+  function $(id){ return document.getElementById(id); }
+  function log(x){
+    const el = $("sb_log");
+    if(!el) return;
+    if(typeof x === "string") el.textContent = x;
+    else el.textContent = JSON.stringify(x, null, 2);
+  }
+
+  function loadConfig(){
+    try{
+      $("sb_url_input").value = localStorage.getItem(URL_KEY) || "";
+      $("sb_key_input").value = localStorage.getItem(KEY_KEY) || "";
+    }catch(e){}
+  }
+
+  async function ensureClient(){
+    try{
+      const cli = await hmGetSupabaseClient();
+      return cli;
+    }catch(e){
+      log({ok:false, error: (e&&e.message)?e.message:String(e)});
+      return null;
+    }
+  }
+
+  async function whoami(){
+    const cli = await ensureClient();
+    if(!cli) return;
+    const sess = await cli.auth.getSession();
+    log({session: sess.data ? sess.data.session : null, error: sess.error || null});
+  }
+
+  async function refreshEncounter(force){
+    const cli = await ensureClient();
+    if(!cli) return;
+    const r = await hmLoadPeopleFromSupabase(!!force);
+    if(!r || !r.ok){
+      log({ok:false, reason:r && r.reason, error:r && r.error});
+      return;
+    }
+    pickRandomBatch();
+    renderPeopleGrid();
+    log({ok:true, people: (people||[]).length, note:"Encounter refreshed"});
+  }
+
+  document.addEventListener("DOMContentLoaded", function(){
+    loadConfig();
+
+    const toggleBtn = $("sb_toggle_btn");
+    const body = $("sb_body");
+    if(toggleBtn && body){
+      toggleBtn.onclick = function(){
+        const hidden = body.style.display === "none";
+        body.style.display = hidden ? "block" : "none";
+        toggleBtn.textContent = hidden ? "收起" : "展開";
+      };
+    }
+
+    const saveBtn = $("sb_save_btn");
+    if(saveBtn){
+      saveBtn.onclick = function(){
+        try{
+          localStorage.setItem(URL_KEY, ($("sb_url_input").value||"").trim());
+          localStorage.setItem(KEY_KEY, ($("sb_key_input").value||"").trim());
+          log("已儲存 SB_URL / SB_ANON_KEY。接著按「初始化」，再登入。");
+        }catch(e){
+          log({ok:false, error:(e&&e.message)?e.message:String(e)});
+        }
+      };
+    }
+
+    const initBtn = $("sb_init_btn");
+    if(initBtn){
+      initBtn.onclick = async function(){
+        const cli = await ensureClient();
+        if(!cli) return;
+        log("Supabase client 已初始化。請登入。");
+      };
+    }
+
+    const signupBtn = $("sb_signup_btn");
+    if(signupBtn){
+      signupBtn.onclick = async function(){
+        const cli = await ensureClient();
+        if(!cli) return;
+        const email = ($("sb_email").value||"").trim();
+        const password = ($("sb_pass").value||"").trim();
+        if(!email || !password) return log("請輸入 Email 與 Password");
+        const r = await cli.auth.signUp({ email, password });
+        log(r);
+      };
+    }
+
+    const signinBtn = $("sb_signin_btn");
+    if(signinBtn){
+      signinBtn.onclick = async function(){
+        const cli = await ensureClient();
+        if(!cli) return;
+        const email = ($("sb_email").value||"").trim();
+        const password = ($("sb_pass").value||"").trim();
+        if(!email || !password) return log("請輸入 Email 與 Password");
+        const r = await cli.auth.signInWithPassword({ email, password });
+        log(r);
+        // 登入後：補齊 blocks、載入巧遇
+        await refreshEncounter(true);
+      };
+    }
+
+    const signoutBtn = $("sb_signout_btn");
+    if(signoutBtn){
+      signoutBtn.onclick = async function(){
+        const cli = await ensureClient();
+        if(!cli) return;
+        const r = await cli.auth.signOut();
+        log(r);
+      };
+    }
+
+    const refreshBtn = $("sb_refresh_people");
+    if(refreshBtn){
+      refreshBtn.onclick = async function(){ await refreshEncounter(false); };
+    }
+
+    const whoBtn = $("sb_whoami");
+    if(whoBtn){
+      whoBtn.onclick = whoami;
+    }
+  });
+})();
+</script>
+
+
+</body>
+</html>
+
+<!-- PUBLIC_PROFILE_READY: gender, photos, public diaries integrated -->
