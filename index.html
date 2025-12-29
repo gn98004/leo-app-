@@ -1,0 +1,248 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+  <title>心遇 XinYou - Public Profile MVP（Supabase）</title>
+  <link rel="stylesheet" href="styles.css" />
+  <!-- Supabase JS v2 (CDN). 若你偏好固定版本，可改成特定版本號。 -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+  <header class="topbar">
+    <div class="topbar__inner">
+      <div class="brand">
+        <div class="brand__logo">心遇</div>
+        <div class="brand__meta">
+          <div class="brand__title">Public Profile MVP</div>
+          <div class="brand__subtitle">跨帳號驗證：頭像 / 相簿 / 公開日記 / 加好友請求</div>
+        </div>
+      </div>
+      <div class="session">
+        <div class="session__status" id="sessionStatus">尚未初始化 Supabase</div>
+        <button class="btn btn--ghost" id="btnHardReload" title="重新整理（保留 localStorage）">重新整理</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="container">
+    <section class="card">
+      <div class="card__header">
+        <h2>Supabase Test Panel</h2>
+        <p class="muted">貼上 SUPABASE_URL / ANON_KEY 後按「初始化」。會自動儲存到本機（localStorage）。</p>
+      </div>
+      <div class="grid grid--2">
+        <div class="field">
+          <label for="sbUrl">SUPABASE_URL</label>
+          <input id="sbUrl" type="text" placeholder="https://xxxxx.supabase.co" />
+        </div>
+        <div class="field">
+          <label for="sbAnon">ANON_KEY</label>
+          <input id="sbAnon" type="password" placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..." />
+        </div>
+      </div>
+      <div class="row row--gap">
+        <button class="btn" id="btnInit">初始化 Supabase</button>
+        <button class="btn btn--ghost" id="btnClearConfig">清除本機設定</button>
+        <div class="hint">提示：GitHub Pages 上也可直接跑（純前端）。</div>
+      </div>
+    </section>
+
+    <section class="card" id="authCard">
+      <div class="card__header">
+        <h2>登入 / 註冊（Email/Password）</h2>
+        <p class="muted">為了跨裝置 A/B 驗證，建議用兩個不同 Email。</p>
+      </div>
+      <div class="grid grid--2">
+        <div class="field">
+          <label for="authEmail">Email</label>
+          <input id="authEmail" type="email" placeholder="user@example.com" autocomplete="email" />
+        </div>
+        <div class="field">
+          <label for="authPass">密碼</label>
+          <input id="authPass" type="password" placeholder="至少 6 碼" autocomplete="current-password" />
+        </div>
+      </div>
+      <div class="row row--gap">
+        <button class="btn" id="btnSignIn">登入</button>
+        <button class="btn btn--ghost" id="btnSignUp">註冊</button>
+        <button class="btn btn--danger" id="btnSignOut" disabled>登出 Email（切換帳號）</button>
+        <div class="hint" id="authHint"></div>
+      </div>
+    </section>
+
+    <div class="layout">
+      <section class="card" id="meCard">
+        <div class="card__header">
+          <h2>我的資料（profiles）</h2>
+          <p class="muted">填寫後按「儲存」。資料會寫回 Supabase 並立即讀回渲染。</p>
+        </div>
+
+        <div class="grid grid--2">
+          <div class="field">
+            <label for="displayName">暱稱（display_name）</label>
+            <input id="displayName" type="text" placeholder="例如：阿司 / Han" />
+          </div>
+          <div class="field">
+            <label for="gender">性別（gender）</label>
+            <select id="gender">
+              <option value="">未設定</option>
+              <option value="male">男</option>
+              <option value="female">女</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="ageRange">年齡層（age_range）</label>
+            <select id="ageRange">
+              <option value="">未設定</option>
+              <option value="18-20">18–20</option>
+              <option value="20-25">20–25</option>
+              <option value="25-30">25–30</option>
+              <option value="30-35">30–35</option>
+              <option value="35-40">35–40</option>
+              <option value="40-45">40–45</option>
+              <option value="45+">45+</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="bio">自介（bio）</label>
+            <input id="bio" type="text" placeholder="一句話自介（可留空）" />
+          </div>
+        </div>
+
+        <div class="row row--gap">
+          <button class="btn" id="btnSaveProfile" disabled>儲存 profiles</button>
+          <button class="btn btn--ghost" id="btnReloadMe" disabled>重新讀取我的資料</button>
+          <span class="hint" id="meHint"></span>
+        </div>
+
+        <hr class="sep" />
+
+        <div class="card__header">
+          <h3>大頭照 / 相簿（Storage + photos）</h3>
+          <p class="muted">大頭照：is_avatar=true（單一）。相簿：is_avatar=false（多張）。</p>
+        </div>
+
+        <div class="grid grid--2">
+          <div class="field">
+            <label>上傳大頭照（單張）</label>
+            <input id="avatarInput" type="file" accept="image/*" />
+            <div class="row row--gap">
+              <button class="btn" id="btnUploadAvatar" disabled>上傳大頭照</button>
+              <button class="btn btn--ghost" id="btnClearAvatar" disabled>清除大頭照標記</button>
+            </div>
+          </div>
+          <div class="field">
+            <label>上傳相簿（可多張）</label>
+            <input id="albumInput" type="file" accept="image/*" multiple />
+            <div class="row row--gap">
+              <button class="btn" id="btnUploadAlbum" disabled>上傳相簿</button>
+              <button class="btn btn--ghost" id="btnRefreshPhotos" disabled>重新讀取照片</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="photo-block">
+          <div class="photo-block__title">我的大頭照</div>
+          <div class="photo-block__content" id="myAvatar"></div>
+        </div>
+
+        <div class="photo-block">
+          <div class="photo-block__title">我的相簿</div>
+          <div class="photo-grid" id="myAlbum"></div>
+        </div>
+
+        <hr class="sep" />
+
+        <div class="card__header">
+          <h3>我的日記（diaries）</h3>
+          <p class="muted">自己可新增/可看；公開日記（is_public=true）必須可讓其他登入者讀取。</p>
+        </div>
+
+        <div class="field">
+          <label for="diaryContent">新增日記內容</label>
+          <textarea id="diaryContent" rows="4" placeholder="輸入內容..."></textarea>
+        </div>
+        <div class="row row--gap">
+          <label class="check">
+            <input id="diaryPublic" type="checkbox" />
+            <span>設為公開（is_public=true）</span>
+          </label>
+          <button class="btn" id="btnAddDiary" disabled>新增日記</button>
+          <button class="btn btn--ghost" id="btnReloadDiaries" disabled>重新讀取日記</button>
+          <span class="hint" id="diaryHint"></span>
+        </div>
+
+        <div class="list" id="myDiaries"></div>
+      </section>
+
+      <section class="card" id="encounterCard">
+        <div class="card__header">
+          <h2>巧遇（公開檔案）</h2>
+          <p class="muted">登入 B 後點開 A：必須看到 A 的性別、年齡層、大頭照/相簿、公開日記；加好友按鈕可送出請求。</p>
+        </div>
+
+        <div class="row row--gap">
+          <button class="btn" id="btnLoadEncounter" disabled>刷新巧遇列表</button>
+          <button class="btn btn--ghost" id="btnOpenRequests" disabled>查看好友請求</button>
+          <span class="hint" id="encHint"></span>
+        </div>
+
+        <div class="split">
+          <div>
+            <div class="subhead">用戶列表</div>
+            <div class="list" id="encList"></div>
+          </div>
+          <div>
+            <div class="subhead">對方公開檔案</div>
+            <div class="profile" id="publicProfile">
+              <div class="muted">尚未選擇對象</div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <section class="card" id="requestsCard" hidden>
+      <div class="card__header">
+        <h2>好友請求（friend_requests）</h2>
+        <p class="muted">收件匣：別人送給你；寄件匣：你送出去的狀態。</p>
+      </div>
+      <div class="row row--gap">
+        <button class="btn btn--ghost" id="btnCloseRequests">返回巧遇</button>
+        <button class="btn" id="btnReloadRequests" disabled>重新讀取</button>
+        <span class="hint" id="reqHint"></span>
+      </div>
+
+      <div class="split">
+        <div>
+          <div class="subhead">收件匣（對方 → 我）</div>
+          <div class="list" id="inboxList"></div>
+        </div>
+        <div>
+          <div class="subhead">寄件匣（我 → 對方）</div>
+          <div class="list" id="outboxList"></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="card__header">
+        <h2>Console / 記錄</h2>
+        <p class="muted">遇到「對外不同步」通常是讀取規則（RLS/查詢條件）或 Storage URL 取得方式錯誤。這裡會列出每個步驟的結果。</p>
+      </div>
+      <pre class="log" id="log"></pre>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="footer__inner">
+      <div class="muted">
+        需求覆蓋：大頭貼同步、相簿同步與對外同步、加好友按鈕可送出請求、日記公開同步（A 公開 → B 必定看得到）。
+      </div>
+    </div>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>
