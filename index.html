@@ -5287,6 +5287,30 @@ function hmBindAvatarUploader() {
 
   // 點擊頭像也能開啟上傳（iOS / Android / Desktop 通用）
   imgEl.onclick = function () {
+	  // ✅ 新增「查看頭貼」按鈕（不影響點頭貼上傳）
+let viewBtn = document.getElementById("myAvatarViewBtn");
+if (!viewBtn) {
+  viewBtn = document.createElement("button");
+  viewBtn.type = "button";
+  viewBtn.id = "myAvatarViewBtn";
+  viewBtn.textContent = "查看";
+  viewBtn.style.marginLeft = "8px";
+  viewBtn.style.padding = "8px 12px";
+  viewBtn.style.borderRadius = "10px";
+  viewBtn.style.border = "1px solid #e5e7eb";
+  viewBtn.style.background = "#fff";
+
+  // 放在「更換頭貼」按鈕旁邊（若找不到就塞到頭貼旁）
+  if (btn && btn.parentElement) btn.parentElement.appendChild(viewBtn);
+  else imgEl.parentElement && imgEl.parentElement.appendChild(viewBtn);
+}
+
+viewBtn.onclick = function (e) {
+  e.stopPropagation();
+  const src = imgEl.src || localStorage.getItem("hmAvatarImage");
+  if (src) openPhotoViewer(src);
+};
+
     input.click();
   };
 
