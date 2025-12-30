@@ -2213,7 +2213,9 @@
     const region = (row.region || "").trim() || "未設定";
     const height = (row.height == null ? "" : String(row.height));
     const weight = (row.weight == null ? "" : String(row.weight));
-    const avatar = row.avatar_url || "https://picsum.photos/300/400?random=" + Math.floor(Math.random()*5000+1);
+    const seed = String(id).replace(/[^a-zA-Z0-9]/g, "").slice(0, 12) || "default";
+    const avatar = row.avatar_url || ("https://picsum.photos/seed/" + seed + "/300/400");
+
 
     // 狀態：優先用資料表 status；沒有就用 last_seen_at 粗略判斷
     let status = (row.status || "").trim() || "offline";
@@ -4236,6 +4238,31 @@ function renderFriendsList(type) {
   }
   window.openPhotoViewer = openPhotoViewer;
   window.closeViewer = closeViewer;
+	// ✅ 全站圖片點擊放大（排除：底部導覽 icon、頭貼上傳區）
+document.addEventListener("click", (ev) => {
+  const img = ev.target.closest("img");
+  if (!img) return;
+
+  // 避免點到 viewer 自己
+  if (img.closest("#photoViewer")) return;
+
+  // 避免底部導覽列 icon 也被放大
+  if (img.closest(".bottom-nav")) return;
+
+  // 保留「我的資料」頭貼點擊＝上傳（不改它）
+  if (img.id === "myAvatarImage") return;
+
+  // 若你日後要排除某些圖：<img data-nozoom="1">
+  if (img.dataset && img.dataset.nozoom === "1") return;
+
+  const src = (img.dataset && img.dataset.fullsrc) || img.currentSrc || img.src;
+  if (!src) return;
+
+  ev.preventDefault();
+  ev.stopPropagation();
+  openPhotoViewer(src);
+}, true);
+
 
   // 依「使用者 id + 第幾張」取得對方的相簿照片
   function hmGetPersonAlbumPhotoSrc(personId, idx) {
