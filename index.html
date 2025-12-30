@@ -492,7 +492,7 @@
       display: none;
       justify-content: center;
       align-items: center;
-      z-index: 999999;
+      z-index: 2000;
     }
     .photo-viewer.show {
       display: flex;
@@ -1926,10 +1926,14 @@
 <input id="myDiaryImageSize" max="100" min="40" style="width:120px;" type="range" value="80"/>
 <span id="myDiaryImageSizeText" style="font-size:12px; color:#6b7280;">照片大小：80%</span>
 </div>
+<label style="display:flex; align-items:center; gap:6px; font-size:13px; color:#374151;">
+  <input id="myDiaryIsPublic" type="checkbox" checked />
+  對外公開（其他帳號可看見）
+</label>
 <button class="hm-btn-outline" id="myDiaryAddBtn" type="button">新增日記</button>
 </div>
 <div id="myDiaryImagePreview" style="margin-top:8px; display:none;">
-  <div style="font-size:12px; color:#6b7280; margin-bottom:4px;">圖片預覽（僅本機顯示，不會上傳到伺服器）：</div>
+  <div style="font-size:12px; color:#6b7280; margin-bottom:4px;">圖片預覽（將同步到 Supabase，對外資料可看到）：</div>
   <img id="myDiaryImagePreviewImg" alt="日記圖片預覽" style="max-width:100%; border-radius:12px; display:block;"/>
 </div>
 </div>
@@ -1966,6 +1970,12 @@
 <button class="hm-btn-outline" id="hm-logout-btn" type="button">
            登出目前帳號（清除本機暫存資料）
          </button>
+<button class="hm-btn" id="hm-signout-email-btn" type="button" style="margin-top:10px;">
+  登出 Email（切換帳號）
+</button>
+<div style="margin-top:8px; font-size:13px; color:#9ca3af;">
+  這個按鈕會呼叫 Supabase Auth Sign Out，讓你可以改用另一個 Email 登入。
+</div>
 <div style="margin-top:8px; font-size:13px; color:#9ca3af;">
            Demo：登出會清除本機的綁定資訊、基本資料與相簿暫存，下次進入時會重新跳出綁定與填寫資料的視窗。
          </div>
@@ -2052,6 +2062,32 @@
 <input id="hm-weight" max="200" min="35" name="weight" placeholder="例如：65" required="" type="number"/>
 </div>
 </div>
+<div class="hm-form-group hm-inline">
+  <div>
+    <label for="hm-gender">* <span class="hm-required">*</span>性別</label>
+    <select id="hm-gender" name="gender" required>
+      <option value="">請選擇</option>
+      <option value="male">男</option>
+      <option value="female">女</option>
+    </select>
+  </div>
+  <div>
+    <label for="hm-age-range">* <span class="hm-required">*</span>年齡層</label>
+    <select id="hm-age-range" name="age_range" required>
+      <option value="">請選擇</option>
+      <option value="18-20">18歲～20歲</option>
+      <option value="20-25">20歲～25歲</option>
+      <option value="25-30">25歲～30歲</option>
+      <option value="30-35">30歲～35歲</option>
+      <option value="35-40">35歲～40歲</option>
+      <option value="40-45">40歲～45歲</option>
+      <option value="45-50">45歲～50歲</option>
+      <option value="50-55">50歲～55歲</option>
+      <option value="55-60">55歲～60歲</option>
+      <option value="60+">60歲以上</option>
+    </select>
+  </div>
+</div>
 <div class="hm-form-group">
 <label for="hm-region">居住縣市（可稍後再填）</label>
 <select id="hm-region" name="region">
@@ -2125,6 +2161,27 @@
 <div class="hm-modal-footer">
 <button class="hm-btn-primary" type="submit">完成並開始使用</button>
 </div>
+<div class="hm-form-group" style="margin-top:12px; padding-top:12px; border-top:1px solid #e5e7eb;">
+  <div style="font-weight:700; margin-bottom:6px;">Email 登入 / 切換帳號</div>
+  <div id="hm-auth-status" style="font-size:12px; color:#6b7280; margin-bottom:10px;">尚未登入（請先在右下角 Supabase Test Panel 填入 SB_URL / ANON_KEY）</div>
+
+  <input id="hm-auth-email" type="email" placeholder="Email" autocomplete="email"
+         style="padding:12px; border:1px solid #e5e7eb; border-radius:12px; width:100%; margin-bottom:8px;">
+  <input id="hm-auth-password" type="password" placeholder="Password" autocomplete="current-password"
+         style="padding:12px; border:1px solid #e5e7eb; border-radius:12px; width:100%; margin-bottom:8px;">
+
+  <div style="display:flex; gap:8px;">
+    <button id="hm-auth-signin-btn" class="hm-btn-outline" type="button" style="flex:1;">登入</button>
+    <button id="hm-auth-signup-btn" class="hm-btn-outline" type="button" style="flex:1;">註冊</button>
+  </div>
+
+  <button id="hm-auth-signout-btn" class="hm-btn-outline" type="button" style="margin-top:8px; width:100%;">登出 Email（切換帳號）</button>
+
+  <div style="font-size:12px; color:#9ca3af; margin-top:6px;">
+    登入成功後，回到「巧遇」按「換一批」即可載入 Supabase 真人資料。
+  </div>
+</div>
+
 <p class="hm-privacy-text">
          ※ 部分資料只用於系統配對與實名感驗證，不會公開顯示您的真實姓名。
        </p>
@@ -2159,6 +2216,7 @@
     const seed = String(id).replace(/[^a-zA-Z0-9]/g, "").slice(0, 12) || "default";
     const avatar = row.avatar_url || ("https://picsum.photos/seed/" + seed + "/300/400");
 
+
     // 狀態：優先用資料表 status；沒有就用 last_seen_at 粗略判斷
     let status = (row.status || "").trim() || "offline";
     let statusText = "離線";
@@ -2178,16 +2236,25 @@
       }
     } catch (e) { /* ignore */ }
 
+    const age_range = (row.age_range == null ? "" : String(row.age_range));
     const age = row.age == null ? "" : String(row.age);
-    const ageText = age ? (age + "歲") : "—";
+    const ageText = age_range ? (age_range.replace(/-/g, "～")) : (age ? (age + "歲") : "—");
+    const gender = (row.gender == null ? "" : String(row.gender));
+    const genderText = gender === "male" ? "男" : (gender === "female" ? "女" : "未設定");
     const desc = "居住：" + region;
 
     return {
       id: String(id),
       name,
+      gender,
+      genderText,
+      age_range,
       ageText,
+      region,
       desc,
       avatar,
+      avatar_url: (row.avatar_url == null ? "" : String(row.avatar_url)),
+      last_seen_at: row.last_seen_at || null,
       status,
       statusText,
       vipLevel: 0,
@@ -2207,6 +2274,9 @@
 
     const uid = session.user.id;
 
+    // 先載入封鎖名單（blocks），讓巧遇可排除你封鎖的對象
+    try { await hmRefreshBlockedIdsFromSupabase(cli, uid); } catch (e) {}
+
     // 讀 profiles：排除自己
     const q = await cli
       .from("profiles")
@@ -2225,6 +2295,8 @@
       people.push(p);
       peopleById.set(p.id, p);
     });
+
+    try { await hmAttachPhotosToPeople(cli, people); } catch(e) { /* ignore */ }
 
     peopleLoadedOnce = true;
 
@@ -2259,9 +2331,96 @@
 
   // 封鎖名單（示意，僅儲存在前端）
   let blockedIds = [];
+  // Supabase blocks / reports 欄位偵測快取（避免欄位命名差異導致功能失效）
+  let hmBlocksCols = null;   // { blockerCol, blockedCol }
+  let hmReportsCols = null;  // { reporterCol, reportedCol, reasonCol }
+
 
   function hmIsBlocked(id) {
-    return blockedIds.includes(id);
+    return blockedIds.includes(String(id));
+  }
+
+  function hmUniqueStrings(arr) {
+    const s = new Set();
+    (arr || []).forEach(v => { if (v != null) s.add(String(v)); });
+    return Array.from(s);
+  }
+
+  async function hmRefreshBlockedIdsFromSupabase(cli, uid) {
+    try {
+      cli = cli || await hmGetSupabaseClient();
+      if (!cli) return { ok: false, skipped: true, reason: "no_sb_url_key" };
+      uid = uid || await hmGetAuthedUid(cli);
+      if (!uid) return { ok: false, skipped: true, reason: "not_signed_in" };
+
+      const candidates = [];
+      if (hmBlocksCols) candidates.push(hmBlocksCols);
+      candidates.push(
+        { blockerCol: "blocker_id", blockedCol: "blocked_id" },
+        { blockerCol: "user_id", blockedCol: "blocked_id" },
+        { blockerCol: "user_id", blockedCol: "blocked_user_id" },
+        { blockerCol: "blocker", blockedCol: "blocked" },
+        { blockerCol: "from_user", blockedCol: "to_user" }
+      );
+
+      let lastErr = null;
+
+      for (const c of candidates) {
+        const res = await cli.from("blocks").select(c.blockedCol).eq(c.blockerCol, uid).limit(500);
+        if (!res || !res.error) {
+          hmBlocksCols = c;
+          const rows = (res && res.data) ? res.data : [];
+          blockedIds = hmUniqueStrings(rows.map(r => r && r[c.blockedCol]));
+          return { ok: true, count: blockedIds.length, cols: c };
+        }
+
+        lastErr = res.error;
+        const msg = String((lastErr && (lastErr.message || lastErr.details || lastErr.hint)) || "");
+        if (/column .* does not exist|does not exist/i.test(msg)) continue;
+        break;
+      }
+
+      if (lastErr) console.warn("[blocks] select failed", lastErr);
+      return { ok: false, error: lastErr };
+    } catch (e) {
+      console.warn("[blocks] refresh failed", e);
+      return { ok: false, error: e };
+    }
+  }
+
+  async function hmDetectReportsCols(cli, uid) {
+    if (hmReportsCols) return hmReportsCols;
+    try {
+      cli = cli || await hmGetSupabaseClient();
+      if (!cli) return null;
+      uid = uid || await hmGetAuthedUid(cli);
+      if (!uid) return null;
+
+      const candidates = [
+        { reporterCol: "reporter_id", reportedCol: "reported_id", reasonCol: "reason" },
+        { reporterCol: "user_id",     reportedCol: "target_id",   reasonCol: "reason" },
+        { reporterCol: "reporter",    reportedCol: "reported",    reasonCol: "reason" },
+        { reporterCol: "from_user",   reportedCol: "to_user",     reasonCol: "reason" },
+        { reporterCol: "reporter_id", reportedCol: "reported_id", reasonCol: "content" }
+      ];
+
+      let lastErr = null;
+      for (const c of candidates) {
+        const res = await cli.from("reports").select(c.reporterCol).limit(1);
+        if (!res || !res.error) { hmReportsCols = c; return hmReportsCols; }
+        lastErr = res.error;
+        const msg = String((lastErr && (lastErr.message || lastErr.details || lastErr.hint)) || "");
+        if (/column .* does not exist|does not exist/i.test(msg)) continue;
+        break;
+      }
+
+      if (lastErr) console.warn("[reports] detect cols failed", lastErr);
+      hmReportsCols = candidates[0];
+      return hmReportsCols;
+    } catch (e) {
+      hmReportsCols = { reporterCol: "reporter_id", reportedCol: "reported_id", reasonCol: "reason" };
+      return hmReportsCols;
+    }
   }
 
   function shuffleArray(arr) {
@@ -2349,6 +2508,7 @@
   let friendIds = [];
   let sentRequestIds = [];
   let receivedRequestIds = [];
+  let friendLastError = ""; // 讀取好友/邀請失敗時提示（避免看起來像沒反應）
 
   // 以 id 為 key 的 profiles 快取（只放好友/邀請相關的對象）
   let friendProfilesById = Object.create(null);
@@ -2403,23 +2563,32 @@
         return;
       }
 
+      friendLastError = "";
+
       // 更新在線時間（你選 B：顯示線上狀態）
       hmTouchLastSeen(cli, uid);
 
-      // 1) 讀取好友關係（friends）
-      const frRes = await cli
-        .from("friends")
-        .select("user_a,user_b,created_at")
-        .or(`user_a.eq.${uid},user_b.eq.${uid}`);
+      // 同步封鎖名單（blocks），好友清單/邀請會排除封鎖對象
+      try { await hmRefreshBlockedIdsFromSupabase(cli, uid); } catch (e) {}
 
-      if (frRes.error) throw frRes.error;
+      // 1) 讀取好友關係（friends）
+      // 1) 讀取好友（由 friend_requests.status = accepted 推導，避免依賴 friends 表欄位）
+      const accRes = await cli
+        .from("friend_requests")
+        .select("from_user,to_user,status")
+        .eq("status", "accepted")
+        .or(`from_user.eq.${uid},to_user.eq.${uid}`);
+
+      if (accRes.error) throw accRes.error;
 
       const fIds = [];
-      (frRes.data || []).forEach(r => {
-        const other = (r.user_a === uid) ? r.user_b : r.user_a;
+      (accRes.data || []).forEach(r => {
+        const other = (r.from_user === uid) ? r.to_user : r.from_user;
         if (other && other !== uid) fIds.push(other);
       });
       friendIds = Array.from(new Set(fIds));
+      // 排除你已封鎖的對象
+      if (blockedIds && blockedIds.length) friendIds = friendIds.filter(x => !hmIsBlocked(x));
 
       // 2) 讀取送出申請（friend_requests: pending）
       const sentRes = await cli
@@ -2430,6 +2599,7 @@
 
       if (sentRes.error) throw sentRes.error;
       sentRequestIds = Array.from(new Set((sentRes.data || []).map(x => x.to_user).filter(Boolean)));
+      if (blockedIds && blockedIds.length) sentRequestIds = sentRequestIds.filter(x => !hmIsBlocked(x));
 
       // 3) 讀取收到申請（friend_requests: pending）
       const recvRes = await cli
@@ -2440,23 +2610,122 @@
 
       if (recvRes.error) throw recvRes.error;
       receivedRequestIds = Array.from(new Set((recvRes.data || []).map(x => x.from_user).filter(Boolean)));
+      if (blockedIds && blockedIds.length) receivedRequestIds = receivedRequestIds.filter(x => !hmIsBlocked(x));
 
       // 4) 拉取相關 profiles（好友 + 邀請相關）
       const allIds = Array.from(new Set([ ...friendIds, ...sentRequestIds, ...receivedRequestIds ].filter(Boolean)));
       friendProfilesById = Object.create(null);
       if (allIds.length) {
-        const pRes = await cli
+        let pRes = await cli
+
           .from("profiles")
-          .select("id,name,region,avatar_url,last_seen_at")
+
+          .select("id,name,region,avatar_url,status,age,gender,age_range,last_seen_at,created_at")
+
           .in("id", allIds);
+
+        
+
+        // 若 profiles 尚未補齊某些欄位（例如 gender / age_range），自動退回到最小欄位避免整個好友功能掛掉
+
+        try {
+
+          if (pRes && pRes.error) {
+
+            const msg = String(pRes.error.message || pRes.error.details || "");
+
+            if (/column .* does not exist/i.test(msg)) {
+
+              pRes = await cli
+
+                .from("profiles")
+
+                .select("id,name,region,avatar_url,status,age,last_seen_at,created_at")
+
+                .in("id", allIds);
+
+            }
+
+          }
+
+        } catch (_e) {}
+
+        
+
         if (pRes.error) throw pRes.error;
-        (pRes.data || []).forEach(p => { friendProfilesById[p.id] = p; });
-      }
+
+        
+
+        const list = [];
+
+        (pRes.data || []).forEach(row => {
+
+          const np = hmNormalizeProfileRow(row) || {
+
+            id: String((row && row.id) || ""),
+
+            name: (row && row.name) ? String(row.name) : "（未設定）",
+
+            region: (row && row.region) ? String(row.region) : "",
+
+            desc: (row && row.region) ? ("居住：" + String(row.region)) : "居住：—",
+
+            avatar: (row && row.avatar_url) ? String(row.avatar_url) : "https://picsum.photos/160/160?random=88",
+
+            avatar_url: (row && row.avatar_url) ? String(row.avatar_url) : "",
+
+            last_seen_at: (row && row.last_seen_at) ? row.last_seen_at : null,
+
+            gender: (row && row.gender) ? String(row.gender) : "",
+
+            genderText: (row && row.gender === "male") ? "男" : ((row && row.gender === "female") ? "女" : "未設定"),
+
+            age_range: (row && row.age_range) ? String(row.age_range) : "",
+
+            ageText: (row && row.age_range) ? String(row.age_range).replace(/-/g, "～") : ((row && row.age) ? (String(row.age) + "歲") : "—"),
+
+            status: (row && row.status) ? String(row.status) : "offline",
+
+            statusText: "離線",
+
+            vipLevel: 0,
+
+            album: []
+
+          };
+
+          // 確保 region / last_seen_at 有值（避免 UI 出現「—」與狀態不準）
+
+          if (np && (np.region == null || np.region === "") && row && row.region != null) np.region = String(row.region);
+
+          if (np && np.last_seen_at == null && row && row.last_seen_at != null) np.last_seen_at = row.last_seen_at;
+
+          list.push(np);
+
+        });
+
+        
+
+        try { await hmAttachPhotosToPeople(cli, list); } catch (e) {}
+
+        
+
+        list.forEach(p => {
+
+          if (!p || !p.id) return;
+
+          friendProfilesById[p.id] = p;
+
+          try { if (peopleById) peopleById.set(p.id, p); } catch (_e) {}
+
+        });
+}
 
       updateFriendTabCounts();
       renderFriendsList(currentFriendTab || "friends");
     } catch (e) {
       console.warn("[friends] refresh failed", e);
+      friendLastError = (e && e.message) ? e.message : String(e);
       updateFriendTabCounts();
       renderFriendsList(currentFriendTab || "friends");
     }
@@ -2464,34 +2733,128 @@
 
   // 對你送出的好友申請
 
-  // 封鎖 / 檢舉相關（示意）
-  function hmBlockUser(id) {
-    if (!blockedIds.includes(id)) {
-      blockedIds.push(id);
-    }
-    // 被封鎖時，從好友與申請清單中移除
-    friendIds = friendIds.filter(x => x !== id);
-    sentRequestIds = sentRequestIds.filter(x => x !== id);
-    receivedRequestIds = receivedRequestIds.filter(x => x !== id);
+    // 封鎖 / 檢舉（Supabase 實裝）
+  // blocks：寫入封鎖關係，巧遇/好友會自動排除
+  // reports：寫入檢舉（原因可空白）
+  async function hmBlockUser(id) {
+    try {
+      const targetId = String(id || "");
+      if (!isUuid(targetId)) {
+        alert("目前封鎖功能只支援 Supabase 真人帳號（UUID）。");
+        return;
+      }
 
-    // 簡單刷新人們與好友畫面（示意）
-    if (typeof renderPeopleGrid === "function") {
-      currentBatch = [];
-      renderPeopleGrid();
+      const cli = await hmGetSupabaseClient();
+      if (!cli) { alert("尚未設定 Supabase 連線。"); return; }
+
+      const uid = await hmGetAuthedUid(cli);
+      if (!uid) { alert("請先登入 Email，才能封鎖。"); return; }
+
+      // 同步封鎖名單（避免重複 insert）
+      await hmRefreshBlockedIdsFromSupabase(cli, uid);
+      if (blockedIds.includes(targetId)) {
+        alert("你已封鎖過此用戶。");
+        return;
+      }
+
+      const candidates = [];
+      if (hmBlocksCols) candidates.push(hmBlocksCols);
+      candidates.push(
+        { blockerCol: "blocker_id", blockedCol: "blocked_id" },
+        { blockerCol: "user_id", blockedCol: "blocked_id" },
+        { blockerCol: "user_id", blockedCol: "blocked_user_id" },
+        { blockerCol: "blocker", blockedCol: "blocked" },
+        { blockerCol: "from_user", blockedCol: "to_user" }
+      );
+
+      let lastErr = null;
+      let ok = false;
+
+      for (const c of candidates) {
+        const payload = {};
+        payload[c.blockerCol] = uid;
+        payload[c.blockedCol] = targetId;
+
+        const res = await cli.from("blocks").insert(payload);
+        if (!res || !res.error) { hmBlocksCols = c; ok = true; break; }
+
+        lastErr = res.error;
+        const code = String(lastErr.code || "");
+        const msg = String(lastErr.message || lastErr.details || "");
+        if (code === "23505" || /duplicate key/i.test(msg)) { hmBlocksCols = c; ok = true; break; }
+        if (/column .* does not exist|does not exist/i.test(msg)) continue;
+        break;
+      }
+
+      if (!ok) {
+        console.warn("[blocks] insert failed", lastErr);
+        alert("封鎖失敗：請確認 blocks 表欄位與 RLS policy。");
+        return;
+      }
+
+      blockedIds.push(targetId);
+
+      // 被封鎖時，從好友與申請清單中移除（前端快取）
+      friendIds = friendIds.filter(x => x !== targetId);
+      sentRequestIds = sentRequestIds.filter(x => x !== targetId);
+      receivedRequestIds = receivedRequestIds.filter(x => x !== targetId);
+
+      // Best-effort：清掉雙向好友邀請 / 好友關係（不成功也不影響 UI）
+      try {
+        await cli.from("friend_requests")
+          .delete()
+          .or(`and(from_user.eq.${uid},to_user.eq.${targetId}),and(from_user.eq.${targetId},to_user.eq.${uid})`);
+      } catch (_e) {}
+
+      // Demo 版不直接操作 friends 表（欄位命名可能不同）；以 friend_requests 狀態為準
+
+
+      // 刷新畫面
+      try { currentBatch = []; renderPeopleGrid(); } catch (_e) {}
+      try { renderFriendsList(currentFriendTab || "friends"); } catch (_e) {}
+
+      alert("已封鎖此用戶（已寫入 Supabase）。");
+    } catch (e) {
+      console.warn("[block] failed", e);
+      alert("封鎖失敗（請確認 blocks 表與 RLS）。");
     }
-    if (typeof renderFriendsPage === "function") {
-      renderFriendsPage();
-    }
-    alert("已封鎖此用戶（Demo 版僅記錄在本機）");
   }
 
-  function hmReportUser(id) {
-    const p = getPersonById(id);
-    alert("已送出對「" + (p ? p.name : "此用戶") + "」的舉報（Demo 示意）\n正式版會送到後端審核。");
+  async function hmReportUser(id) {
+    try {
+      const targetId = String(id || "");
+      if (!isUuid(targetId)) {
+        alert("目前檢舉功能只支援 Supabase 真人帳號（UUID）。");
+        return;
+      }
+
+      const cli = await hmGetSupabaseClient();
+      if (!cli) { alert("尚未設定 Supabase 連線。"); return; }
+
+      const uid = await hmGetAuthedUid(cli);
+      if (!uid) { alert("請先登入 Email，才能檢舉。"); return; }
+
+      const p = getPersonById(targetId);
+      const reason = window.prompt("請輸入檢舉原因（可留空）：", "") || "";
+      const cols = await hmDetectReportsCols(cli, uid) || { reporterCol: "reporter_id", reportedCol: "reported_id", reasonCol: "reason" };
+
+      const payload = {};
+      payload[cols.reporterCol] = uid;
+      payload[cols.reportedCol] = targetId;
+      payload[cols.reasonCol] = reason.trim() || "unspecified";
+
+      const res = await cli.from("reports").insert(payload);
+      if (res && res.error) throw res.error;
+
+      alert("已送出對「" + (p ? p.name : "此用戶") + "」的檢舉（已寫入 Supabase）。");
+    } catch (e) {
+      console.warn("[report] failed", e);
+      alert("檢舉失敗（請確認 reports 表與 RLS）。");
+    }
   }
 
-  function hmBlockOrReport(id) {
-    const p = getPersonById(id);
+  async function hmBlockOrReport(id) {
+    const p = getPersonById(String(id));
     if (!p) return;
 
     const choice = window.prompt(
@@ -2501,18 +2864,17 @@
     if (!choice) return;
 
     if (choice === "1") {
-      hmBlockUser(id);
+      await hmBlockUser(p.id);
     } else if (choice === "2") {
-      hmReportUser(id);
+      await hmReportUser(p.id);
     } else if (choice === "3") {
-      hmBlockUser(id);
-      hmReportUser(id);
+      await hmBlockUser(p.id);
+      await hmReportUser(p.id);
     } else {
       alert("未執行任何動作。");
       return;
     }
 
-    // Demo：封鎖 / 檢舉後回到「人們」頁
     showPage("people");
   }
 
@@ -2559,19 +2921,138 @@
       if (!uid) return alert("請先登入 Supabase 再操作好友功能。");
       if (id === uid) return alert("不能加自己為好友。");
 
-      // 若已是好友就不重複送
-      if (friendIds.includes(id)) return alert("你們已經是好友了。");
-      if (sentRequestIds.includes(id)) return alert("已送出好友申請，請耐心等候。");
+      // 防止連點造成重複送出（前端保護）
+      window.__hmBusy = window.__hmBusy || Object.create(null);
+      const busyKey = `addFriend:${uid}:${id}`;
+      if (window.__hmBusy[busyKey]) return;
+      window.__hmBusy[busyKey] = true;
 
-      const res = await cli.from("friend_requests").insert({ from_user: uid, to_user: id, status: "pending" }).select("id").single();
-      if (res.error) throw res.error;
+      // 先刷新一次本地狀態（避免 sentRequestIds 還沒更新）
+      try { await hmRefreshFriendsFromSupabase(); } catch (e) {}
+
+      // 若已是好友就不重複送
+      if (friendIds.includes(id)) {
+        alert("你們已經是好友了。");
+        return;
+      }
+
+      // 若已送出待回覆，直接提示
+      if (sentRequestIds.includes(id)) {
+        alert("已送出好友申請，請耐心等候。");
+        return;
+      }
+
+      // 如果你有封鎖或被封鎖，禁止操作（以本地 blockedIds 判斷；伺服器端仍應由 RLS 防護）
+      if (Array.isArray(blockedIds) && blockedIds.includes(id)) {
+        alert("你已封鎖此用戶，無法送出好友申請。");
+        return;
+      }
+
+      // 先查資料庫是否已有任一方向的申請（避免 unique constraint 23505）
+      const { data: exReq, error: exErr } = await cli
+        .from("friend_requests")
+        .select("id,from_user,to_user,status")
+        .or(`and(from_user.eq.${uid},to_user.eq.${id}),and(from_user.eq.${id},to_user.eq.${uid})`)
+        .limit(1)
+        .maybeSingle();
+
+      if (exErr) throw exErr;
+
+      if (exReq) {
+        const st = exReq.status;
+
+        if (st === "accepted") {
+          await hmRefreshFriendsFromSupabase();
+          updateFriendTabCounts();
+          renderFriendsList("friends");
+          alert("你們已經是好友了。");
+          return;
+        }
+
+        if (st === "pending") {
+          // 若是你送出的 pending
+          if (exReq.from_user === uid) {
+            await hmRefreshFriendsFromSupabase();
+            updateFriendTabCounts();
+            hmGotoPage("friends");
+            openFriendTab("sent");
+            alert("已送出好友申請，請耐心等候。");
+            return;
+          }
+          // 若是對方送你的 pending：可直接引導同意
+          const ok = confirm("對方已送出好友申請，是否直接同意？");
+          if (ok) {
+            await hmAcceptFriend(exReq.from_user); // from_user 就是對方
+          }
+          return;
+        }
+
+        if (st === "rejected") {
+          // 只允許「送出者」重新送出（避免 RLS 擋 update）
+          if (exReq.from_user === uid) {
+            const { error: upErr } = await cli
+              .from("friend_requests")
+              .update({ status: "pending" })
+              .eq("from_user", uid)
+              .eq("to_user", id);
+            if (upErr) throw upErr;
+
+            await hmRefreshFriendsFromSupabase();
+            updateFriendTabCounts();
+            hmGotoPage("friends");
+            openFriendTab("sent");
+            alert("已重新送出好友申請。");
+            return;
+          } else {
+            alert("此用戶先前的申請已被你拒絕。若要恢復關係，請讓對方重新送出申請（或你改為同意對方的申請）。");
+            return;
+          }
+        }
+
+        // 其他未知狀態：先刷新再提示
+        await hmRefreshFriendsFromSupabase();
+        updateFriendTabCounts();
+        hmGotoPage("friends");
+            openFriendTab("sent");
+        alert("已有申請紀錄存在，請至好友頁查看狀態。");
+        return;
+      }
+
+      // 真正送出申請
+      const res = await cli
+        .from("friend_requests")
+        .insert({ from_user: uid, to_user: id, status: "pending" })
+        .select("id")
+        .single();
+
+      if (res.error) {
+        // 若是 unique constraint（23505），表示已存在，刷新後給提示
+        if (res.error.code === "23505") {
+          await hmRefreshFriendsFromSupabase();
+          updateFriendTabCounts();
+          hmGotoPage("friends");
+            openFriendTab("sent");
+          alert("好友申請已存在（可能你已送出，或對方已送出）。請至好友頁查看。");
+          return;
+        }
+        throw res.error;
+      }
+
       await hmRefreshFriendsFromSupabase();
       updateFriendTabCounts();
-      renderFriendsList("sent");
+      hmGotoPage("friends");
+            openFriendTab("sent");
       alert("已送出好友申請。");
     } catch (e) {
       console.warn(e);
       alert("送出申請失敗：" + (e && e.message ? e.message : String(e)));
+    } finally {
+      try {
+        const cli = await hmGetSupabaseClient();
+        const uid = cli ? await hmGetAuthedUid(cli) : "";
+        const busyKey = `addFriend:${uid}:${id}`;
+        if (window.__hmBusy) window.__hmBusy[busyKey] = false;
+      } catch (e) {}
     }
   }
 
@@ -2598,17 +3079,12 @@
         .maybeSingle();
       if (up.error) throw up.error;
 
-      // 2) insert into friends (avoid duplicates by sorting)
-      const a = (uid < id) ? uid : id;
-      const b = (uid < id) ? id : uid;
-      const ins = await cli.from("friends").insert({ user_a: a, user_b: b }).select("id").maybeSingle();
-      if (ins.error) {
-        // ignore duplicate errors, but still refresh
-        console.warn("[friends insert]", ins.error);
-      }
+      // 2) Demo 版以 friend_requests.status=accepted 當作好友成立（不依賴 friends 表）
+
 
       await hmRefreshFriendsFromSupabase();
-      renderFriendsList("friends");
+      hmGotoPage("friends");
+      openFriendTab("friends");
       alert("已同意好友申請。");
     } catch (e) {
       console.warn(e);
@@ -2639,7 +3115,8 @@
       if (up.error) throw up.error;
 
       await hmRefreshFriendsFromSupabase();
-      renderFriendsList("received");
+      hmGotoPage("friends");
+      openFriendTab("received");
       alert("已拒絕好友申請。");
     } catch (e) {
       console.warn(e);
@@ -2670,7 +3147,8 @@
       if (up.error) throw up.error;
 
       await hmRefreshFriendsFromSupabase();
-      renderFriendsList("sent");
+      hmGotoPage("friends");
+      openFriendTab("sent");
       alert("已取消好友申請。");
     } catch (e) {
       console.warn(e);
@@ -2702,15 +3180,15 @@
     let actionHtml = "";
 
     if (relation === "friend") {
-      actionHtml = '<button class="btn btn-primary" onclick="openChatWith(' + JSON.stringify(p.id) + ')">1 對 1 聊天</button>';
+      actionHtml = '<button class="btn btn-primary" onclick="openChatWith(\'' + p.id + '\')">1 對 1 聊天</button>';
     } else if (relation === "sent") {
       actionHtml = '<button class="btn" disabled>已送出好友申請</button>';
     } else if (relation === "received") {
       actionHtml = ''
-        + '<button class="btn btn-primary btn-sm" onclick="hmAcceptFriend(' + JSON.stringify(p.id) + ')">同意好友申請</button>'
-        + '<button class="btn btn-sm" onclick="hmRejectFriend(' + JSON.stringify(p.id) + ')">拒絕</button>';
+        + '<button class="btn btn-primary btn-sm" onclick="event.stopPropagation(); hmAcceptFriend(\'' + p.id + '\')">同意好友申請</button>'
+        + '<button class="btn btn-sm" onclick="event.stopPropagation(); hmRejectFriend(\'' + p.id + '\')">拒絕</button>';
     } else {
-      actionHtml = '<button class="btn btn-primary" onclick="hmAddFriend(' + JSON.stringify(p.id) + ')">加入好友</button>';
+      actionHtml = '<button class="btn btn-primary" onclick="hmAddFriend(\'' + p.id + '\')">加入好友</button>';
     }
 
     const totalSlots = (Array.isArray(p.album) && p.album.length > 0)
@@ -2726,7 +3204,7 @@
       const isLocked = !isFree && myVipLevel === 0 && !unlocked;
       const lockedClass = isLocked ? " locked" : "";
       return ''
-        + '<div class="album-item' + lockedClass + '" onclick="handleStrangerAlbumClick(' + p.id + ',' + idx + ')">'
+        + '<div class="album-item' + lockedClass + '" onclick="handleStrangerAlbumClick(\'' + p.id + '\',' + idx + ')">'
         + '  <img src="' + src + '" alt="photo' + (idx + 1) + '" />'
         + '  <div class="album-gift-btn" onclick="event.stopPropagation(); sendGiftAnimation(this)">💝 送禮</div>'
         + '</div>';
@@ -2745,7 +3223,7 @@
       + '    </div>'
       + '  </div>'
       + '  <div class="profile-actions">'
-      + '    <button class="btn" onclick="hmBlockOrReport(' + p.id + ')">封鎖 / 舉報</button>'
+      + '    <button class="btn" onclick="hmBlockOrReport(\'' + p.id + '\')">封鎖 / 舉報</button>'
       +      actionHtml
       + '  </div>'
       + '</div>'
@@ -2768,7 +3246,7 @@
       + '  <div class="section-title">基本資料</div>'
       + '  <table class="info-table">'
       + '    <tr><td class="info-key">暱稱</td><td class="info-value">' + p.name + '</td></tr>'
-      + '    <tr><td class="info-key">性別</td><td class="info-value">未設定</td></tr>'
+      + '    <tr><td class="info-key">性別</td><td class="info-value">' + (p.genderText || '未設定') + '</td></tr>'
       + '    <tr><td class="info-key">年齡層</td><td class="info-value">' + p.ageText + '</td></tr>'
       + '    <tr><td class="info-key">國家</td><td class="info-value">台灣</td></tr>'
       + '    <tr><td class="info-key">地區</td><td class="info-value">未設定</td></tr>'
@@ -2776,18 +3254,16 @@
       + '  </table>'
       + '</div>'
       + '<div class="section">'
-      + '  <div class="section-title">自介日記（示意）</div>'
-      + '  <div class="diary-list">'
-      + '    <div class="diary-item">'
-      + '      <div class="diary-date">2025-11-25</div>'
-      + '      <div>這裡之後可以顯示對方的 5 篇代表日記，讓人更了解他。</div>'
-      + '    </div>'
-      + '  </div>'
+      + '  <div class="section-title">公開日記</div>'
+      + '  <div class="diary-list" id="publicDiaryList"></div>'
       + '</div>';
 
     showPage("profileDetail");
     topTitleEl.textContent = p.name;
     topRightSlot.innerHTML = "";
+
+    // 載入對方公開日記（Supabase diaries）
+    try { hmLoadPublicDiariesIntoDetail(p.id); } catch (_e) {}
   }
 
   // ==== 好友列表 ====
@@ -2802,13 +3278,73 @@
   }
 
   
-  // 查看好友公開資料（先用簡易 alert，後續可接你原本的「對外資料頁」模板）
-  function hmOpenFriendProfile(id) {
+    // 查看用戶對外資料：好友 / 送出申請 / 收到申請 都可點進去看（沿用巧遇同一個對外資料頁）
+  async function hmOpenPublicProfile(id) {
     try {
-      const p = friendProfilesById && friendProfilesById[id] ? friendProfilesById[id] : null;
-      if (!p) return alert("找不到此好友資料。");
-      alert("好友資料\n\n姓名：" + (p.name || "—") + "\n地區：" + (p.region || "—"));
-    } catch (e) {}
+      id = String(id || "");
+      if (!isUuid(id)) return;
+
+      // 1) 若已在巧遇快取中，直接開啟
+      try {
+        if (peopleById && peopleById.get(id)) { openProfileDetail(id); return; }
+      } catch (_e) {}
+
+      // 2) 若在好友快取中，補進 peopleById 再開啟
+      try {
+        if (friendProfilesById && friendProfilesById[id]) {
+          try { if (peopleById) peopleById.set(id, friendProfilesById[id]); } catch (_e) {}
+          openProfileDetail(id);
+          return;
+        }
+      } catch (_e) {}
+
+      // 3) 否則現查 profiles（避免你明明有好友/邀請但巧遇沒載到、看不到對外資料）
+      const cli = await hmGetSupabaseClient();
+      if (!cli) return alert("尚未設定 Supabase 連線。");
+
+      const uid = await hmGetAuthedUid(cli);
+      if (!uid) return alert("請先登入 Supabase 再查看對方資料。");
+
+      let res = await cli
+        .from("profiles")
+        .select("id,name,region,avatar_url,status,age,gender,age_range,last_seen_at,created_at")
+        .eq("id", id)
+        .maybeSingle();
+
+      // 若 profiles 尚未補齊欄位，退回最小欄位
+      try {
+        if (res && res.error) {
+          const msg = String(res.error.message || res.error.details || "");
+          if (/column .* does not exist/i.test(msg)) {
+            res = await cli
+              .from("profiles")
+              .select("id,name,region,avatar_url,status,age,last_seen_at,created_at")
+              .eq("id", id)
+              .maybeSingle();
+          }
+        }
+      } catch (_e) {}
+
+      if (res.error) throw res.error;
+
+      const p = hmNormalizeProfileRow(res.data);
+      if (!p || !p.id) return alert("找不到此用戶資料。");
+
+      try { await hmAttachPhotosToPeople(cli, [p]); } catch (_e) {}
+
+      try { if (peopleById) peopleById.set(p.id, p); } catch (_e) {}
+      try { friendProfilesById[p.id] = p; } catch (_e) {}
+
+      openProfileDetail(p.id);
+    } catch (e) {
+      console.warn(e);
+      alert("開啟資料失敗：" + (e && e.message ? e.message : String(e)));
+    }
+  }
+
+  // 保留此函式名，避免舊按鈕失效
+  function hmOpenFriendProfile(id) {
+    hmOpenPublicProfile(id);
   }
 
 function renderFriendsList(type) {
@@ -2823,19 +3359,25 @@ function renderFriendsList(type) {
 
     if (!ids.length) {
       const li = document.createElement("li");
-      li.className = "item";
-      li.innerHTML = '<div class="item-info"><div class="item-row1"><div class="item-name">目前沒有資料</div></div><div class="item-row3">（此區已改為 Supabase 真實資料；若你尚未建立好友/邀請，會顯示空清單）</div></div>';
-      friendsListEl.appendChild(li);
+      li.className = "list-item";
+      const err = (friendLastError && String(friendLastError).trim()) ? ('<div class="item-row3" style="color:#ef4444;">讀取好友資料失敗：' + String(friendLastError).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").slice(0,180) + '</div>') : '';
+      li.innerHTML = '<div class="avatar"></div>'
+        + '<div class="item-main">'
+        + '<div class="item-row1"><div class="item-name">（清單目前為空）</div></div>'
+        + '<div class="item-row2">切換上方「好友 / 送出申請 / 收到申請」查看不同清單。</div>'
+        + err
+        + '<div class="item-row3">（此區已改為 Supabase 真實資料；若你尚未建立好友/邀請，會顯示空清單）</div>'
+        + '</div>';friendsListEl.appendChild(li);
       return;
     }
 
     ids.forEach((id) => {
-      const p = friendProfilesById[id] || { id, name: "（未設定）", region: "", avatar_url: "" };
+      const p = friendProfilesById[id] || { id, name: "（未設定）", region: "", avatar: "https://picsum.photos/160/160?random=88", last_seen_at: null };
       const st = onlineStatusFromLastSeen(p.last_seen_at);
       const statusHtml = renderStatusInline(st.status, st.text);
 
-      const safeId = JSON.stringify(String(id)); // 支援 UUID
-      const avatar = p.avatar_url || "https://picsum.photos/160/160?random=88";
+      const safeId = "\'" + String(id).replace(/\'/g, "\\\'") + "\'"; // 支援 UUID
+      const avatar = (p && (p.avatar || p.avatar_url || p.avatarUrl || p.avatarURL)) || "https://picsum.photos/160/160?random=88";
 
       let row3Html = "";
       let extraActionsHtml = "";
@@ -2844,28 +3386,29 @@ function renderFriendsList(type) {
         row3Html = '<div class="item-row3"><span class="label">好友限定：</span>' + noteText + '</div>';
         extraActionsHtml = ''
           + '<div class="item-row3">'
-          + '  <button class="btn btn-sm" onclick="hmOpenFriendProfile(' + safeId + ')">查看資料</button>'
+          + '  <button class="btn btn-sm" onclick="event.stopPropagation(); hmOpenFriendProfile(' + safeId + ')">查看資料</button>'
           + '</div>';
       } else if (type === "sent") {
         row3Html = '<div class="item-row3"><span class="label">狀態：</span>已送出好友申請，等待對方回應</div>';
         extraActionsHtml = ''
           + '<div class="item-row3">'
-          + '  <button class="btn btn-sm" onclick="hmCancelFriendRequest(' + safeId + ')">取消申請</button>'
+          + '  <button class="btn btn-sm" onclick="event.stopPropagation(); hmCancelFriendRequest(' + safeId + ')">取消申請</button>'
           + '</div>';
       } else if (type === "received") {
         row3Html = '<div class="item-row3"><span class="label">狀態：</span>對方想加你為好友</div>';
         extraActionsHtml = ''
           + '<div class="item-row3">'
-          + '  <button class="btn btn-sm" onclick="hmAcceptFriend(' + safeId + ')">同意</button>'
-          + '  <button class="btn btn-sm btn-outline" onclick="hmRejectFriend(' + safeId + ')">拒絕</button>'
+          + '  <button class="btn btn-sm" onclick="event.stopPropagation(); hmOpenPublicProfile(' + safeId + ')">查看資料</button>'
+          + '  <button class="btn btn-sm" onclick="event.stopPropagation(); hmAcceptFriend(' + safeId + ')">同意</button>'
+          + '  <button class="btn btn-sm btn-outline" onclick="event.stopPropagation(); hmRejectFriend(' + safeId + ')">拒絕</button>'
           + '</div>';
       }
 
       const li = document.createElement("li");
-      li.className = "item";
+      li.className = "list-item";
       li.innerHTML = ''
-        + '<div class="item-photo"><img src="' + avatar + '" alt="avatar"></div>'
-        + '<div class="item-info">'
+        + '<div class="avatar"><img src="' + avatar + '" alt="avatar"></div>'
+        + '<div class="item-main">'
         + '  <div class="item-row1">'
         + '    <div class="item-name">' + (p.name || "（未設定）") + '</div>'
         + '    <div class="item-right">' + statusHtml + '</div>'
@@ -2874,6 +3417,9 @@ function renderFriendsList(type) {
         + row3Html
         + extraActionsHtml
         + '</div>';
+
+      // 點整列可開啟對方對外資料（按鈕已 stopPropagation，不會誤觸）
+      li.addEventListener("click", function () { hmOpenPublicProfile(id); });
 
       friendsListEl.appendChild(li);
     });
@@ -3064,6 +3610,12 @@ function renderFriendsList(type) {
     }
     renderTopRightForPage(pageName);
 
+    // 進入好友頁時自動同步好友/邀請資料（避免清單看起來永遠是空的）
+    if (pageName === "friends") {
+      try { hmRefreshFriendsFromSupabase(); } catch (e) {}
+      try { setFriendTabActive(currentFriendTab || "friends"); } catch (e) {}
+    }
+
     // 切換到其他頁面時，自動關閉聊天室滑窗
     if (pageName !== "chat") {
       hideChatPanel();
@@ -3099,13 +3651,33 @@ function renderFriendsList(type) {
     });
   });
 
+
+  // 好友頁 tab 操作（避免從其他頁觸發後 UI 沒同步）
+  function setFriendTabActive(type) {
+    const t = type || "friends";
+    document.querySelectorAll("[data-friendtab]").forEach(b => b.classList.remove("active"));
+    const btn = document.querySelector('[data-friendtab="' + t + '"]');
+    if (btn) btn.classList.add("active");
+    currentFriendTab = t;
+  }
+
+  function openFriendTab(type) {
+    setFriendTabActive(type);
+    // 先畫一次（避免空白），再背景刷新一次（避免狀態不同步）
+    try { hmRefreshFriendsFromSupabase(); } catch (e) {}
+    renderFriendsList(currentFriendTab);
+  }
+
+  function hmGotoPage(page) {
+    const nav = document.querySelector('.nav-item[data-page="' + page + '"]');
+    if (nav && typeof nav.click === "function") nav.click();
+    else switchPage(page);
+  }
+
   document.querySelectorAll("[data-friendtab]").forEach(btn => {
     btn.addEventListener("click", () => {
-      document.querySelectorAll("[data-friendtab]").forEach(b => b.classList.remove("active"));
-      btn.classList.add("active");
       const type = btn.getAttribute("data-friendtab");
-      currentFriendTab = type;
-      renderFriendsList(type);
+      openFriendTab(type);
     });
   });
 
@@ -3666,77 +4238,31 @@ function renderFriendsList(type) {
   }
   window.openPhotoViewer = openPhotoViewer;
   window.closeViewer = closeViewer;
+	// ✅ 全站圖片點擊放大（排除：底部導覽 icon、頭貼上傳區）
+document.addEventListener("click", (ev) => {
+  const img = ev.target.closest("img");
+  if (!img) return;
 
-  // 點背景即可關閉 Viewer（點圖片不關閉）
-  (function () {
-    const v = document.getElementById("photoViewer");
-    if (v && !v.__hmBound) {
-      v.__hmBound = true;
-      v.addEventListener("click", function (e) {
-        if (e.target && e.target.tagName === "IMG") return;
-        closeViewer();
-      });
-    }
-  })();
+  // 避免點到 viewer 自己
+  if (img.closest("#photoViewer")) return;
 
-  // ✅ 全站照片可點擊全螢幕放大（不影響底部導覽）
-  // - 支援 <img> 以及使用 background-image 的頭像（例如我的資料卡片）
-  document.addEventListener("click", function (ev) {
-    try {
-      // 1) background-image（我的資料卡片頭像）
-      const bgEl = ev.target && ev.target.closest ? ev.target.closest(".hm-profile-avatar") : null;
-      if (bgEl && !bgEl.closest(".bottom-nav")) {
-        const bg = (bgEl.style && bgEl.style.backgroundImage) || (window.getComputedStyle ? getComputedStyle(bgEl).backgroundImage : "");
-        if (bg && bg.startsWith("url(")) {
-          let url = bg.slice(4, -1);
-          url = url.replace(/^["']|["']$/g, "");
-          if (url) {
-            ev.preventDefault();
-            ev.stopPropagation();
-            openPhotoViewer(url);
-            return;
-          }
-        }
-      }
+  // 避免底部導覽列 icon 也被放大
+  if (img.closest(".bottom-nav")) return;
 
-      // 2) 一般 <img> 照片
-      const img = ev.target && ev.target.closest ? ev.target.closest("img") : null;
-      if (!img) return;
+  // 保留「我的資料」頭貼點擊＝上傳（不改它）
+  if (img.id === "myAvatarImage") return;
 
-      // 不攔截 viewer 自己
-      if (img.closest("#photoViewer")) return;
+  // 若你日後要排除某些圖：<img data-nozoom="1">
+  if (img.dataset && img.dataset.nozoom === "1") return;
 
-      // 不攔截底部導覽
-      if (img.closest(".bottom-nav")) return;
+  const src = (img.dataset && img.dataset.fullsrc) || img.currentSrc || img.src;
+  if (!src) return;
 
-      // 小 icon 不放大（避免把 UI icon 放大）
-      const r = img.getBoundingClientRect ? img.getBoundingClientRect() : { width: 0, height: 0 };
-      if ((r.width && r.width < 70) && (r.height && r.height < 70)) return;
+  ev.preventDefault();
+  ev.stopPropagation();
+  openPhotoViewer(src);
+}, true);
 
-      // 若你要排除某些圖：<img data-nozoom="1">
-      if (img.dataset && img.dataset.nozoom === "1") return;
-
-      const src = (img.dataset && img.dataset.fullsrc) || img.currentSrc || img.src;
-      if (!src) return;
-
-      // 若這張圖本來就是「點擊開上傳」，改成：不擋按鈕；照片本身可放大
-      //（頭貼上傳改走按鈕 myAvatarChangeBtn / 相簿改走各格的上傳按鈕）
-      if (img.id === "myAvatarImage") {
-        // 頭貼改為放大：不再用點圖上傳
-        ev.preventDefault();
-        ev.stopPropagation();
-        openPhotoViewer(src);
-        return;
-      }
-
-      ev.preventDefault();
-      ev.stopPropagation();
-      openPhotoViewer(src);
-    } catch (e) {
-      // 絕不讓放大功能影響主流程
-      console.warn("[zoom] click handler failed", e);
-    }
-  }, true);
 
   // 依「使用者 id + 第幾張」取得對方的相簿照片
   function hmGetPersonAlbumPhotoSrc(personId, idx) {
@@ -4126,6 +4652,190 @@ function renderFriendsList(type) {
     });
   }
 
+  // ================== Supabase: profile_photos + diaries (minimal, stable) ==================
+  var hmProfilePhotosOwnerCol = null;
+
+  async function hmDetectProfilePhotosOwnerCol(cli) {
+    if (hmProfilePhotosOwnerCol) return hmProfilePhotosOwnerCol;
+    try {
+      const t = await cli.from("profile_photos").select("user_id").limit(1);
+      if (!t.error) { hmProfilePhotosOwnerCol = "user_id"; return hmProfilePhotosOwnerCol; }
+    } catch (e) {}
+    try {
+      const t2 = await cli.from("profile_photos").select("profile_id").limit(1);
+      if (!t2.error) { hmProfilePhotosOwnerCol = "profile_id"; return hmProfilePhotosOwnerCol; }
+    } catch (e) {}
+    hmProfilePhotosOwnerCol = "user_id";
+    return hmProfilePhotosOwnerCol;
+  }
+
+  async function hmAttachPhotosToPeople(cli, peopleList) {
+    if (!cli || !Array.isArray(peopleList) || peopleList.length === 0) return;
+    const ownerCol = await hmDetectProfilePhotosOwnerCol(cli);
+    const ids = peopleList.map(p => String(p.id));
+    const chunkSize = 50;
+    const allRows = [];
+    for (let i = 0; i < ids.length; i += chunkSize) {
+      const chunk = ids.slice(i, i + chunkSize);
+      const res = await cli
+        .from("profile_photos")
+        .select(ownerCol + ",url,is_avatar,created_at")
+        .in(ownerCol, chunk)
+        .order("created_at", { ascending: false });
+      if (res && res.data) allRows.push(...res.data);
+    }
+
+    const byUser = new Map();
+    allRows.forEach(r => {
+      const uid = String(r[ownerCol] || "");
+      if (!uid) return;
+      if (!byUser.has(uid)) byUser.set(uid, []);
+      byUser.get(uid).push(r);
+    });
+
+    peopleList.forEach(p => {
+      const rows = byUser.get(String(p.id)) || [];
+      const avatarRow = rows.find(x => x.is_avatar === true) || null;
+      if (avatarRow && avatarRow.url) p.avatar = String(avatarRow.url);
+
+      const album = rows.filter(x => !x.is_avatar && x.url).map(x => String(x.url));
+      if (album.length) p.album = album.slice(0, 6);
+    });
+  }
+
+  async function hmInsertProfilePhotoToSupabase(dataUrl, isAvatar) {
+    try {
+      const cli = await hmGetSupabaseClient();
+      if (!cli) return { ok: false, skipped: true, reason: "no_sb_url_key" };
+      const sessRes = await cli.auth.getSession();
+      const session = (sessRes && sessRes.data) ? sessRes.data.session : null;
+      if (!session || !session.user) return { ok: false, skipped: true, reason: "not_signed_in" };
+
+      const ownerCol = await hmDetectProfilePhotosOwnerCol(cli);
+      const payload = {};
+      payload[ownerCol] = session.user.id;
+      payload.url = dataUrl;
+      payload.is_avatar = !!isAvatar;
+
+      const res = await cli.from("profile_photos").insert(payload);
+      if (res && res.error) throw res.error;
+      return { ok: true };
+    } catch (e) {
+      return { ok: false, error: e };
+    }
+  }
+
+  async function hmInsertDiaryToSupabase(content, isPublic, imageUrl) {
+    try {
+      const cli = await hmGetSupabaseClient();
+      if (!cli) return { ok: false, skipped: true, reason: "no_sb_url_key" };
+      const sessRes = await cli.auth.getSession();
+      const session = (sessRes && sessRes.data) ? sessRes.data.session : null;
+      if (!session || !session.user) return { ok: false, skipped: true, reason: "not_signed_in" };
+
+      // NOTE: imageUrl 目前使用 dataURL（base64）同步到資料庫（Demo 可用）。
+      // 若你想改成 Supabase Storage，後續可把這裡的 imageUrl 換成 public URL。
+      const payload = {
+        user_id: session.user.id,
+        content: String(content || ""),
+        is_public: !!isPublic
+      };
+      if (imageUrl) payload.image_url = String(imageUrl);
+
+      // 先嘗試帶 image_url 插入；若資料庫尚未加欄位，會自動降級插入文字並回傳提示
+      let res = await cli.from("diaries").insert(payload).select("id,created_at,image_url,is_public");
+      if (res && res.error) {
+        const msg = String(res.error.message || "");
+        const missingCol = msg.includes("image_url") && (msg.includes("does not exist") || msg.includes("column"));
+        if (missingCol) {
+          // retry without image_url
+          const payload2 = { user_id: payload.user_id, content: payload.content, is_public: payload.is_public };
+          res = await cli.from("diaries").insert(payload2).select("id,created_at,is_public");
+          if (res && res.error) throw res.error;
+          var row2 = Array.isArray(res.data) && res.data.length ? res.data[0] : res.data;
+          return {
+            ok: true,
+            id: row2 && row2.id ? String(row2.id) : null,
+            created_at: row2 && row2.created_at ? row2.created_at : null,
+            image_url: null,
+            is_public: !!payload.is_public,
+            warning: "missing_image_url_column"
+          };
+        }
+        throw res.error;
+      }
+
+      var row = Array.isArray(res.data) && res.data.length ? res.data[0] : res.data;
+      return {
+        ok: true,
+        id: row && row.id ? String(row.id) : null,
+        created_at: row && row.created_at ? row.created_at : null,
+        image_url: row && row.image_url ? String(row.image_url) : (imageUrl ? String(imageUrl) : null),
+        is_public: row && row.is_public != null ? !!row.is_public : !!payload.is_public
+      };
+    } catch (e) {
+      return { ok: false, error: e };
+    }
+  }
+
+  async function hmLoadPublicDiariesIntoDetail(profileId) {
+    const listEl = document.getElementById("publicDiaryList");
+    if (!listEl) return;
+    listEl.innerHTML = '<div class="diary-item" style="color:#6b7280;">載入中...</div>';
+    try {
+      const cli = await hmGetSupabaseClient();
+      if (!cli) { listEl.innerHTML = '<div class="diary-item" style="color:#6b7280;">尚未設定 Supabase 連線。</div>'; return; }
+      const sessRes = await cli.auth.getSession();
+      const session = (sessRes && sessRes.data) ? sessRes.data.session : null;
+      if (!session || !session.user) { listEl.innerHTML = '<div class="diary-item" style="color:#6b7280;">請先登入後再查看公開日記。</div>'; return; }
+
+      const res = await cli
+        .from("diaries")
+        .select("content,created_at,image_url")
+        .eq("user_id", profileId)
+        .eq("is_public", true)
+        .order("created_at", { ascending: false })
+        .limit(10);
+
+      if (res && res.error) throw res.error;
+      const rows = res.data || [];
+      if (!rows.length) {
+        listEl.innerHTML = '<div class="diary-item" style="color:#6b7280;">對方尚未公開任何日記。</div>';
+        return;
+      }
+      listEl.innerHTML = "";
+      rows.forEach(r => {
+        const item = document.createElement("div");
+        item.className = "diary-item";
+        const t = document.createElement("div");
+        t.style.fontSize = "15px";
+        t.style.whiteSpace = "pre-wrap";
+        t.textContent = r.content || "";
+        const meta = document.createElement("div");
+        meta.style.marginTop = "6px";
+        meta.style.fontSize = "12px";
+        meta.style.color = "#9ca3af";
+        meta.textContent = r.created_at ? new Date(r.created_at).toLocaleString() : "";
+        item.appendChild(t);
+        if (r && r.image_url) {
+          const img = document.createElement("img");
+          img.src = r.image_url;
+          img.alt = "日記照片";
+          img.style.width = "100%";
+          img.style.maxWidth = "100%";
+          img.style.borderRadius = "12px";
+          img.style.marginTop = "10px";
+          img.style.display = "block";
+          item.appendChild(img);
+        }
+        item.appendChild(meta);
+        listEl.appendChild(item);
+      });
+    } catch (e) {
+      listEl.innerHTML = '<div class="diary-item" style="color:#6b7280;">載入失敗（可能尚未建立 diaries 表或 RLS 未設定）。</div>';
+    }
+  }
+
   async function hmSyncProfileToSupabase(profile) {
     try {
       var cli = await hmGetSupabaseClient();
@@ -4155,17 +4865,19 @@ if (!nameVal) nameVal = null;
       var payload = {
         id: uid,
         name: nameVal,                 
+        gender: (profile && profile.gender) ? String(profile.gender) : null,
+        age_range: (profile && profile.age_range) ? String(profile.age_range) : null,
         region: profile.region || null,
         height: heightVal,
         weight: weightVal,
-        avatar_url: profile.avatar_url || null
+        avatar_url: (profile && profile.avatar_url) ? profile.avatar_url : (function(){ try { return localStorage.getItem("hmAvatarImage") || null; } catch(e){ return null; } })()
       };
 
       // upsert：同一個 uid 永遠寫回同一筆 profiles.id
       var upsertRes = await cli
         .from("profiles")
         .upsert(payload, { onConflict: "id" })
-        .select("id,name,region,height,weight,avatar_url,created_at")
+        .select("id,name,gender,age_range,region,height,weight,avatar_url,age,last_seen_at,created_at")
         .single();
 
       if (upsertRes && upsertRes.error) throw upsertRes.error;
@@ -4243,6 +4955,9 @@ if (!nameVal) nameVal = null;
     try { hmInitProfileCard(); } catch (e) { /* ignore */ }
     try { hmInitMyProfileHeader(); } catch (e) { /* ignore */ }
 
+    // 同步頭貼/相簿（來自 profile_photos）
+    try { await hmHydrateMyPhotosFromSupabase(); } catch (e) { /* ignore */ }
+
     // If the edit modal/form is present, also refill it
     try {
       if (document.getElementById("hm-name")) {
@@ -4251,6 +4966,60 @@ if (!nameVal) nameVal = null;
     } catch (e) { /* ignore */ }
 
     return { ok: true, data: merged };
+  }
+
+  async function hmHydrateMyPhotosFromSupabase() {
+    try {
+      const cli = await hmGetSupabaseClient();
+      if (!cli) return { ok: false, skipped: true, reason: "no_sb_url_key" };
+
+      const sessRes = await cli.auth.getSession();
+      const session = (sessRes && sessRes.data) ? sessRes.data.session : null;
+      if (!session || !session.user) return { ok: false, skipped: true, reason: "no_session" };
+
+      const uid = session.user.id;
+
+      // 透過 profile_photos 拉回最新頭貼/相簿，讓「我的資料」與「對外資料」保持一致（可跨裝置）。
+      const arr = [{ id: uid }];
+      try {
+        await hmAttachPhotosToPeople(cli, arr);
+      } catch (e) {
+        console.warn("載入 profile_photos 失敗：", e);
+        return { ok: false, error: e };
+      }
+      const me = arr[0] || {};
+      const avatar = me.avatar || null;
+      const album = Array.isArray(me.album) ? me.album : [];
+
+      if (avatar) {
+        try { localStorage.setItem("hmAvatarImage", avatar); } catch(_e) {}
+        try {
+          const imgEl = document.getElementById("myAvatarImage");
+          if (imgEl) imgEl.src = avatar;
+        } catch(_e) {}
+        try {
+          const raw = localStorage.getItem("hmProfileData");
+          const prof = raw ? JSON.parse(raw) : {};
+          prof.avatar_url = avatar;
+          hmSaveProfileData(prof);
+        } catch(_e) {}
+        try { hmApplyAvatarToProfileCard(); } catch(_e) {}
+      }
+
+      // 相簿固定 6 格：依最新資料回填（多的取前 6、少的補 null）
+      const fixed = new Array(MY_ALBUM_SLOTS).fill(null);
+      for (let i = 0; i < Math.min(album.length, MY_ALBUM_SLOTS); i++) fixed[i] = album[i];
+
+      myAlbumPhotosCache = fixed;
+      try { localStorage.setItem("hmMyAlbumPhotos", JSON.stringify(fixed)); } catch(_e) {}
+
+      try { renderMyAlbum(); } catch(_e) {}
+
+      return { ok: true, avatar_url: avatar, album: fixed };
+    } catch (e) {
+      console.warn("hmHydrateMyPhotosFromSupabase 失敗：", e);
+      return { ok: false, error: e };
+    }
   }
 // 保持相容：某些舊版程式碼呼叫 hmUpsertProfileToSupabase
   // 這裡直接 alias 到 hmSyncProfileToSupabase，避免 ReferenceError
@@ -4368,6 +5137,8 @@ function hmFillProfileForm(options) {
     const nameInput = document.getElementById("hm-name");
     const heightInput = document.getElementById("hm-height");
     const weightInput = document.getElementById("hm-weight");
+    const genderInput = document.getElementById("hm-gender");
+    const ageRangeInput = document.getElementById("hm-age-range");
     const regionInput = document.getElementById("hm-region");
     const threadsInput = document.getElementById("hm-threads");
     const xInput = document.getElementById("hm-x");
@@ -4395,6 +5166,8 @@ function hmFillProfileForm(options) {
     nameInput.value = profile.name || "";
     heightInput.value = profile.height || "";
     weightInput.value = profile.weight || "";
+    if (genderInput) genderInput.value = profile.gender || "";
+    if (ageRangeInput) ageRangeInput.value = profile.age_range || "";
         hmSetRegionToForm(profile.region || "");
 // 社群欄位
     threadsInput.value = socials.threads || "";
@@ -4409,6 +5182,8 @@ function hmFillProfileForm(options) {
     nameInput.readOnly = lockBasic;
     heightInput.readOnly = lockBasic;
     weightInput.readOnly = lockBasic;
+    if (genderInput) { if (genderInput.tagName === "SELECT") genderInput.disabled = lockBasic; else genderInput.readOnly = lockBasic; }
+    if (ageRangeInput) { if (ageRangeInput.tagName === "SELECT") ageRangeInput.disabled = lockBasic; else ageRangeInput.readOnly = lockBasic; }
         if (regionInput) {
       if (regionInput.tagName === "SELECT") regionInput.disabled = lockBasic;
       else regionInput.readOnly = lockBasic;
@@ -4471,6 +5246,17 @@ function hmHandleAvatarFile(inputEl) {
       if (!result) return;
       try {
         localStorage.setItem("hmAvatarImage", result);
+      // Update profileData.avatar_url + sync to Supabase (best-effort)
+      try {
+        const raw = localStorage.getItem("hmProfileData");
+        const prof = raw ? JSON.parse(raw) : {};
+        prof.avatar_url = result;
+        hmSaveProfileData(prof);
+        if (window.hmUpsertProfileToSupabase) { window.hmUpsertProfileToSupabase(prof); }
+      } catch(e) { /* ignore */ }
+      // Insert avatar into profile_photos (best-effort)
+      try { hmInsertProfilePhotoToSupabase(result, true); } catch(e) { /* ignore */ }
+
       } catch (err) {
         console.warn("儲存頭貼失敗：", err);
       }
@@ -4499,9 +5285,33 @@ function hmBindAvatarUploader() {
     };
   }
 
-  // 點擊頭像改為：全螢幕查看（上傳請用「更換頭貼」按鈕）
+  // 點擊頭像也能開啟上傳（iOS / Android / Desktop 通用）
   imgEl.onclick = function () {
-    if (imgEl && imgEl.src) { openPhotoViewer(imgEl.src); }
+	  // ✅ 新增「查看頭貼」按鈕（不影響點頭貼上傳）
+let viewBtn = document.getElementById("myAvatarViewBtn");
+if (!viewBtn) {
+  viewBtn = document.createElement("button");
+  viewBtn.type = "button";
+  viewBtn.id = "myAvatarViewBtn";
+  viewBtn.textContent = "查看";
+  viewBtn.style.marginLeft = "8px";
+  viewBtn.style.padding = "8px 12px";
+  viewBtn.style.borderRadius = "10px";
+  viewBtn.style.border = "1px solid #e5e7eb";
+  viewBtn.style.background = "#fff";
+
+  // 放在「更換頭貼」按鈕旁邊（若找不到就塞到頭貼旁）
+  if (btn && btn.parentElement) btn.parentElement.appendChild(viewBtn);
+  else imgEl.parentElement && imgEl.parentElement.appendChild(viewBtn);
+}
+
+viewBtn.onclick = function (e) {
+  e.stopPropagation();
+  const src = imgEl.src || localStorage.getItem("hmAvatarImage");
+  if (src) openPhotoViewer(src);
+};
+
+    input.click();
   };
 
   // 統一走 hmHandleAvatarFile，確保各環境一致
@@ -4873,13 +5683,16 @@ function hmInitProfileCard() {
         const file = e.target.files && e.target.files[0];
         if (!file) return;
         const reader = new FileReader();
-        reader.onload = (ev) => {
+        reader.onload = async (ev) => {
           const result = ev.target && ev.target.result;
           if (!result) return;
           const arr = hmLoadAlbumPhotos();
           arr[i] = result;
           myAlbumPhotosCache = arr;
           hmSaveAlbumPhotos();
+          // 同步相簿照片到 Supabase（寫入 profile_photos，讓對外資料與跨裝置一致）
+          try { await hmInsertProfilePhotoToSupabase(result, false); } catch(e) {}
+          try { await hmHydrateMyPhotosFromSupabase(); } catch(e) {}
           renderMyAlbum();
           if (pages.profileDetail.classList.contains("active") && currentProfileId != null) {
             openProfileDetail(currentProfileId);
@@ -5006,7 +5819,7 @@ function hmInitProfileCard() {
       updateDiarySizeLabel();
     }
 
-    function handleDiaryAdd() {
+	    async function handleDiaryAdd() {
       if (!diaryInput) return;
       const text = diaryInput.value.trim();
       if (!text && !diaryPendingImage) {
@@ -5029,6 +5842,29 @@ function hmInitProfileCard() {
       };
       list.push(diary);
       hmSaveDiaries(list);
+	      // 同步公開日記到 Supabase（避免「我的日記有改，但對外資料沒跟著變」）
+	      try {
+	        const isPublic = (document.getElementById("myDiaryIsPublic") && document.getElementById("myDiaryIsPublic").checked) ? true : false;
+	        if (isPublic && !text && !diaryPendingImage) {
+	          alert("公開日記建議至少填寫一些文字，否則對外顯示會是空白。\n\n你可以先取消勾選『公開』，或補上文字後再送出。");
+	        } else {
+	          const sbRes = await hmInsertDiaryToSupabase(text || "", isPublic, diaryPendingImage || null);
+	          if (sbRes && sbRes.ok) {
+	            try {
+	              if (sbRes.warning === "missing_image_url_column" && diaryPendingImage) {
+	                alert("日記文字已同步到 Supabase，但『image_url』欄位尚未建立，因此照片無法同步。\n\n請到 Supabase SQL Editor 執行：\nALTER TABLE public.diaries ADD COLUMN IF NOT EXISTS image_url text;\n\n執行後再新增一次含照片的日記即可。");
+	              }
+	            } catch(_e) {}
+	            diary.sb_id = sbRes.id || null;
+	            diary.is_public = isPublic;
+	            // 回寫一次（讓本機也記得這則已同步）
+	            hmSaveDiaries(list);
+	          } else {
+	            console.warn("diary sync failed", sbRes);
+	            alert("已新增到本機日記，但未同步到 Supabase（因此對外資料看不到）。\n\n請確認：\n1) 已在右下 Supabase 設定並登入\n2) Supabase 已建立 diaries 表與 RLS\n3) 勾選『公開』才會顯示給別人");
+	          }
+	        }
+	      } catch(e) { console.warn(e); }
       diaryInput.value = "";
       if (diaryImageUpload) diaryImageUpload.value = "";
       if (diaryImageCamera) diaryImageCamera.value = "";
@@ -5102,6 +5938,8 @@ function hmInitProfileCard() {
         const name = document.getElementById("hm-name").value.trim();
         const height = document.getElementById("hm-height").value.trim();
         const weight = document.getElementById("hm-weight").value.trim();
+        const gender = (document.getElementById("hm-gender") && document.getElementById("hm-gender").value || "").trim();
+        const age_range = (document.getElementById("hm-age-range") && document.getElementById("hm-age-range").value || "").trim();
                 const region = hmGetRegionFromForm();
 const threads = document.getElementById("hm-threads").value.trim();
         const x = document.getElementById("hm-x").value.trim();
@@ -5129,6 +5967,14 @@ const threads = document.getElementById("hm-threads").value.trim();
             alert("身高與體重為必填欄位");
             return;
           }
+          if (!gender) {
+            alert("請選擇性別");
+            return;
+          }
+          if (!age_range) {
+            alert("請選擇年齡層");
+            return;
+          }
           if (!agree) {
             alert("請勾選同意服務條款與隱私政策");
             return;
@@ -5143,6 +5989,8 @@ const threads = document.getElementById("hm-threads").value.trim();
           // 初次建立或補齊缺漏，全部寫入
           profileData = {
             name,
+            gender,
+            age_range,
             height,
             weight,
             region,
@@ -5154,6 +6002,8 @@ const threads = document.getElementById("hm-threads").value.trim();
   // （避免 Supabase 那筆 name 仍為 NULL 時永遠補不上）
   profileData = Object.assign({}, existingProfile, {
     name,
+    gender,
+    age_range,
     height,
     weight,
     region,
@@ -5231,8 +6081,202 @@ const threads = document.getElementById("hm-threads").value.trim();
         location.reload();
       });
     }
+
+
+
+// ================== Supabase Auth: Email 登入 / 註冊 / 切換（放在填寫資料 Modal 底部） ==================
+async function hmRefreshAuthStatusUI() {
+  try {
+    const statusEl = document.getElementById("hm-auth-status");
+    const emailEl = document.getElementById("hm-auth-email");
+    const passEl = document.getElementById("hm-auth-password");
+    if (!statusEl || !emailEl || !passEl) return;
+
+    const cli = await hmGetSupabaseClient();
+    if (!cli) {
+      statusEl.textContent = "尚未初始化 Supabase（請先在右下角 Supabase Test Panel 填 SB_URL / ANON_KEY）";
+      return;
+    }
+
+    const sessRes = await cli.auth.getSession();
+    const session = (sessRes && sessRes.data) ? sessRes.data.session : null;
+    const email = session && session.user ? (session.user.email || "") : "";
+    if (email) {
+      statusEl.textContent = "目前登入 Email：" + email;
+      if (!emailEl.value) emailEl.value = email;
+    } else {
+      statusEl.textContent = "尚未登入（請輸入 Email / Password 後按登入或註冊）";
+    }
+  } catch (e) {
+    console.warn("hmRefreshAuthStatusUI 失敗：", e);
+  }
+}
+
+async function hmAuthEnsureClientOrAlert() {
+  const cli = await hmGetSupabaseClient();
+  if (!cli) {
+    alert("Supabase 尚未初始化。\n請先在右下角 Supabase Test Panel 綁定 SUPABASE_URL / ANON_KEY。");
+    return null;
+  }
+  return cli;
+}
+
+async function hmAuthSignInWithPassword(email, password) {
+  const cli = await hmAuthEnsureClientOrAlert();
+  if (!cli) return;
+  const res = await cli.auth.signInWithPassword({ email: email, password: password });
+  if (res && res.error) throw res.error;
+  return res;
+}
+
+async function hmAuthSignUp(email, password) {
+  const cli = await hmAuthEnsureClientOrAlert();
+  if (!cli) return;
+  const res = await cli.auth.signUp({ email: email, password: password });
+  if (res && res.error) throw res.error;
+  return res;
+}
+
+async function hmAuthSignOutEmail() {
+  const cli = await hmAuthEnsureClientOrAlert();
+  if (!cli) return;
+  await cli.auth.signOut();
+  try {
+    localStorage.removeItem("hmProfileData");
+    localStorage.removeItem("hmProfileCompleted");
+    localStorage.removeItem("hmAuthProvider");
+    localStorage.removeItem("hmVipLevel");
+    localStorage.removeItem("hmMyAlbumPhotos");
+    localStorage.removeItem("hmAlbumUnlockUntil");
+    localStorage.removeItem("hmAvatarImage");
+    sessionStorage.removeItem("hmAlbumUnlocked");
+  } catch (e) { /* ignore */ }
+}
+
+// Bind modal auth buttons (safe: 不影響主程式)
+(function bindHmAuthUiInProfileModal() {
+  try {
+    const btnIn = document.getElementById("hm-auth-signin-btn");
+    const btnUp = document.getElementById("hm-auth-signup-btn");
+    const btnOut = document.getElementById("hm-auth-signout-btn");
+    const emailEl = document.getElementById("hm-auth-email");
+    const passEl = document.getElementById("hm-auth-password");
+
+    if (btnIn) btnIn.addEventListener("click", async function () {
+      try {
+        const email = (emailEl && emailEl.value ? emailEl.value : "").trim();
+        const password = (passEl && passEl.value ? passEl.value : "").trim();
+        if (!email || !password) { alert("請輸入 Email 與 Password"); return; }
+        await hmAuthSignInWithPassword(email, password);
+        await hmRefreshAuthStatusUI();
+        try { await hmRefreshFriendsFromSupabase(); } catch (e) {}
+        alert("登入成功。\n請回到「巧遇」按「換一批」載入真人資料。");
+      } catch (e) {
+        console.warn("登入失敗：", e);
+        alert("登入失敗：" + (e && e.message ? e.message : e));
+      }
+    });
+
+    if (btnUp) btnUp.addEventListener("click", async function () {
+      try {
+        const email = (emailEl && emailEl.value ? emailEl.value : "").trim();
+        const password = (passEl && passEl.value ? passEl.value : "").trim();
+        if (!email || !password) { alert("請輸入 Email 與 Password"); return; }
+        await hmAuthSignUp(email, password);
+        await hmRefreshAuthStatusUI();
+        try { await hmRefreshFriendsFromSupabase(); } catch (e) {}
+        alert("註冊成功。\n若專案有啟用 Email 驗證，請先完成信箱驗證後再登入。");
+      } catch (e) {
+        console.warn("註冊失敗：", e);
+        alert("註冊失敗：" + (e && e.message ? e.message : e));
+      }
+    });
+
+    if (btnOut) btnOut.addEventListener("click", async function () {
+      try {
+        if (!confirm("確定要登出 Email 嗎？\n登出後你可以切換到另一個 Email 登入。")) return;
+        await hmAuthSignOutEmail();
+        await hmRefreshAuthStatusUI();
+        alert("已登出 Email。");
+      } catch (e) {
+        console.warn("登出失敗：", e);
+        alert("登出失敗：" + (e && e.message ? e.message : e));
+      }
+    });
+
+    // init status (best-effort)
+    if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", hmRefreshAuthStatusUI);
+    } else {
+      hmRefreshAuthStatusUI();
+    }
+  } catch (e) {
+    console.warn("bindHmAuthUiInProfileModal 失敗：", e);
+  }
+})();
+
+// Supabase Auth 登出（切換 Email）
+const signOutEmailBtn = document.getElementById("hm-signout-email-btn");
+if (signOutEmailBtn) {
+  signOutEmailBtn.addEventListener("click", function () {
+    if (!confirm("確定要登出 Email 嗎？\n登出後你可以使用另一個 Email 重新登入。")) return;
+
+    // 確保 Supabase SDK 已載入
+    hmEnsureSupabaseSdk().then(function () {
+      if (!hmSupabaseClient || !hmSupabaseClient.auth) {
+        alert("Supabase 尚未初始化。\n請先在右下角 Supabase Test Panel 綁定 SUPABASE_URL / ANON_KEY。登入/註冊可在「填寫資料」視窗底部操作。");
+        return;
+      }
+
+      hmSupabaseClient.auth
+        .signOut()
+        .then(function () {
+          // 同步清除本機暫存（避免同一裝置殘留 UI 狀態）
+          try {
+            localStorage.removeItem("hmProfileData");
+            localStorage.removeItem("hmProfileCompleted");
+            localStorage.removeItem("hmAuthProvider");
+            localStorage.removeItem("hmVipLevel");
+            localStorage.removeItem("hmMyAlbumPhotos");
+            localStorage.removeItem("hmAlbumUnlockUntil");
+            localStorage.removeItem("hmAvatarImage");
+            sessionStorage.removeItem("hmAlbumUnlocked");
+          } catch (e) {
+            console.warn("Email 登出時清除 localStorage / sessionStorage 失敗：", e);
+          }
+          location.reload();
+        })
+        .catch(function (err) {
+          console.warn("Supabase signOut 失敗：", err);
+          alert("登出失敗：" + (err && err.message ? err.message : err));
+        });
+    }).catch(function (e) {
+      console.warn("載入 Supabase SDK 失敗：", e);
+      alert("載入 Supabase SDK 失敗，請確認網路後重試。");
+    });
   });
- </script>
+}
+  });
+ 
+  // === Expose inline onclick handlers (important for mobile & GitHub Pages) ===
+  // Some browsers do not resolve functions declared in script scope from HTML event attributes unless
+  // they are attached to window. Export the handlers we use in onclick="...".
+  try {
+    window.hmAddFriend = hmAddFriend;
+    window.hmAcceptFriend = hmAcceptFriend;
+    window.hmRejectFriend = hmRejectFriend;
+    window.hmCancelFriendRequest = hmCancelFriendRequest;
+    window.hmOpenFriendProfile = hmOpenFriendProfile;
+    window.hmBlockOrReport = hmBlockOrReport;
+    window.handleStrangerAlbumClick = handleStrangerAlbumClick;
+    window.openChatWith = openChatWith;
+    window.sendGiftAnimationFromHeader = sendGiftAnimationFromHeader;
+    window.closeViewer = closeViewer;
+  } catch (e) {
+    console.warn("[ExposeHandlers] failed", e);
+  }
+
+</script>
 
 <script>
 document.addEventListener("change", function (e) {
@@ -5278,6 +6322,41 @@ document.addEventListener("change", function (e) {
 <!-- Supabase Test Panel (safe loader) -->
 <!--<script src="./supabase-panel-loader.js">-->
 
+<div id="hm-sb-mini-panel" style="position:fixed; right:12px; bottom:86px; z-index:9999; font-family:inherit;">
+  <button id="hm-sb-mini-toggle" class="hm-btn-outline" type="button" style="background:#fff; box-shadow:0 6px 18px rgba(0,0,0,0.12);">Supabase 設定</button>
+  <div id="hm-sb-mini-body" style="display:none; margin-top:8px; width:320px; background:#ffffff; border:1px solid #e5e7eb; border-radius:14px; padding:12px; box-shadow:0 10px 22px rgba(0,0,0,0.14);">
+    <div style="font-weight:700; margin-bottom:8px;">Supabase Test Panel</div>
+    <div style="font-size:12px; color:#6b7280; margin-bottom:10px;">填入 SB_URL / SB_ANON_KEY 後按「儲存」。</div>
+    <div style="display:flex; flex-direction:column; gap:8px;">
+      <input id="hm-sb-url" type="text" placeholder="SUPABASE_URL (https://xxxx.supabase.co)" style="padding:10px; border:1px solid #e5e7eb; border-radius:10px;">
+      <textarea id="hm-sb-key" placeholder="ANON_KEY（很長一串）" rows="3" style="padding:10px; border:1px solid #e5e7eb; border-radius:10px;"></textarea>
+      <div style="display:flex; gap:8px;">
+        <button id="hm-sb-save" class="btn btn-primary btn-sm" type="button" style="flex:1;">儲存</button>
+        <button id="hm-sb-close" class="btn btn-sm" type="button" style="flex:1;">關閉</button>
+      </div>
+    </div>
+  </div>
+</div>
+<script>
+(function(){
+  const t = document.getElementById("hm-sb-mini-toggle");
+  const body = document.getElementById("hm-sb-mini-body");
+  const urlEl = document.getElementById("hm-sb-url");
+  const keyEl = document.getElementById("hm-sb-key");
+  const save = document.getElementById("hm-sb-save");
+  const close = document.getElementById("hm-sb-close");
+  if (!t || !body) return;
+  t.addEventListener("click", ()=>{
+    body.style.display = (body.style.display==="none"||!body.style.display) ? "block" : "none";
+    try { urlEl.value = localStorage.getItem("SB_URL") || ""; keyEl.value = localStorage.getItem("SB_ANON_KEY") || ""; } catch(e){}
+  });
+  if (close) close.addEventListener("click", ()=>{ body.style.display="none"; });
+  if (save) save.addEventListener("click", ()=>{
+    try { localStorage.setItem("SB_URL", (urlEl.value||"").trim()); localStorage.setItem("SB_ANON_KEY",(keyEl.value||"").trim()); } catch(e){}
+    alert("已儲存 Supabase 連線設定。你可按「巧遇 → 換一批」或重新整理頁面。");
+  });
+})();
+</script>
 </body>
 </html>
 
