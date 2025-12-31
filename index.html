@@ -6718,6 +6718,12 @@ document.addEventListener("change", function (e) {
 </div>
 <script>
 (function(){
+  const isDev = new URLSearchParams(location.search).get("dev") === "1";
+  if (!isDev) {
+    const panel = document.getElementById("hm-sb-mini-panel");
+    if (panel) panel.remove();   // 直接把面板整個移除
+    return;
+  }
   const t = document.getElementById("hm-sb-mini-toggle");
   const body = document.getElementById("hm-sb-mini-body");
   const urlEl = document.getElementById("hm-sb-url");
