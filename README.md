@@ -1,6 +1,3 @@
-# leo-app-
-
-Patched build: Supabase test panel loader (no hard-coded keys).
 # HeartMeet — Supabase 後端化（簽到 / 道具）
 
 ## 你要做什麼
