@@ -1,4 +1,4 @@
-# HeartMeet — Supabase 後端化（簽到 / 道具）
+# HeartMeet — Supabase 後端化（簽到 / 道具）.
 
 ## 你要做什麼
 這版已把「每日簽到、玫瑰/小禮物庫存、送禮/心情廣場扣款」改成 **Supabase 後端權威**：
