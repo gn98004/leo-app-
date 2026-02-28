@@ -121,4 +121,5 @@
 2. 重新整理頁面，在「我的」相簿區會出現「測試開通 30 天 / 測試取消」。
 3. 或者在網址後加 `?devvip=1` 也會顯示測試按鈕（但後端仍需 `dev_vip_grant_enabled=true` 才能成功呼叫 RPC）。
 
+4. 
 > 注意：測試按鈕僅用於開發驗證，正式上架會改為 Apple/Google 內購訂閱驗證後，透過 Edge Function / Server 端呼叫 `grant_vip_from_iap()` 來寫入 `user_entitlements`。
