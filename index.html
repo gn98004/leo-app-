@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Linko 溫和變現版</title>
+<style>
+body {font-family: Arial; padding:20px;}
+.btn {padding:10px; margin:5px; background:#ff6b81; color:#fff; border:none;}
+.card {border:1px solid #ddd; padding:10px; margin:10px 0;}
+</style>
+</head>
+<body>
+
+<h2>🌹 玫瑰：<span class="rose-count">0</span></h2>
+<h3>VIP：<span class="vip-status">未開通</span></h3>
+
+<button class="btn" onclick="openVIP()">開通VIP(測試)</button>
+<button class="btn" onclick="watchAdReward('rose')">看廣告 +2玫瑰</button>
+
+<hr>
+
+<div class="card">
+<h4>用戶A 相簿</h4>
+<button class="btn" onclick="openAlbum('A')">查看相簿</button>
+</div>
+
+<div class="card">
+<h4>聊天</h4>
+<button class="btn" onclick="sendMessage()">發送訊息</button>
+</div>
+
+<div class="card">
+<h4>點讚</h4>
+<button class="btn" onclick="like()">👍 喜歡</button>
+<button class="btn" onclick="superLike()">🌹 超喜歡(1玫瑰)</button>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
